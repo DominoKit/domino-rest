@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.dominokit</groupId>
+    <artifactId>domino-rest</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>gwt-lib</packaging>
+
+    <url>https://github.com/DominoKit/domino-rest</url>
+    <description>Domino rest</description>
+	<name>domino-rest</name>
+
+    <licenses>
+        <license>
+            <name>Apache 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Ahmad K. Bawaneh</name>
+            <email>akabme@gmail.com</email>
+        </developer>
+        <developer>
+            <name>Rafat J. Al-Barouki</name>
+            <email>rafat.albarouki@gmail.com</email>
+        </developer>
+        <developer>
+            <name>Farah M. Soudani</name>
+            <email>fsoudanii93@gmail.com</email>
+        </developer>
+    </developers>
+
+    <issueManagement>
+        <url>https://github.com/DominoKit/domino-rest/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:https://github.com/DominoKit/domino-rest.git</connection>
+        <developerConnection>scm:git:git@github.com:DominoKit/domino-rest.git</developerConnection>
+        <url>https://github.com/DominoKit/domino-rest</url>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <gwt.version>2.8.2</gwt.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt</artifactId>
+                <version>2.8.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>3.1.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-dev</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-client</artifactId>
+            <version>3.5.2</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.7.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>net.ltgt.gwt.maven</groupId>
+                    <artifactId>gwt-maven-plugin</artifactId>
+                    <version>1.0-rc-9</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <moduleName>org.dominokit.rest.DominoRest</moduleName>
+                        <moduleShortName>dominorest</moduleShortName>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.10.4</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>1.6</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.8</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+    </build>
+
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>net.ltgt.gwt.maven</groupId>
+                        <artifactId>gwt-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>production</id>
+            <properties>
+                <gpg.executable>gpg</gpg.executable>
+                <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+                <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+                <gpg.defaultKeyring>false</gpg.defaultKeyring>
+                <gpg.publicKeyring>${env.GPG_DIR}/pubring.gpg</gpg.publicKeyring>
+                <gpg.secretKeyring>${env.GPG_DIR}/secring.gpg</gpg.secretKeyring>
+            </properties>
+            <activation>
+                <property>
+                    <name>ci</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>net.ltgt.gwt.maven</groupId>
+                        <artifactId>gwt-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <repositories>
+        <repository>
+            <id>vertispan-snapshots</id>
+            <name>Vertispan Snapshots</name>
+            <url>https://repo.vertispan.com/gwt-snapshot/</url>
+        </repository>
+    </repositories>
+</project>

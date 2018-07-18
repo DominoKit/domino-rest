@@ -1,0 +1,9 @@
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.7.0//EN"
+        "http://google-web-toolkit.googlecode.com/svn/tags/2.7.0/distro-source/core/src/gwt-module.dtd">
+<module>
+    <inherits name="org.dominokit.rest.DominoRest"/>
+    <source path="client"/>
+    <source path="shared"/>
+    <servlet path='/testRequest'
+             class='org.dominokit.rest.server.TestServlet'/>
+</module>
