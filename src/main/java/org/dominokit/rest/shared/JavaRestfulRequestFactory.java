@@ -1,6 +1,5 @@
 package org.dominokit.rest.shared;
 
-import com.google.gwt.core.shared.GwtIncompatible;
 import org.dominokit.rest.server.JavaRestfulRequest;
 
 class JavaRestfulRequestFactory extends JsRestfulRequestFactory {

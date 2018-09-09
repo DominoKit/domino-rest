@@ -1,7 +1,7 @@
 package org.dominokit.rest.client;
 
-import com.google.gwt.xhr.client.XMLHttpRequest;
 import org.dominokit.rest.shared.Response;
+import org.gwtproject.xhr.client.XMLHttpRequest;
 
 import java.util.Map;
 import java.util.stream.Collectors;

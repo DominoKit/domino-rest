@@ -1,9 +1,9 @@
 package org.dominokit.rest.client;
 
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.xhr.client.XMLHttpRequest;
 import org.dominokit.rest.shared.BaseRestfulRequest;
 import org.dominokit.rest.shared.RestfulRequest;
+import org.gwtproject.timer.client.Timer;
+import org.gwtproject.xhr.client.XMLHttpRequest;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
