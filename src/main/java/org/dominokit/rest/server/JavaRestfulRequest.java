@@ -14,6 +14,7 @@ import org.dominokit.rest.shared.RestfulRequest;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
 public class JavaRestfulRequest extends BaseRestfulRequest {
@@ -52,6 +53,22 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
     @Override
     public JavaRestfulRequest putHeader(String key, String value) {
         request.putHeader(key, value);
+        return this;
+    }
+
+    @Override
+    public RestfulRequest putHeaders(Map<String, String> headers) {
+        if(nonNull(headers)){
+            headers.forEach(this::putHeader);
+        }
+        return this;
+    }
+
+    @Override
+    public RestfulRequest putParameters(Map<String, String> parameters) {
+        if(nonNull(parameters) && !parameters.isEmpty()){
+            parameters.forEach(this::addQueryParam);
+        }
         return this;
     }
 

@@ -1,5 +1,7 @@
 package org.dominokit.rest.client;
 
+import elemental2.core.Global;
+import elemental2.dom.DomGlobal;
 import org.dominokit.rest.shared.BaseRestfulRequest;
 import org.dominokit.rest.shared.RestfulRequest;
 import org.gwtproject.timer.client.Timer;
@@ -10,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
 public class JsRestfulRequest extends BaseRestfulRequest {
@@ -28,6 +31,7 @@ public class JsRestfulRequest extends BaseRestfulRequest {
         super(uri, method);
         request = XMLHttpRequest.create();
         parseUri(uri);
+
     }
 
     private void parseUri(String uri) {
@@ -68,6 +72,22 @@ public class JsRestfulRequest extends BaseRestfulRequest {
     @Override
     public RestfulRequest putHeader(String key, String value) {
         headers.put(key, value);
+        return this;
+    }
+
+    @Override
+    public RestfulRequest putHeaders(Map<String, String> headers) {
+        if(nonNull(headers)){
+            headers.forEach(this::putHeader);
+        }
+        return this;
+    }
+
+    @Override
+    public RestfulRequest putParameters(Map<String, String> parameters) {
+        if(nonNull(parameters) && !parameters.isEmpty()){
+            parameters.forEach(this::addQueryParam);
+        }
         return this;
     }
 

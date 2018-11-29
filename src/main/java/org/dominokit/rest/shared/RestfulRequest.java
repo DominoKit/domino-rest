@@ -1,5 +1,6 @@
 package org.dominokit.rest.shared;
 
+import java.util.List;
 import java.util.Map;
 
 public interface RestfulRequest {
@@ -61,6 +62,8 @@ public interface RestfulRequest {
     String getMethod();
 
     RestfulRequest putHeader(String key, String value);
+    RestfulRequest putHeaders(Map<String, String> headers);
+    RestfulRequest putParameters(Map<String, String> parameters);
 
     Map<String, String> getHeaders();
 
