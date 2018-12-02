@@ -25,6 +25,7 @@ public class JsResponse implements Response {
         String allResponseHeaders = request.getAllResponseHeaders();
         String[] headers = allResponseHeaders.split("\n");
         return Stream.of(headers)
+                .filter(header -> !header.isEmpty())
                 .map(header -> header.split(":", 2))
                 .collect(Collectors.toMap(header -> header[0], header -> header[1].trim()));
     }
