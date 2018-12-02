@@ -31,4 +31,8 @@ class JsRestfulRequestFactory {
     RestfulRequest options(String uri) {
         return request(uri, RestfulRequest.OPTIONS);
     }
+
+    RestfulRequest patch(String uri) {
+        return request(uri, RestfulRequest.PATCH);
+    }
 }

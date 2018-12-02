@@ -11,6 +11,7 @@ public interface RestfulRequest {
     String DELETE = "DELETE";
     String HEAD = "HEAD";
     String OPTIONS = "OPTIONS";
+    String PATCH = "PATCH";
 
     static JavaRestfulRequestFactory factory() {
         return new JavaRestfulRequestFactory();
@@ -42,6 +43,10 @@ public interface RestfulRequest {
 
     static RestfulRequest options(String uri) {
         return factory().options(uri);
+    }
+
+    static RestfulRequest patch(String uri) {
+        return factory().patch(uri);
     }
 
 

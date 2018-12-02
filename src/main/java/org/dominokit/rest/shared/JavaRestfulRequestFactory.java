@@ -45,4 +45,10 @@ class JavaRestfulRequestFactory extends JsRestfulRequestFactory {
     RestfulRequest options(String uri) {
         return request(uri, RestfulRequest.OPTIONS);
     }
+
+    @GwtIncompatible
+    @Override
+    RestfulRequest patch(String uri) {
+        return request(uri, RestfulRequest.PATCH);
+    }
 }
