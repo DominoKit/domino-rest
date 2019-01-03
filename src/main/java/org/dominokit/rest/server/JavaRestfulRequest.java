@@ -58,7 +58,7 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
 
     @Override
     public RestfulRequest putHeaders(Map<String, String> headers) {
-        if(nonNull(headers)){
+        if (nonNull(headers)) {
             headers.forEach(this::putHeader);
         }
         return this;
@@ -66,7 +66,7 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
 
     @Override
     public RestfulRequest putParameters(Map<String, String> parameters) {
-        if(nonNull(parameters) && !parameters.isEmpty()){
+        if (nonNull(parameters) && !parameters.isEmpty()) {
             parameters.forEach(this::addQueryParam);
         }
         return this;
@@ -90,7 +90,8 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
 
     @Override
     public void sendJson(String json) {
-        request.sendJson(json, this::handleResponse);
+        putHeader("Content-Type", "application/json");
+        send(json);
     }
 
     @Override
