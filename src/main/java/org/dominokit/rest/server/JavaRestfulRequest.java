@@ -11,24 +11,23 @@ import io.vertx.ext.web.client.WebClient;
 import org.dominokit.rest.shared.BaseRestfulRequest;
 import org.dominokit.rest.shared.RestfulRequest;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
 public class JavaRestfulRequest extends BaseRestfulRequest {
 
     private final HttpRequest<Buffer> request;
-    private static final WebClient WEB_CLIENT;
-
-    static {
-        WEB_CLIENT = WebClient.create(Vertx.vertx());
-    }
+    private WebClient webClient;
 
     public JavaRestfulRequest(String uri, String method) {
         super(uri, method);
-        request = WEB_CLIENT.requestAbs(HttpMethod.valueOf(method), uri);
+        request = getWebClient().requestAbs(HttpMethod.valueOf(method), uri);
     }
 
     @Override
@@ -109,5 +108,20 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
             successHandler.onResponseReceived(new JavaResponse(event.result()));
         else
             errorHandler.onError(event.cause());
+    }
+
+    private WebClient getWebClient() {
+        if (isNull(this.webClient)) {
+            Iterator<VertxInstanceProvider> iterator = ServiceLoader.load(VertxInstanceProvider.class).iterator();
+            Vertx instance;
+            if (iterator.hasNext()) {
+                instance = iterator.next().getInstance();
+            } else {
+                instance = Vertx.vertx();
+            }
+            this.webClient = WebClient.create(instance);
+        }
+
+        return webClient;
     }
 }
