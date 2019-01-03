@@ -72,7 +72,7 @@ public class JavaRestfulRequestTest extends RestfulRequestTest {
 
     @Override
     protected String expectedJson() {
-        return "\"{\\\"message\\\":\\\"test message\\\"}\"";
+        return "{\"message\":\"test message\"}";
     }
 
     public class Message {
