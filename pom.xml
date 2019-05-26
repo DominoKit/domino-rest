@@ -5,8 +5,16 @@
 
     <groupId>org.dominokit</groupId>
     <artifactId>domino-rest</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>gwt-lib</packaging>
+    <version>1.0-rc.4-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>domino-rest-shared</module>
+        <module>domino-rest-apt</module>
+        <module>jaxrs-super</module>
+        <module>domino-rest-gwt</module>
+        <module>domino-rest-server</module>
+    </modules>
 
     <url>https://github.com/DominoKit/domino-rest</url>
     <description>Domino rest</description>
@@ -78,40 +86,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.gwtproject.timer</groupId>
-            <artifactId>gwt-timer</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.gwtproject</groupId>
-            <artifactId>xhr</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-user</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-dev</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web-client</artifactId>
-            <version>3.6.3</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -125,10 +99,6 @@
                     <artifactId>gwt-maven-plugin</artifactId>
                     <version>1.0-rc-9</version>
                     <extensions>true</extensions>
-                    <configuration>
-                        <moduleName>org.dominokit.rest.DominoRest</moduleName>
-                        <moduleShortName>dominorest</moduleShortName>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

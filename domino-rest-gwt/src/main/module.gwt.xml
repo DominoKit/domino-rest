@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+    <entry-point class="org.dominokit.domino.rest.DominoRestGwt"/>
+    <source path=""/>
+</module>
