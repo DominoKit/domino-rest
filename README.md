@@ -1,3 +1,5 @@
+![GWT3/J2CL compatible](https://img.shields.io/badge/GWT3/J2CL-compatible-brightgreen.svg)
+
 # domino-rest
 
 ## Setup
@@ -6,7 +8,7 @@
 
 Domino-rest can be used in two modes : 
 
-1- Interface defined in client module, then we only add dependencies to client module only 
+1- Interface defined in client module, then we only add dependencies to client module only
 
 ```xml
 <!-- Lib dependency-->

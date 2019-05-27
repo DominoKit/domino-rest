@@ -1,7 +1,5 @@
 package org.dominokit.domino.rest.shared.request;
 
-import elemental2.dom.DomGlobal;
-import org.dominokit.domino.api.shared.extension.ContextAggregator;
 import org.dominokit.domino.history.StateHistoryToken;
 import org.gwtproject.regexp.shared.MatchResult;
 import org.gwtproject.regexp.shared.RegExp;
@@ -13,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static java.util.Objects.*;
 
@@ -23,7 +22,13 @@ public class ServerRequest<R, S>
     private static final String CONTENT_TYPE = "Content-type";
     private static final String ACCEPT = "Accept";
 
-    private SenderSupplier senderSupplier = new SenderSupplier(() -> new RequestSender<R, S>() {
+    //should remain anonymous till a bug is fixed in j2cl
+    private SenderSupplier senderSupplier = new SenderSupplier(new Supplier<RequestRestSender>() {
+        @Override
+        public RequestRestSender get() {
+            return new RequestSender<R, S>() {
+            };
+        }
     });
 
     private Map<String, String> headers = new HashMap<>();
@@ -45,8 +50,6 @@ public class ServerRequest<R, S>
     private RequestWriter<R> requestWriter = request -> null;
     private ResponseReader<S> responseReader = request -> null;
     private RequestParametersReplacer<R> requestParametersReplacer = (token, request) -> token.value();
-
-    private ContextAggregator.ContextWait<S> contextWait = ContextAggregator.ContextWait.create();
 
     private Success<S> success = response -> {
     };
@@ -179,19 +182,13 @@ public class ServerRequest<R, S>
                     tempToken.replacePath(path, callArguments.get(path.replace(":", "")));
                 });
 
-        try {
-            tempToken.queryParameters()
-                    .entrySet()
-                    .stream()
-                    .filter(entry -> {
-                        return entry.getValue().startsWith(":") && callArguments.containsKey(entry.getValue().replace(":", ""));
-                    })
-                    .forEach(entry -> {
-                        tempToken.replaceParameter(entry.getKey(), entry.getKey(), callArguments.get(entry.getValue().replace(":", "")));
-                    });
-        }catch (Throwable error){
-            DomGlobal.console.error(error);
-        }
+        tempToken.queryParameters()
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().startsWith(":") && callArguments.containsKey(entry.getValue().replace(":", "")))
+                .forEach(entry -> {
+                    tempToken.replaceParameter(entry.getKey(), entry.getKey(), callArguments.get(entry.getValue().replace(":", "")));
+                });
 
         new ArrayList<>(tempToken.fragments())
                 .stream()
