@@ -2,7 +2,7 @@ package org.dominokit.domino.rest.shared.request;
 
 import java.util.List;
 
-public interface RequestConfig {
+public interface RestConfig {
     RequestRouter<ServerRequest> getServerRouter();
     String getDefaultServiceRoot();
 

@@ -1,9 +1,9 @@
 package org.dominokit.domino.rest.gwt;
 
-import com.google.gwt.event.shared.EventBus;
-import com.google.gwt.event.shared.SimpleEventBus;
-import com.google.web.bindery.event.shared.Event;
 import org.dominokit.domino.rest.shared.EventsBus;
+import org.gwtproject.event.shared.Event;
+import org.gwtproject.event.shared.EventBus;
+import org.gwtproject.event.shared.SimpleEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,12 +1,11 @@
 package org.dominokit.domino.rest.gwt;
 
-import com.google.gwt.event.shared.GwtEvent;
-import com.google.web.bindery.event.shared.Event;
 import org.dominokit.domino.rest.shared.EventProcessor;
+import org.gwtproject.event.shared.Event;
 
 public abstract class ServerFailedRequestGwtEvent extends Event<EventProcessor> {
 
-    protected static final GwtEvent.Type<EventProcessor> SERVER_FAILED_REQUEST_EVENT_TYPE = new GwtEvent.Type<>();
+    protected static final Event.Type<EventProcessor> SERVER_FAILED_REQUEST_EVENT_TYPE = new Event.Type<>();
 
     @Override
     public Type<EventProcessor> getAssociatedType() {

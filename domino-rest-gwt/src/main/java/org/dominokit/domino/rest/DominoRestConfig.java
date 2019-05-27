@@ -1,6 +1,6 @@
 package org.dominokit.domino.rest;
 
-import com.google.gwt.core.client.GWT;
+import org.dominokit.domino.rest.gwt.DefaulServiceRoot;
 import org.dominokit.domino.rest.gwt.GwtRequestAsyncSender;
 import org.dominokit.domino.rest.gwt.ServerEventFactory;
 import org.dominokit.domino.rest.shared.request.*;
@@ -11,7 +11,7 @@ import java.util.List;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-public class GwtRequestConfig implements RequestConfig {
+public class DominoRestConfig implements RestConfig {
 
     private static String defaultServiceRoot;
     private static String defaultResourceRootPath = "service";
@@ -21,31 +21,37 @@ public class GwtRequestConfig implements RequestConfig {
     private static List<DynamicServiceRoot> dynamicServiceRoots = new ArrayList<>();
     private static final List<RequestInterceptor> interceptors = new ArrayList<>();
 
-    public static GwtRequestConfig getInstance() {
-        return new GwtRequestConfig();
+    public static DominoRestConfig initDefaults() {
+        RestfullRequestContext.setFactory(new JsRestfulRequestFactory());
+        DominoRestContext.init(DominoRestConfig.getInstance());
+        return DominoRestConfig.getInstance();
     }
 
-    public GwtRequestConfig setDefaultServiceRoot(String defaultServiceRoot) {
+    public static DominoRestConfig getInstance() {
+        return new DominoRestConfig();
+    }
+
+    public DominoRestConfig setDefaultServiceRoot(String defaultServiceRoot) {
         this.defaultServiceRoot = defaultServiceRoot;
         return this;
     }
 
-    public GwtRequestConfig setDefaultJsonDateFormat(String defaultJsonDateFormat) {
+    public DominoRestConfig setDefaultJsonDateFormat(String defaultJsonDateFormat) {
         this.defaultJsonDateFormat = defaultJsonDateFormat;
         return this;
     }
 
-    public GwtRequestConfig addDynamicServiceRoot(DynamicServiceRoot dynamicServiceRoot) {
+    public DominoRestConfig addDynamicServiceRoot(DynamicServiceRoot dynamicServiceRoot) {
         dynamicServiceRoots.add(dynamicServiceRoot);
         return this;
     }
 
-    public GwtRequestConfig addRequestInterceptor(RequestInterceptor interceptor) {
+    public DominoRestConfig addRequestInterceptor(RequestInterceptor interceptor) {
         this.interceptors.add(interceptor);
         return this;
     }
 
-    public GwtRequestConfig removeRequestInterceptor(RequestInterceptor interceptor) {
+    public DominoRestConfig removeRequestInterceptor(RequestInterceptor interceptor) {
         this.interceptors.remove(interceptor);
         return this;
     }
@@ -56,7 +62,7 @@ public class GwtRequestConfig implements RequestConfig {
 
     public String getDefaultServiceRoot() {
         if (isNull(defaultServiceRoot)) {
-            return GWT.getModuleBaseURL().replace(GWT.getModuleName(), defaultResourceRootPath);
+            return DefaulServiceRoot.get() + defaultResourceRootPath;
         }
         return defaultServiceRoot;
     }
@@ -69,7 +75,7 @@ public class GwtRequestConfig implements RequestConfig {
         return dynamicServiceRoots;
     }
 
-    public GwtRequestConfig setDefaultResourceRootPath(String rootPath) {
+    public DominoRestConfig setDefaultResourceRootPath(String rootPath) {
         if (nonNull(rootPath)) {
             this.defaultResourceRootPath = rootPath;
         }

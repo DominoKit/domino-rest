@@ -78,6 +78,8 @@ Domino-rest can be used in two modes :
 Domino-res is built based on both `domino-jackson` for serialization/de-serialization of requests and responses, and provides a simple declarative way to define the server calls, 
 you can create a service interface and add `jax-rs` annotations and it will generate the classes to do the server call, leaving to you the handling of success and failure of requests.
 
+> In j2cl you need to initialize the RestContext manually, so in your application bootstrap please call `DominoRestConfig.initDefaults();`, in gwt2 this will be called automatically from an entry point.
+
 Sample service :
 
 ```java

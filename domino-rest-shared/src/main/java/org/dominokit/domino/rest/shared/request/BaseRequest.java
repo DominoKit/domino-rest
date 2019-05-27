@@ -5,7 +5,7 @@ public abstract class BaseRequest implements Request {
     public static final String REQUEST_HAVE_ALREADY_BEEN_SENT = "Request have already been sent";
 
     protected RequestState state;
-    protected final RequestContext requestContext = RequestContext.make();
+    protected final DominoRestContext requestContext = DominoRestContext.make();
 
     protected final RequestState<DefaultRequestStateContext> ready = context -> startRouting();
 

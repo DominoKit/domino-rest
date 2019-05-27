@@ -1,7 +1,7 @@
 package org.dominokit.domino.rest.async;
 
-import com.google.gwt.core.client.Scheduler;
 import org.dominokit.domino.rest.shared.request.AsyncRunner;
+import org.gwtproject.core.client.Scheduler;
 
 public class GwtAsyncRunner implements AsyncRunner {
     @Override

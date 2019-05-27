@@ -21,7 +21,7 @@ public abstract class RequestSender<R, S> implements RequestRestSender<R, S> {
     @Override
     public void send(ServerRequest<R, S> request, ServerRequestCallBack callBack) {
         request.normalizeUrl();
-        List<RequestInterceptor> interceptors = RequestContext.make().getConfig().getRequestInterceptors();
+        List<RequestInterceptor> interceptors = DominoRestContext.make().getConfig().getRequestInterceptors();
 
         if (nonNull(interceptors) && !interceptors.isEmpty()) {
             List<InterceptorRequestWait> interceptorsWaitList = interceptors.stream().map(InterceptorRequestWait::new)

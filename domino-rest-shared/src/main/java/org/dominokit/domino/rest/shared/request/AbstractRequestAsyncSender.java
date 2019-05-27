@@ -15,7 +15,7 @@ public abstract class AbstractRequestAsyncSender implements RequestAsyncSender {
     @SuppressWarnings("rawtypes")
     @Override
     public final void send(final ServerRequest request) {
-        RequestContext.make().getConfig().asyncRunner().runAsync(new RequestAsyncTask(request));
+        DominoRestContext.make().getConfig().asyncRunner().runAsync(new RequestAsyncTask(request));
     }
 
     private class RequestAsyncTask implements AsyncRunner.AsyncTask {
