@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static java.util.Objects.*;
 
@@ -23,12 +22,7 @@ public class ServerRequest<R, S>
     private static final String ACCEPT = "Accept";
 
     //should remain anonymous till a bug is fixed in j2cl
-    private SenderSupplier senderSupplier = new SenderSupplier(new Supplier<RequestRestSender>() {
-        @Override
-        public RequestRestSender get() {
-            return new RequestSender<R, S>() {
-            };
-        }
+    private SenderSupplier<R,S> senderSupplier = new SenderSupplier<>(() -> new RequestSender<R, S>() {
     });
 
     private Map<String, String> headers = new HashMap<>();

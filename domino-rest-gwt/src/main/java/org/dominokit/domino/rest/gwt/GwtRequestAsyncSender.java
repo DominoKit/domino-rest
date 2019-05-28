@@ -11,6 +11,7 @@ public class GwtRequestAsyncSender extends AbstractRequestAsyncSender {
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected void sendRequest(ServerRequest request, ServerRequestEventFactory requestEventFactory) {
+
         request.getSender()
                 .send(request,
                         new ServerRequestCallBack() {

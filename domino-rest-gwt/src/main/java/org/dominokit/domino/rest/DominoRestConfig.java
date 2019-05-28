@@ -62,7 +62,7 @@ public class DominoRestConfig implements RestConfig {
 
     public String getDefaultServiceRoot() {
         if (isNull(defaultServiceRoot)) {
-            return DefaulServiceRoot.get() + defaultResourceRootPath;
+            return DefaulServiceRoot.get() + defaultResourceRootPath+"/";
         }
         return defaultServiceRoot;
     }

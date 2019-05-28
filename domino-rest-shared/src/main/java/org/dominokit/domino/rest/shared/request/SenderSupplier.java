@@ -3,17 +3,17 @@ package org.dominokit.domino.rest.shared.request;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class SenderSupplier implements Supplier<RequestRestSender> {
+public class SenderSupplier<R,S> implements Supplier<RequestRestSender<R,S>> {
 
-    private RequestRestSender sender;
-    private final Supplier<RequestRestSender> senderFactory;
+    private RequestRestSender<R,S> sender;
+    private final Supplier<RequestRestSender<R,S>> senderFactory;
 
-    public SenderSupplier(Supplier<RequestRestSender> senderFactory) {
+    public SenderSupplier(Supplier<RequestRestSender<R,S>> senderFactory) {
         this.senderFactory = senderFactory;
     }
 
     @Override
-    public RequestRestSender get(){
+    public RequestRestSender<R,S> get(){
         if(Objects.isNull(sender))
             this.sender=senderFactory.get();
         return sender;
