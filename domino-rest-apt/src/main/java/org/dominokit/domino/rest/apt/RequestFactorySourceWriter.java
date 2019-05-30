@@ -7,20 +7,24 @@ import org.dominokit.domino.apt.commons.DominoTypeBuilder;
 import org.dominokit.domino.rest.shared.request.*;
 import org.dominokit.domino.rest.shared.request.service.annotations.*;
 import org.dominokit.domino.rest.shared.request.service.annotations.Request;
+import org.dominokit.jacksonapt.*;
+import org.dominokit.jacksonapt.processor.ObjectMapperProcessor;
+import org.dominokit.jacksonapt.processor.Type;
+import org.dominokit.jacksonapt.processor.deserialization.FieldDeserializersChainBuilder;
+import org.dominokit.jacksonapt.processor.serialization.FieldSerializerChainBuilder;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static java.util.Objects.nonNull;
@@ -36,6 +40,11 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         super(processingEnvironment);
         this.serviceElement = serviceElement;
         this.requestsServiceRoot = serviceElement.getAnnotation(RequestFactory.class).serviceRoot();
+
+        ObjectMapperProcessor.elementUtils = elements;
+        ObjectMapperProcessor.typeUtils = types;
+        ObjectMapperProcessor.messager = messager;
+        ObjectMapperProcessor.filer = filer;
     }
 
     @Override
@@ -46,8 +55,27 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 .initializer("new " + factoryName + "()")
                 .build();
 
-        List<ExecutableElement> serviceMethods = processorUtil
-                .getElementMethods(serviceElement);
+        Map<String, Integer> methodCount = new HashMap<>();
+
+        List<ServiceMethod> serviceMethods = processorUtil
+                .getElementMethods(serviceElement)
+                .stream()
+                .map(executableElement -> {
+                    String name = executableElement.getSimpleName().toString();
+                    if(hasClassifier(executableElement)){
+                        return new ServiceMethod(executableElement, 0);
+                    }else {
+                        if (!methodCount.containsKey(name)) {
+                            methodCount.put(name, 1);
+                            return new ServiceMethod(executableElement, 0);
+                        } else {
+                            Integer index = methodCount.get(name);
+                            methodCount.put(name, methodCount.get(name) + 1);
+                            return new ServiceMethod(executableElement, index);
+                        }
+                    }
+                }).collect(toList());
+
         List<TypeSpec> requests = serviceMethods
                 .stream()
                 .map(this::makeRequestClass)
@@ -59,7 +87,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 .collect(toList());
 
         TypeSpec.Builder factory = DominoTypeBuilder.classBuilder(factoryName, RequestFactoryProcessor.class)
-                .addSuperinterface(TypeName.get(serviceElement.asType()))
+                .addAnnotation(AnnotationSpec.builder(RestService.class)
+                        .addMember("value", "$T.class", serviceElement.asType())
+                        .build())
                 .addField(instanceField)
                 .addTypes(requests)
                 .addMethods(overrideMethods);
@@ -68,32 +98,31 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return Collections.singletonList(factory);
     }
 
-    private MethodSpec makeRequestFactoryMethod(ExecutableElement method) {
-        TypeName requestTypeName = TypeName.get(getRequestBeanType(method));
-        TypeMirror responseBean = getResponseBeanType(method);
+    private MethodSpec makeRequestFactoryMethod(ServiceMethod serviceMethod) {
+        String classifier = getMethodClassifier(serviceMethod);
 
+        TypeName requestTypeName = TypeName.get(getRequestBeanType(serviceMethod.method));
+        TypeMirror responseBean = getResponseBeanType(serviceMethod.method);
 
-        MethodSpec.Builder request = MethodSpec.methodBuilder(method.getSimpleName().toString())
-                .addAnnotation(Override.class)
+        MethodSpec.Builder request = MethodSpec.methodBuilder(serviceMethod.method.getSimpleName().toString())
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ParameterizedTypeName.get(ClassName.get(ServerRequest.class), requestTypeName, ClassName.get(responseBean)));
 
-        method.getParameters()
+        serviceMethod.method.getParameters()
                 .forEach(parameter -> request.addParameter(TypeName.get(parameter.asType()), parameter.getSimpleName().toString()));
 
-        String requestClassName = serviceElement.getSimpleName().toString() + "_" + method.getSimpleName();
+        String requestClassName = serviceElement.getSimpleName().toString() + "_" + serviceMethod.method.getSimpleName() + classifier;
         String initializeStatement = requestClassName + " instance = new " + requestClassName;
 
-        Optional<String> requestBodyParamName = getRequestBodyParamName(method);
+        Optional<String> requestBodyParamName = getRequestBodyParamName(serviceMethod.method);
 
         if (requestBodyParamName.isPresent()) {
             request.addStatement(initializeStatement + "(" + requestBodyParamName.get() + ")");
         } else
-            request.addStatement(initializeStatement + "($T.VOID_REQUEST)", RequestBean.class);
+            request.addStatement(initializeStatement + "()");
 
-        method.getParameters()
+        serviceMethod.method.getParameters()
                 .stream()
-                .filter(parameter -> !isBodyParameter(parameter))
                 .forEach(parameter -> request.addStatement("instance.addCallArgument($S, String.valueOf($L))", parameter.getSimpleName().toString(), parameter.getSimpleName().toString()));
 
         request.addStatement("return instance");
@@ -101,37 +130,82 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return request.build();
     }
 
-    private TypeSpec makeRequestClass(ExecutableElement method) {
-
-        TypeName requestTypeName = TypeName.get(getRequestBeanType(method));
-        TypeMirror responseBean = getResponseBeanType(method);
+    private TypeSpec makeRequestClass(ServiceMethod serviceMethod) {
+        String classifier = getMethodClassifier(serviceMethod);
+        TypeMirror requestType = getRequestBeanType(serviceMethod.method);
+        TypeName requestTypeName = TypeName.get(requestType);
+        TypeMirror responseBean = getResponseBeanType(serviceMethod.method);
 
         TypeSpec.Builder requestBuilder = TypeSpec
-                .classBuilder(serviceElement.getSimpleName().toString() + "_" + method.getSimpleName())
+                .classBuilder(serviceElement.getSimpleName().toString() + "_" + serviceMethod.method.getSimpleName() + classifier)
                 .addAnnotation(Request.class)
                 .addModifiers(Modifier.PUBLIC)
                 .superclass(ParameterizedTypeName.get(ClassName.get(ServerRequest.class),
                         requestTypeName,
                         ClassName.get(responseBean)))
-                .addMethod(constructor(requestTypeName, method));
+                .addMethod(constructor(requestType, serviceMethod.method));
 
         return requestBuilder.build();
     }
 
-    private TypeMirror getResponseBeanType(ExecutableElement method) {
-        DeclaredType responseReturnType = (DeclaredType) method.getReturnType();
-        return responseReturnType.getTypeArguments().get(0);
+    private String getMethodClassifier(ServiceMethod serviceMethod) {
+        String classifier;
+        Classifier classifierAnnotation = serviceMethod.method.getAnnotation(Classifier.class);
+        if (hasClassifier(serviceMethod.method)) {
+            classifier = "_" + classifierAnnotation.value();
+        } else {
+            classifier = serviceMethod.index > 0 ? "_" + serviceMethod.index : "";
+        }
+        return classifier;
     }
 
+    private boolean hasClassifier(ExecutableElement method) {
+        Classifier classifierAnnotation = method.getAnnotation(Classifier.class);
+        return nonNull(classifierAnnotation) && !classifierAnnotation.value().trim().isEmpty();
+    }
+
+    private TypeMirror getResponseBeanType(ExecutableElement method) {
+        return getMappingType(method.getReturnType());
+    }
+
+    private TypeMirror getMappingType(TypeMirror returnType) {
+        if (isPrimitive(returnType)) {
+            return wrapperType(returnType);
+        }
+
+        if (TypeKind.VOID.equals(returnType.getKind())) {
+            return elements.getTypeElement(Void.class.getCanonicalName()).asType();
+        }
+
+        if (Type.isArray(returnType)) {
+            return returnType;
+        }
+
+        return returnType;
+    }
+
+    private TypeMirror wrapperType(TypeMirror type) {
+        return types.boxedClass((PrimitiveType) type).asType();
+    }
+
+
+    private boolean isPrimitive(TypeMirror typeMirror) {
+        boolean primitive = typeMirror.getKind().isPrimitive();
+        messager.printMessage(Diagnostic.Kind.NOTE, typeMirror.toString() + " : " + primitive);
+        return primitive;
+    }
 
     private TypeMirror getRequestBeanType(ExecutableElement method) {
         List<? extends VariableElement> parameters = method.getParameters();
 
-        return parameters.stream()
+        TypeMirror typeMirror = parameters.stream()
                 .filter(this::isBodyParameter)
                 .map(Element::asType)
                 .findFirst()
-                .orElse(elements.getTypeElement(VoidRequest.class.getCanonicalName()).asType());
+                .orElse(elements.getTypeElement(Void.class.getCanonicalName())
+                        .asType());
+
+        return getMappingType(typeMirror);
     }
 
     private Optional<String> getRequestBodyParamName(ExecutableElement method) {
@@ -157,11 +231,17 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return processorUtil.isAssignableFrom(parameter, RequestBean.class);
     }
 
-    private MethodSpec constructor(TypeName requestBean, ExecutableElement method) {
-        MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
-                .addParameter(requestBean, "request")
-                .addStatement("super(request)")
-                .addStatement("setHttpMethod($S)", getHttpMethod(method))
+    private MethodSpec constructor(TypeMirror requestBean, ExecutableElement method) {
+        MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder();
+        if (isVoidType(requestBean)) {
+            constructorBuilder.addStatement("super(null)");
+        } else {
+            constructorBuilder
+                    .addParameter(TypeName.get(requestBean), "request")
+                    .addStatement("super(request)");
+        }
+
+        constructorBuilder.addStatement("setHttpMethod($S)", getHttpMethod(method))
                 .addStatement("setContentType(new String[]{$L})", getContentType(method))
                 .addStatement("setAccept(new String[]{$L})", getAcceptResponse(method))
                 .addStatement("setPath($S)", getPath(method))
@@ -171,19 +251,13 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
             constructorBuilder.addStatement("setSuccessCodes(new Integer[]{$L})", getSuccessCodes(method));
         }
 
-        if (isVoidResponse(method)) {
-            constructorBuilder.addStatement("markAsVoidResponse()");
-        }
-
-        if (!isVoidRequest(method)) {
+        if (!isVoidType(method)) {
             constructorBuilder.addCode(getRequestWriter(method));
         }
 
-        if (!isVoidResponse(method)) {
-            constructorBuilder.addCode(getResponseReader(method));
-        }
+        constructorBuilder.addCode(getResponseReader(method));
 
-        if (!isVoidRequest(method)) {
+        if (!isVoidType(method)) {
             constructorBuilder.addCode(new ReplaceParametersMethodBuilder(messager, getPath(method), method).build());
         }
 
@@ -193,17 +267,26 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     private CodeBlock getRequestWriter(ExecutableElement method) {
         CodeBlock.Builder builder = CodeBlock.builder();
 
-        if (processorUtil.isStringType(getRequestBeanType(method))) {
-            builder.addStatement("setRequestWriter(bean -> new $T().write(bean))", TypeName.get(StringWriter.class));
+
+        Writer annotation = method.getAnnotation(Writer.class);
+        if (nonNull(annotation)) {
+            Optional<TypeMirror> value = processorUtil.getClassValueFromAnnotation(method, Writer.class, "value");
+            value.ifPresent(writerType -> builder.addStatement("setRequestWriter(bean -> new $T().write(bean))", TypeName.get(writerType)));
         } else {
-            Writer annotation = method.getAnnotation(Writer.class);
-            if (nonNull(annotation)) {
-                Optional<TypeMirror> value = processorUtil.getClassValueFromAnnotation(method, Writer.class, "value");
-                value.ifPresent(writerType -> builder.addStatement("setRequestWriter(bean -> new $T().write(bean))", TypeName.get(writerType)));
-            } else {
-                Element requestType = types.asElement(getRequestBeanType(method));
-                builder.addStatement("setRequestWriter(bean -> $T.INSTANCE.write(bean))", mapperClassName(requestType));
-            }
+            TypeMirror requestBeanType = getRequestBeanType(method);
+            CodeBlock instance = new FieldSerializerChainBuilder(requestBeanType).getInstance(requestBeanType);
+            TypeSpec.Builder writerType = TypeSpec.anonymousClassBuilder("$S", requestBeanType)
+                    .addSuperinterface(ParameterizedTypeName.get(ClassName.get(AbstractObjectWriter.class), TypeName.get(requestBeanType)))
+                    .addMethod(MethodSpec.methodBuilder("newSerializer")
+                            .addAnnotation(Override.class)
+                            .addModifiers(Modifier.PROTECTED)
+                            .returns(ParameterizedTypeName.get(ClassName.get(JsonSerializer.class), TypeName.get(requestBeanType)))
+                            .addCode("return ")
+                            .addCode(instance)
+                            .addCode(";")
+                            .build());
+
+            builder.addStatement("setRequestWriter(bean -> $L.write(bean))", writerType.build());
         }
 
         return builder.build();
@@ -217,13 +300,21 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
             Optional<TypeMirror> value = processorUtil.getClassValueFromAnnotation(method, Reader.class, "value");
             value.ifPresent(readerType -> builder.addStatement("setResponseReader(response -> new $T().read(response))", TypeName.get(readerType)));
         } else {
+
             TypeMirror responseBeanType = getResponseBeanType(method);
-            if (processorUtil.isAssignableFrom(responseBeanType, ArrayResponse.class)) {
-                TypeMirror beanType = ((DeclaredType) responseBeanType).getTypeArguments().get(0);
-                builder.addStatement("setResponseReader(response -> new $T<>($T.INSTANCE.readArray(response, length -> new $T[length])))", TypeName.get(ArrayResponse.class), mapperClassName(types.asElement(beanType)), TypeName.get(beanType));
-            } else {
-                builder.addStatement("setResponseReader(response -> $T.INSTANCE.read(response))", mapperClassName(types.asElement(responseBeanType)));
-            }
+            CodeBlock instance = new FieldDeserializersChainBuilder(responseBeanType).getInstance(responseBeanType);
+            TypeSpec.Builder readerType = TypeSpec.anonymousClassBuilder("$S", responseBeanType)
+                    .addSuperinterface(ParameterizedTypeName.get(ClassName.get(AbstractObjectReader.class), TypeName.get(responseBeanType)))
+                    .addMethod(MethodSpec.methodBuilder("newDeserializer")
+                            .addAnnotation(Override.class)
+                            .addModifiers(Modifier.PROTECTED)
+                            .returns(ParameterizedTypeName.get(ClassName.get(JsonDeserializer.class), TypeName.get(responseBeanType)))
+                            .addCode("return ")
+                            .addCode(instance)
+                            .addCode(";")
+                            .build());
+
+            builder.addStatement("setResponseReader(response -> $L.read(response))", readerType.build());
         }
 
         return builder.build();
@@ -233,12 +324,12 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return ClassName.get(elements.getPackageOf(type).getQualifiedName().toString(), type.getSimpleName().toString() + "_MapperImpl");
     }
 
-    private boolean isVoidResponse(ExecutableElement method) {
-        return types.isSameType(getResponseBeanType(method), elements.getTypeElement(VoidResponse.class.getCanonicalName()).asType());
+    private boolean isVoidType(ExecutableElement method) {
+        return isVoidType(getRequestBeanType(method));
     }
 
-    private boolean isVoidRequest(ExecutableElement method) {
-        return types.isSameType(getRequestBeanType(method), elements.getTypeElement(VoidRequest.class.getCanonicalName()).asType());
+    private boolean isVoidType(TypeMirror type) {
+        return TypeKind.VOID.equals(type.getKind()) || types.isSameType(elements.getTypeElement(Void.class.getCanonicalName()).asType(), type);
     }
 
     private String getContentType(ExecutableElement method) {
@@ -327,6 +418,16 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
 
         return HttpMethod.GET;
+    }
+
+    private static class ServiceMethod {
+        private ExecutableElement method;
+        private Integer index;
+
+        public ServiceMethod(ExecutableElement method, Integer index) {
+            this.method = method;
+            this.index = index;
+        }
     }
 
 }

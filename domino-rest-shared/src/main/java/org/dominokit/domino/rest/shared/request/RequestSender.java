@@ -61,11 +61,7 @@ public abstract class RequestSender<R, S> implements RequestRestSender<R, S> {
 
     private void handleResponse(ServerRequest<R, S> request, ServerRequestCallBack callBack, Response response) {
         if (Arrays.stream(request.getSuccessCodes()).anyMatch(code -> code.equals(response.getStatusCode()))) {
-            if (request.isVoidResponse()) {
-                callBack.onSuccess(new VoidResponse());
-            } else {
-                callBack.onSuccess(request.getResponseReader().read(response.getBodyAsString()));
-            }
+            callBack.onSuccess(request.getResponseReader().read(response.getBodyAsString()));
         } else {
             callBack.onFailure(new FailedResponseBean(response.getStatusCode(), response.getStatusText(), response.getBodyAsString(), response.getHeaders()));
         }

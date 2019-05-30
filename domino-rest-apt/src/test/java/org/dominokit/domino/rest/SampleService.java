@@ -1,16 +1,55 @@
 package org.dominokit.domino.rest;
 
 
-import org.dominokit.domino.rest.shared.request.Response;
+import org.dominokit.domino.rest.shared.request.service.annotations.Classifier;
+import org.dominokit.domino.rest.shared.request.service.annotations.RequestBody;
 import org.dominokit.domino.rest.shared.request.service.annotations.RequestFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import java.util.List;
 
 @RequestFactory
 public interface SampleService {
 
     @GET
     @Path("someService/:id")
-    Response<SampleResponse> getById(int id);
+    SampleResponse getById(@RequestBody int id);
+
+
+    @GET
+    @Path("someService/:id")
+    SampleResponse getById(String id);
+
+
+    @GET
+    @Path("someService/:id")
+    @Classifier("long")
+    void getById(Long id);
+
+    @GET
+    @Path("someService/:id")
+    @Classifier("double")
+    int getById(Double id);
+
+    @GET
+    @Path("someService/:id")
+    List<String> getById(double id);
+
+    @GET
+    @Path("someService/:id")
+    String[] getById6(int id);
+
+    @GET
+    @Path("someService/:id")
+    int[] getById7(int id);
+
+
+    @GET
+    @Path("someService/:id")
+    int[][] getById8(int id);
+
+
+
+
 }
