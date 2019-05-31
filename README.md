@@ -351,8 +351,11 @@ if we are passing a request body in the method argument we can use that request 
 In case of `POST`, `PUT`, `PATCH` http requests we normally sends a body in the request, in domino-rest the body of the request is determined from the call argument using one of the following in order :
 
 1- The argument is implementing the marker interface `RequestBean`.
+
 2- The argument in the method is annotated with `@RequestBody`.
-3- The class representing the type of the argument is annotated with `@RequestBody`
+
+3- The class representing the type of the argument is annotated with `@RequestBody`.
+
 4- The class representing the type of the argument is annotated with `@JSONMapper`.
 
 #### Produces & Consumes
