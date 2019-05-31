@@ -4,24 +4,23 @@ package org.dominokit.domino.rest.apt;
 import com.squareup.javapoet.*;
 import org.dominokit.domino.apt.commons.AbstractSourceBuilder;
 import org.dominokit.domino.apt.commons.DominoTypeBuilder;
-import org.dominokit.domino.rest.shared.request.*;
+import org.dominokit.domino.rest.shared.request.RequestBean;
+import org.dominokit.domino.rest.shared.request.ServerRequest;
 import org.dominokit.domino.rest.shared.request.service.annotations.*;
-import org.dominokit.domino.rest.shared.request.service.annotations.Request;
-import org.dominokit.jacksonapt.*;
+import org.dominokit.jacksonapt.AbstractObjectReader;
+import org.dominokit.jacksonapt.AbstractObjectWriter;
+import org.dominokit.jacksonapt.JsonDeserializer;
+import org.dominokit.jacksonapt.JsonSerializer;
 import org.dominokit.jacksonapt.processor.ObjectMapperProcessor;
 import org.dominokit.jacksonapt.processor.Type;
 import org.dominokit.jacksonapt.processor.deserialization.FieldDeserializersChainBuilder;
 import org.dominokit.jacksonapt.processor.serialization.FieldSerializerChainBuilder;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.Diagnostic;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.*;
@@ -122,7 +121,6 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
             request.addStatement(initializeStatement + "()");
 
         serviceMethod.method.getParameters()
-                .stream()
                 .forEach(parameter -> request.addStatement("instance.addCallArgument($S, String.valueOf($L))", parameter.getSimpleName().toString(), parameter.getSimpleName().toString()));
 
         request.addStatement("return instance");
@@ -190,9 +188,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
 
     private boolean isPrimitive(TypeMirror typeMirror) {
-        boolean primitive = typeMirror.getKind().isPrimitive();
-        messager.printMessage(Diagnostic.Kind.NOTE, typeMirror.toString() + " : " + primitive);
-        return primitive;
+        return typeMirror.getKind().isPrimitive();
     }
 
     private TypeMirror getRequestBeanType(ExecutableElement method) {
@@ -223,8 +219,22 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
 
     private boolean isRequestBody(VariableElement parameter) {
-        return nonNull(parameter.getAnnotation(RequestBody.class)) ||
-                nonNull(parameter.asType().getAnnotation(RequestBody.class));
+        TypeMirror typeMirror = parameter.asType();
+        if(isPrimitive(typeMirror)
+                || Type.isArray(typeMirror)
+                || Type.is2dArray(typeMirror)
+                || Type.isEnum(typeMirror)
+                || Type.isCollection(typeMirror)
+                || Type.isPrimitiveArray(typeMirror)
+                || Type.isIterable(typeMirror)){
+
+            return nonNull(parameter.getAnnotation(RequestBody.class));
+        }else{
+            TypeElement typeElement = elements.getTypeElement(typeMirror.toString());
+            RequestBody pojoAnnotation = typeElement.getAnnotation(RequestBody.class);
+            return nonNull(parameter.getAnnotation(RequestBody.class)) ||
+                    nonNull(pojoAnnotation);
+        }
     }
 
     private boolean isRequestBean(VariableElement parameter) {
