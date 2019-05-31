@@ -87,6 +87,9 @@ public class ServerRequest<R, S>
         this.requestBean = requestBean;
     }
 
+    /**
+     * prepare the request and execute it.
+     */
     @Override
     public final void send() {
         execute();
@@ -97,6 +100,11 @@ public class ServerRequest<R, S>
         return this;
     }
 
+    /**
+     * Use this method to intercept the request before it is sent to the server, this is good for setting headers or adding extra parameters.
+     * @param interceptor
+     * @return the same request instance
+     */
     public ServerRequest<R, S> intercept(Consumer<HasHeadersAndParameters<R, S>> interceptor) {
         interceptor.accept(this);
         return this;
@@ -116,11 +124,22 @@ public class ServerRequest<R, S>
         return this.requestBean;
     }
 
+    /**
+     * set a request a header, this will add a new header or override existing one
+     * @param name
+     * @param value
+     * @return the same request instance
+     */
     public ServerRequest<R, S> setHeader(String name, String value) {
         headers.put(name, value);
         return this;
     }
 
+    /**
+     * sets request headers from a map
+     * @param headers
+     * @return the same request instance
+     */
     public ServerRequest<R, S> setHeaders(Map<String, String> headers) {
         if (nonNull(headers) && !headers.isEmpty()) {
             this.headers.putAll(headers);
@@ -128,11 +147,22 @@ public class ServerRequest<R, S>
         return this;
     }
 
+    /**
+     * sets a query parameter or override an existing one
+     * @param name
+     * @param value
+     * @return the same request instance
+     */
     public ServerRequest<R, S> setParameter(String name, String value) {
         parameters.put(name, value);
         return this;
     }
 
+    /**
+     * set request query parameters from a map
+     * @param parameters
+     * @return the same request instance
+     */
     public ServerRequest<R, S> setParameters(Map<String, String> parameters) {
         if (nonNull(parameters) && !parameters.isEmpty()) {
             this.parameters.putAll(parameters);
@@ -140,14 +170,23 @@ public class ServerRequest<R, S>
         return this;
     }
 
+    /**
+     * @returnnew map containing all headers defined in the request
+     */
     public Map<String, String> headers() {
         return new HashMap<>(headers);
     }
 
+    /**
+     * @return new map containing all headers defined in the request
+     */
     public Map<String, String> parameters() {
         return new HashMap<>(parameters);
     }
 
+    /**
+     * apply the service root and resource root configuration and replace the variable parameters in the request url.
+     */
     public void normalizeUrl() {
         if (isNull(this.url)) {
             String root = (isNull(this.serviceRoot) || this.serviceRoot.isEmpty()) ? ServiceRootMatcher.matchedServiceRoot(path) : ServiceRootMatcher.matchedServiceRoot(this.serviceRoot + path);
@@ -207,78 +246,148 @@ public class ServerRequest<R, S>
         return url;
     }
 
+    /**
+     * override the request url, when the url is set it is used as is, and no configuration or parameter replacement is used.
+     * @param url
+     * @return same request instance.
+     */
     public ServerRequest<R, S> setUrl(String url) {
         this.url = url;
         return this;
     }
 
+    /**
+     * add an on before send handler
+     * @param handler
+     * @return same request instance.
+     */
     public ServerRequest<R, S> onBeforeSend(BeforeSendHandler handler) {
         handler.onBeforeSend();
         return this;
     }
 
+    /**
+     * add a call argument to be used in parameter replacement process.
+     * @param name
+     * @param value
+     * @return same request instance.
+     */
     public ServerRequest<R, S> addCallArgument(String name, String value) {
         callArguments.put(name, value);
         return this;
     }
 
+    /**
+     * removes a call argument
+     * @param name
+     * @return same request instance.
+     */
     public ServerRequest<R, S> removeCallArgument(String name) {
         callArguments.remove(name);
         return this;
     }
 
+    /**
+     * @return new map of all added call arguments.
+     */
     public Map<String, String> getCallArguments() {
         return new HashMap<>(callArguments);
     }
 
+    /**
+     * define the on success handler
+     * @param success
+     * @return
+     */
     @Override
     public CanFailOrSend onSuccess(Success<S> success) {
         this.success = success;
         return this;
     }
 
+    /**
+     * sets the Content-type header
+     * @param contentType
+     * @return same request instance.
+     */
     public ServerRequest<R, S> setContentType(String[] contentType) {
         setHeader(CONTENT_TYPE, String.join(", ", contentType));
         return this;
     }
 
+    /**
+     * sets the Accept header
+     * @param accept
+     * @return same request instance.
+     */
     public ServerRequest<R, S> setAccept(String[] accept) {
         setHeader(ACCEPT, String.join(", ", accept));
         return this;
     }
 
+    /**
+     * sets the http method
+     * @param httpMethod
+     * @return same request instance.
+     */
     public ServerRequest<R, S> setHttpMethod(String httpMethod) {
         requireNonNull(httpMethod);
         this.httpMethod = httpMethod.toUpperCase();
         return this;
     }
 
+    /**
+     * @return the request http method
+     */
     public String getHttpMethod() {
         return httpMethod;
     }
 
+    /**
+     * @return the accepted succees codes
+     */
     public Integer[] getSuccessCodes() {
         return successCodes;
     }
 
+    /**
+     * sets an array of integers to be considered as success response status code as success.
+     * @param successCodes
+     * @return
+     */
     public ServerRequest<R, S> setSuccessCodes(Integer[] successCodes) {
         this.successCodes = successCodes;
         return this;
     }
 
+    /**
+     * @return the custom service root for this request.
+     */
     public String getServiceRoot() {
         return serviceRoot;
     }
 
+    /**
+     * sets the service root for this request
+     * @param serviceRoot
+     * @return same request instance.
+     */
     public ServerRequest<R, S> setServiceRoot(String serviceRoot) {
         this.serviceRoot = serviceRoot;
         return this;
     }
 
+    /**
+     * @return the writer class to be used for serializing the request body
+     */
     public RequestWriter<R> getRequestWriter() {
         return requestWriter;
     }
 
+    /**
+     * sets the writer to be used to serialize the request body
+     * @param requestWriter
+     */
     public void setRequestWriter(RequestWriter<R> requestWriter) {
         this.requestWriter = requestWriter;
     }

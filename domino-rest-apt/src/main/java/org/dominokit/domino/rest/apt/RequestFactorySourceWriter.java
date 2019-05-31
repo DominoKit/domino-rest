@@ -11,6 +11,7 @@ import org.dominokit.jacksonapt.AbstractObjectReader;
 import org.dominokit.jacksonapt.AbstractObjectWriter;
 import org.dominokit.jacksonapt.JsonDeserializer;
 import org.dominokit.jacksonapt.JsonSerializer;
+import org.dominokit.jacksonapt.annotation.JSONMapper;
 import org.dominokit.jacksonapt.processor.ObjectMapperProcessor;
 import org.dominokit.jacksonapt.processor.Type;
 import org.dominokit.jacksonapt.processor.deserialization.FieldDeserializersChainBuilder;
@@ -232,8 +233,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         }else{
             TypeElement typeElement = elements.getTypeElement(typeMirror.toString());
             RequestBody pojoAnnotation = typeElement.getAnnotation(RequestBody.class);
+            JSONMapper mapperAnnotation = typeElement.getAnnotation(JSONMapper.class);
             return nonNull(parameter.getAnnotation(RequestBody.class)) ||
-                    nonNull(pojoAnnotation);
+                    nonNull(pojoAnnotation) || nonNull(mapperAnnotation);
         }
     }
 
@@ -257,6 +259,11 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 .addStatement("setPath($S)", getPath(method))
                 .addStatement("setServiceRoot($S)", getServiceRoot(method));
 
+        Retries retries = method.getAnnotation(Retries.class);
+        if(nonNull(retries)) {
+            constructorBuilder.addStatement("setTimeout($L)", retries.timeout());
+            constructorBuilder.addStatement("setMaxRetries($L)", retries.maxRetries());
+        }
         if (nonNull(method.getAnnotation(SuccessCodes.class))) {
             constructorBuilder.addStatement("setSuccessCodes(new Integer[]{$L})", getSuccessCodes(method));
         }
@@ -378,23 +385,6 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 .map(String::valueOf)
                 .collect(joining(","));
     }
-
-    private void copyAnnotations(AnnotationSpec.Builder requestBuilder, ExecutableElement method) {
-        Path path = method.getAnnotation(Path.class);
-
-        requestBuilder.addMember("value", "$S", path.value());
-
-        requestBuilder.addMember("httpMethod", "$S", getHttpMethod(method));
-
-        if (nonNull(method.getAnnotation(SuccessCodes.class))) {
-            requestBuilder.addMember("successCodes", "{$L}", IntStream.of(method.getAnnotation(SuccessCodes.class).value())
-                    .boxed()
-                    .map(String::valueOf)
-                    .collect(joining(",")));
-        }
-
-    }
-
 
     private String getHttpMethod(ExecutableElement method) {
 

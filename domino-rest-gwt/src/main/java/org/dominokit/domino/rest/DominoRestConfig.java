@@ -87,7 +87,11 @@ public class DominoRestConfig implements RestConfig {
     }
 
     public String getDefaultResourceRootPath() {
-        return defaultResourceRootPath;
+        if(nonNull(defaultResourceRootPath) && !defaultResourceRootPath.trim().isEmpty()) {
+            return defaultResourceRootPath + "/";
+        }else {
+            return "";
+        }
     }
 
     @Override

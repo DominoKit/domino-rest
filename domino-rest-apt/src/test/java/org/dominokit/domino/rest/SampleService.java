@@ -4,8 +4,10 @@ package org.dominokit.domino.rest;
 import org.dominokit.domino.rest.shared.request.service.annotations.Classifier;
 import org.dominokit.domino.rest.shared.request.service.annotations.RequestBody;
 import org.dominokit.domino.rest.shared.request.service.annotations.RequestFactory;
+import org.dominokit.domino.rest.shared.request.service.annotations.Retries;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import java.util.List;
 
@@ -16,11 +18,13 @@ public interface SampleService {
     @Path("someService/:id")
     SampleResponse getById(@RequestBody int id);
 
+    @POST
+    @Path("somePath/xxx")
+    SampleResponse annotatedBody(SampleRequest sampleRequest);
 
     @GET
     @Path("someService/:id")
     SampleResponse getById(String id);
-
 
     @GET
     @Path("someService/:id")
@@ -44,12 +48,14 @@ public interface SampleService {
     @Path("someService/:id")
     int[] getById7(int id);
 
-
     @GET
     @Path("someService/:id")
     int[][] getById8(int id);
 
-
+    @GET
+    @Path("someService/:id")
+    @Retries(timeout = 3000, maxRetries = 5)
+    int[][] getByI98(int id);
 
 
 }

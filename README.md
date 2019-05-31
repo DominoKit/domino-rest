@@ -2,6 +2,9 @@
 
 # domino-rest
 
+Domino-rest is a lib for generating rest clients from **JaxRs** compatible interfaces, and the generated clients can be used from both client side and server in GWT applications and works in both **GWT2** and **GWT3**,
+the serialization and deserialization is based on [domino-jackson](https://github.com/DominoKit/domino-jackson), and service definition is based on **JaxRs** annotations, while code generation uses annotation processing.
+
 ## Setup
 
 ### Maven dependency
@@ -77,12 +80,36 @@ Domino-rest can be used in two modes :
 ```
 ### Usage
 
-Domino-res is built based on both `domino-jackson` for serialization/de-serialization of requests and responses, and provides a simple declarative way to define the server calls, 
-you can create a service interface and add `jax-rs` annotations and it will generate the classes to do the server call, leaving to you the handling of success and failure of requests.
+#### Initializing the context
 
->you need to initialize the RestContext manually, so in your application entry-point please call `DominoRestConfig.initDefaults();`
+First step to start working with domino-rest is to initialize domino-rest context which will inject some implementation depending on where are using it (client/server), the domino-rest context can be initialized with recommended defaults using
+ 
+```
+DominoRestConfig.initDefaults();
+```
 
-Sample service :
+#### Write the pojos
+
+A pojo used in the service definition as a response or request needs to be annotated with `@JSONMapper` in order to generate the JSON mappers for it, we will see later how we can customize this.
+
+```java
+@JSONMapper
+public class Movie {
+
+    private String name;
+    private int rating;
+    private String bio;
+    private String releaseDate;
+
+    // setters and getters
+}
+```
+
+#### Write the service definition
+
+To define a rest service create an interface and annotate it with `@RequestFactory` which will trigger the annotation processor when we compile to generate the rest client.
+Add as many methods annotated using JaxRs annotations, and the processor will create a request class and a factory method to execute that method and call the server. 
+
 
 ```java
 @RequestFactory
@@ -98,138 +125,137 @@ public interface MoviesService {
 
     @Path("library/movies/:name")
     @PUT
-    void updateMovie(Movie movie);
+    void updateMovie(@RequestBody Movie movie);
 }
 ```
 
-the interface is annotated with `@RequestFactory` this will cause the generation of a factory class to create new requests instance based on the interface methods annotated with `@Path`, the path annotation defines what resource this request should be calling on the server, so this is a mapping to the server endpoints.
+Any pojo used in the service response or request needs to be annotated with `@JSONMapper` in order to enable JSON serialization/deserialization.
 
-by default the request method is `GET`, the path value can have variable parameters, and those will be substituted from the request being sent to the server, you also can use primitives and wrapper types as method parameters that can be substituted in the path , if the method allows sending a body to the server then the request will be serialized and sent to the server as a request body, otherwise it will only be used to replace the path variable parameters.
+#### Use the generated client
 
-You can define one method parameter to be the request body by annotating the parameter with `@RequestBody`, or annotating the request class itself with `@RequestBody` or `@JSONMapper`.
-
-both request and response can be annotated with `@JSONMapper` to generate serializer/deserializer for each, or we can define custom serialisers/deserialsers using the `@Writer`/`@Reader` annotation.
-
-
-Sample request and response : 
-
-**Request**
+The generated client class will be named with the service interface name + "Factory", get the instance and call the service method :
 
 ```java
-@JSONMapper
-public class MovieRequest {
+MoviesServiceFactory.INSTANCE
+    .getMovieByName("hulk")
+    .onSuccess(movie -> {
+        //do something on success
+    })
+    .onFailed(failedResponse -> {
+        //do something on error
+    })
+    .send();
 
-    private String movieName;
-
-    public MovieRequest() {
-    }
-
-    public MovieRequest(String movieName) {
-        this.movieName = movieName;
-    }
-
-    public String getMovieName() {
-        return movieName;
-    }
-
-    public void setMovieName(String movieName) {
-        this.movieName = movieName;
-    }
-}
-```
-
-**Response**
-
-```java
-@JSONMapper
-public class Movie {
-
-    private String name;
-    private int rating;
-    private String bio;
-    private String releaseDate;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getRating() {
-        return rating;
-    }
-
-    public void setRating(int rating) {
-        this.rating = rating;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public String getReleaseDate() {
-        return releaseDate;
-    }
-
-    public void setReleaseDate(String releaseDate) {
-        this.releaseDate = releaseDate;
-    }
-}
+MoviesServiceFactory.INSTANCE
+    .listMovies()
+    .onSuccess(movies -> {
+        //do something on success
+    })
+    .onFailed(failedResponse -> {
+        //do something on error
+    })
+    .send();
+    
+MoviesServiceFactory.INSTANCE
+    .updateMovie(movie)
+    .onSuccess(aVoid -> {
+        //do something on success
+    })
+    .onFailed(failedResponse -> {
+        //do something on error
+    })
+    .send();
 
 ```
 
-#### Define the service
+### Customizations and Configurations
+
+#### Service Root
+
+- ##### Global service root
+
+By default domino-rest assumes that the rest points are deployed to the same host and port of the running application, so if the application is running on `localhost` at port `8080` then all services will be mapped to :
+
+`http://localhost:8080/service/{path to service}`
+
+we can change the default service root globally for all services using the `DominoRestConfig` class : 
 
 ```java
-@RequestFactory
+DominoRestConfig.getInstance()
+				.setDefaultServiceRoot("http://127.0.0.1:9090/");
+
+```
+
+after changing the service root all service will be mapped to the new service root .e.g: `http://127.0.0.1:9090/{path to service}`
+
+ - ##### Service root for a single service
+ 
+ We can change the service root for any service while keeping other services mapped to the default service root using the `@ServiceFactory` annotation by setting the `serviceRoot` attribute
+ 
+ ```java
+@RequestFactory(serviceRoot = "http://localhost:7070/library/")
 public interface MoviesService {
 
     @Path("movies/:movieName")
     @GET
-    Movie getMovieByName(@RequestBody MovieRequest movieRequest);
+    Movie getMovieByName(String movieName);
 
     @Path("movies")
     @GET
     List<Movie> listMovies();
 
-    @Path(value = "movies/:name")
+    @Path("movies/:name")
     @PUT
-    void updateMovie(Movie movie);
+    void updateMovie(@RequestBody Movie movie);
 }
 ```
 
-#### Using the service 
+with this we can make the movies service for example map to port `7070` while keep other services map to default port `8080`
 
-The generated factory class will have the interface name followed by `Factory` so for the sample above it will be `MoviesServiceFactory`, we will get an instance from this factory and use it to call our service.
 
-Sample : 
+- ##### Dynamic service root mapping
+
+Instead of fixed service mapping for each service, or using one global service mapping for all service domino-rest allows mapping service to different roots based on some matching conditions.
+for example we want all services that has a path starts with `movies` to map to `http://localhost:7070/library/` while all services with paths starts with `books` map to `http://localhost:9090` and so on.
+this is also very useful when the service roots are not fixed and could be defined as system properties or coming from sort of configuration.
+
+in order to define a dynamic service root we use the `DominoRestConfig` class 
 
 ```java
-public void onMovieSelected(String movieName) {
-
-    MoviesServiceFactory.INSTANCE.getMovieByName(new MovieRequest(movieName))
-            .onSuccess(movie -> {
-                LOGGER.info("movie loaded from server : " + movie.toString());
-            })
-            .onFailed(failedResponse -> {
-                LOGGER.info("Failed to load movie : " + failedResponse.getStatusCode());
-            })
-            .send();
-
-}
+DominoRestConfig.getInstance()
+    .addDynamicServiceRoot(DynamicServiceRoot
+            .pathMatcher(path -> path.startsWith("movies"))
+            .serviceRoot(() -> "http://localhost:7070/library/")
+    )
+    .addDynamicServiceRoot(DynamicServiceRoot
+            .pathMatcher(path -> path.startsWith("books"))
+            .serviceRoot(() -> "http://localhost:9090")
+    );
 ```
 
-once the send is called the request will be sent to the server, and we can handle the results in the `onSuccess` and `onFailed` handlers.
+Any service that is'nt matched with of the defined matcher will be mapped to the default service root.
 
-#### Service Root
+We can also use dynamic service roots to remove the host and port mapping from the service definition while keeping using a custom service root for that interface
 
-You can specify a root path for your services using the request factory annotation `@RequestFactory(serviceRoot = "library")`, this path will be automatically appended to all requests paths in this service and can be omitted from the `@Path` annotation. Sample
+for example instead of defining the movies service like this :
+```java
+@RequestFactory(serviceRoot = "htp://localhost:7070/")
+public interface MoviesService {
+
+    @Path("library/movies/:movieName")
+    @GET
+    Movie getMovieByName(String movieName);
+
+    @Path("library/movies")
+    @GET
+    List<Movie> listMovies();
+
+    @Path("library/movies/:name")
+    @PUT
+    void updateMovie(@RequestBody Movie movie);
+}
+```
+We can define it like this
 
 ```java
 @RequestFactory(serviceRoot = "library/")
@@ -241,27 +267,225 @@ public interface MoviesService {
 
     @Path("movies")
     @GET
-    Movie[] listMovies();
+    List<Movie> listMovies();
 
-    @Path(value = "movies/:name")
+    @Path("movies/:name")
     @PUT
-    void updateMovie(Movie movie);
+    void updateMovie(@RequestBody Movie movie);
 }
 ```
 
-By default all requests will be mapped to the predefined end-point `service`, for the example the above example requests will be mapped in the server if we are running on localhost:8080 to `http://localhost:8080/service/library/movies...`.
-
-this default behavior can be customized using `DominoRestConfig`, you can obtain a `DominoRestConfig` instance by calling `DominoRestConfig.getInstance()`, once the obtained you can use this config instance to register a dynamic service root which allows different mapping for different request to different end-points even out side your application.
-
-Sample : 
+then we define a service root like this :
 
 ```java
 DominoRestConfig.getInstance()
-        .addDynamicServiceRoot(DynamicServiceRoot
-        .pathMatcher(path -> path.startsWith("library"))
-        .serviceRoot(() -> "http://localhost:9090/cinema/"));
+    .addDynamicServiceRoot(DynamicServiceRoot
+            .pathMatcher(path -> path.startsWith("library"))
+            .serviceRoot(() -> "http://localhost:7070/library/")
+    )
 ```
 
-you can do this in an initialization phase of your application, then when we make our requests then the paths of the requests will be matched using the path matchers and the first matching service root will be used to execute the request, if no service root matches the request path it will fallback to the default behavior and use the `service` root.
+notice now how we dont have the host and port hard-coded in the service definition, and how we have a shorter path mapping in the service methods.
 
-you can add as many dynamic service roots as needed.
+this will map for example the `getMovieByname` method to `http://localhost:7070/library/movies/hulk`.
+
+#### Resource root
+
+By default when a service is mapped using the default service root it will be mapped to the resource root as `service` meaning that it will be mapped to an endpoint path that starts with `service`.
+we can override this using `DominoRestConfig` : 
+
+```java
+DominoRestConfig.getInstance()
+                .setDefaultResourceRootPath("endpoint");
+```
+
+now when a service is mapped to default service root it will be mapped to for example `http://localhost:8080/endpoint/{path from method @Path annotation}`
+
+The resource root path will only work with default service root, and will be ignored for services that override the service root or when we override the service root globally.
+
+
+#### HTTP Methods
+
+We can set the http request method on a service method using one of the JaxRs annotations : `@GET`,`@POST`,`@PUT`,`@PATCH`,`@DELETE`,`@HEAD`,`@OPTIONS`.
+
+if none of these annotations is present in the service method definition then it is considered `GET` by default, and only `@POST`, `@PUT`, `@PATCH` will allow sending a body in the request while the other will ignore any body presented in the request or service definition.
+
+#### Service method path mapping
+
+The JaxRs annotation `@Path` is used to map each service method to an endpoint in the service alongside the http method, the path defined in the service method definition will be appended to matched service root of that service and can have variable parameters.
+
+for example for the service :
+
+```java
+@RequestFactory
+public interface MoviesService {
+
+    @Path("library/movies/:movieName")
+    @GET
+    Movie getMovieByName(String movieName);
+
+    @Path("library/movies")
+    @GET
+    List<Movie> listMovies();
+
+    @Path("library/movies/:name")
+    @PUT
+    void updateMovie(@RequestBody Movie movie);
+}
+```
+
+the `listMovies` method will produce an http request to the following endpoint :
+
+`http://localhost:8080/service/library/movies`
+
+we can define a variable parameter in the method path by adding `:` before the name of the parameter, the parameter name will be matched with the method argument name for replacement
+
+for example : calling `getMovieByName` and pass the movie name `hulk` as argument will result in the following http request path :
+
+`http://localhost:8080/service/library/movies/hulk`
+
+if we are passing a request body in the method argument we can use that request properties to replace path variable parameters, the variable path parameter name will be match with the property name from the request pojo.
+
+#### Request body
+
+In case of `POST`, `PUT`, `PATCH` http requests we normally sends a body in the request, in domino-rest the body of the request is determined from the call argument using one of the following in order :
+
+1- The argument is implementing the marker interface `RequestBean`.
+2- The argument in the method is annotated with `@RequestBody`.
+3- The class representing the type of the argument is annotated with `@RequestBody`
+4- The class representing the type of the argument is annotated with `@JSONMapper`.
+
+#### Produces & Consumes
+
+Domino-rest use JaxRs `@Produces` and `@Consumes` and By default all service methods are mapped to produce or consume `MediaType.APPLICATION_JSON` which is omitted, since the default serialization/deserialization in domino-rest is JSON, 
+and using any other format will require writing custom serializer/deserializers using `@Writer` and `@Reader` annotations :
+
+- ##### Writer
+
+if want a service method to send the body in a format other than JSON we can write a custom serializer or writer by implementing the generic interface `RequestWriter<T>` 
+
+e.g if want the update method to send the movie in the body in `xml` format instead of JSON, we introduce a writer class :
+
+```java
+    public class XmlMovieWriter implements RequestWriter<Movie>{
+        @Override
+        public String write(Movie request) {
+            String movieXml = //convert the movie to xml
+            return movieXml;
+        }
+    }
+```
+
+then in our service definition, we change the `@Consumes` and specify the writer using the `@Writer` annotation 
+
+```java
+@RequestFactory
+public interface MoviesService {
+
+    @Path("library/movies/:movieName")
+    @GET
+    Movie getMovieByName(String movieName);
+
+    @Path("library/movies")
+    @GET
+    List<Movie> listMovies();
+
+    @Path("movies/:name")
+    @PUT
+    @Consumes(MediaType.APPLICATION_XML)
+    @Writer(MovieXmlWriter.class)
+    void updateMovie(@RequestBody Movie movie);
+}
+```
+
+#### Success codes
+
+By default status codes `200`,`201`,`202`,`203`,`204` are considered a success for all requests, if we need to change this behavior we can change this for a single request using the `@SuccessCodes` annotation.
+
+```java
+@RequestFactory
+public interface MoviesService {
+
+    @Path("library/movies/:movieName")
+    @GET
+    Movie getMovieByName(String movieName);
+
+    @Path("library/movies")
+    @GET
+    List<Movie> listMovies();
+
+    @Path("library/movies/:name")
+    @PUT
+    @SuccessCodes({200})
+    void updateMovie(@RequestBody Movie movie);
+}
+```
+
+now `updateMethod` will only be considered success only of the response status code is `200`.
+
+#### Timeout and maximum retries
+
+Sometimes requests might timeout due to network latency or other reasons and we dont want our requests to fail directly but rather want to retry several times before we end up failing the request.
+in domino-rest we can use the `@Retries` annotation to define a timeout with maximum retries count.
+
+```java
+@RequestFactory
+public interface MoviesService {
+
+    @Path("library/movies/:movieName")
+    @GET
+    Movie getMovieByName(String movieName);
+
+    @Path("library/movies")
+    @GET
+    List<Movie> listMovies();
+
+    @Path("library/movies/:name")
+    @PUT
+    @SuccessCodes({200})
+    @Retries(timeout=3000, maxRetries=5)
+    void updateMovie(@RequestBody Movie movie);
+}
+```
+
+the `updateMovie` will timeout if the response didnt return within 3000 milliseconds but will try 5 times before it actually fail.
+
+we can also set a global timeout and max retries in a global interceptor.
+
+#### Setting request URL
+
+In some cases like when we work with HATEOAS links the request url isnt fixed and is received from the response of another rest request and so using service root or Path mapping does not work,
+in this case we can leave the value for `@Path` annotation empty and use the request `setUrl` method to set the url, this method will override any other path setup.
+
+Example 
+
+```java
+MoviesServiceFactory.INSTANCE
+    .updateMovie(movie)
+    .setUrl("http://localhost:6060/movies")
+    .onSuccess(aVoid -> {
+        //do something on success
+    })
+    .onFailed(failedResponse -> {
+        //do something on error
+    })
+    .send();
+```
+
+
+#### Global interceptors
+
+In many cases we might need to intercept all rest requests to add some extra headers, like security headers or authentication tokens, and it would be painful to do this for each request one at a time.
+and for this domino-rest allow defining global interceptors that can intercept all requests using `DominoRestConfig`, we can define global interceptors like the following :
+
+```java
+public class TokenInterceptor implements RequestInterceptor {
+    @Override
+    public void interceptRequest(ServerRequest request, ContextAggregator.ContextWait<ServerRequest> contextWait) {
+        request.setHeader("Authorization", "some token goes here");
+        contextWait.complete(request);
+    }
+}
+```
+
+The request interceptors are blocking which allows us to do some other rest calls before or async operation and only send the request after all interceptors calls the complete method of the contextWait received in the argument.
