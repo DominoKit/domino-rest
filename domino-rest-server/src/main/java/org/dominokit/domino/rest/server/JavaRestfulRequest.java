@@ -1,4 +1,4 @@
-package org.dominokit.domino.rest;
+package org.dominokit.domino.rest.server;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.MultiMap;
@@ -8,6 +8,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import org.dominokit.domino.rest.VertxInstanceProvider;
 import org.dominokit.domino.rest.shared.BaseRestfulRequest;
 import org.dominokit.domino.rest.shared.GwtIncompatible;
 import org.dominokit.domino.rest.shared.RestfulRequest;

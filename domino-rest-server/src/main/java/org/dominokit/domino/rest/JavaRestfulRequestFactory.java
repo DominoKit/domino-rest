@@ -1,5 +1,6 @@
 package org.dominokit.domino.rest;
 
+import org.dominokit.domino.rest.server.JavaRestfulRequest;
 import org.dominokit.domino.rest.shared.RestfulRequest;
 
 class JavaRestfulRequestFactory implements RestfulRequestFactory {

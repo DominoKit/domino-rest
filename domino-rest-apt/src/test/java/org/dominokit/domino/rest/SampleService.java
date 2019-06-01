@@ -19,15 +19,19 @@ public interface SampleService {
     SampleResponse getById(@RequestBody int id);
 
     @POST
-    @Path("somePath/xxx")
+    @Path("somePath/:name")
     SampleResponse annotatedBody(SampleRequest sampleRequest);
+
+    @POST
+    @Path("somePath/{name}")
+    SampleResponse annotatedBody2(SampleRequest sampleRequest);
 
     @GET
     @Path("someService/:id")
     SampleResponse getById(String id);
 
     @GET
-    @Path("someService/:id")
+    @Path("someService/{id}")
     @Classifier("long")
     void getById(Long id);
 
@@ -49,13 +53,12 @@ public interface SampleService {
     int[] getById7(int id);
 
     @GET
-    @Path("someService/:id")
+    @Path("someService/{id}")
     int[][] getById8(int id);
 
     @GET
     @Path("someService/:id")
     @Retries(timeout = 3000, maxRetries = 5)
     int[][] getByI98(int id);
-
 
 }

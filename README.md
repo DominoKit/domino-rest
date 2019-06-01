@@ -11,8 +11,9 @@ the serialization and deserialization is based on [domino-jackson](https://githu
 
 Domino-rest can be used in two modes : 
 
-1- Interface defined in client module, then we only add dependencies to client module only
+1- Interface defined in client/server module, then we only add dependencies to client/server module only
 
+ - Client dependencies
 ```xml
 <!-- Lib dependency-->
 <dependency>
@@ -30,7 +31,25 @@ Domino-rest can be used in two modes :
 </dependency>
 ```
 
-2- Interface is defined in the shared module, then we add dependencies to both shared module and client module.
+ - Server dependencies
+```xml
+<!-- Lib dependency-->
+<dependency>
+  <groupId>org.dominokit</groupId>
+  <artifactId>domino-rest-server</artifactId>
+  <version>1.0-rc.4-SNAPSHOT</version>
+</dependency>
+
+<!-- Annotation processor dependency-->
+<dependency>
+    <groupId>org.dominokit</groupId>
+    <artifactId>domino-rest-apt</artifactId>
+    <version>1.0-rc.4-SNAPSHOT</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+2- Interface is defined in the shared module, then we add dependencies to both shared module and client/server module.
 
    - In client module we add
    
@@ -42,6 +61,17 @@ Domino-rest can be used in two modes :
      <version>1.0-rc.4-SNAPSHOT</version>
    </dependency>
    ```
+  - In server module we add
+  
+  ```xml
+  <!-- Lib dependency-->
+  <dependency>
+    <groupId>org.dominokit</groupId>
+    <artifactId>domino-rest-server</artifactId>
+    <version>1.0-rc.4-SNAPSHOT</version>
+  </dependency>
+  ```
+   
    - In shared module we add
    ```xml
    <!-- Lib dependency-->
@@ -338,7 +368,7 @@ the `listMovies` method will produce an http request to the following endpoint :
 
 `http://localhost:8080/service/library/movies`
 
-we can define a variable parameter in the method path by adding `:` before the name of the parameter, the parameter name will be matched with the method argument name for replacement
+we can define a variable parameter in the method path by adding `:` before the name of the parameter or surround it with `{}`, the parameter name will be matched with the method argument name for replacement
 
 for example : calling `getMovieByName` and pass the movie name `hulk` as argument will result in the following http request path :
 

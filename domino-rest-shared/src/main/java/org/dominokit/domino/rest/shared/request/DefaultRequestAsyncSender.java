@@ -1,10 +1,8 @@
-package org.dominokit.domino.rest.gwt;
+package org.dominokit.domino.rest.shared.request;
 
-import org.dominokit.domino.rest.shared.request.*;
+public class DefaultRequestAsyncSender extends AbstractRequestAsyncSender {
 
-public class GwtRequestAsyncSender extends AbstractRequestAsyncSender {
-
-    public GwtRequestAsyncSender(ServerRequestEventFactory requestEventFactory) {
+    public DefaultRequestAsyncSender(ServerRequestEventFactory requestEventFactory) {
         super(requestEventFactory);
     }
 

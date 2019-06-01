@@ -1,8 +1,7 @@
 package org.dominokit.domino.rest;
 
-import org.dominokit.domino.rest.gwt.DefaultServiceRoot;
-import org.dominokit.domino.rest.shared.request.DefaultRequestAsyncSender;
-import org.dominokit.domino.rest.gwt.ServerEventFactory;
+import org.dominokit.domino.rest.server.DefaultServiceRoot;
+import org.dominokit.domino.rest.server.OnServerRequestEventFactory;
 import org.dominokit.domino.rest.shared.request.*;
 
 import java.util.ArrayList;
@@ -17,12 +16,12 @@ public class DominoRestConfig implements RestConfig {
     private static String defaultResourceRootPath = "service";
     private static String defaultJsonDateFormat = null;
 
-    private static final RequestRouter<ServerRequest> serverRouter = new ServerRouter(new DefaultRequestAsyncSender(new ServerEventFactory()));
+    private static final RequestRouter<ServerRequest> serverRouter = new ServerRouter(new DefaultRequestAsyncSender(new OnServerRequestEventFactory()));
     private static List<DynamicServiceRoot> dynamicServiceRoots = new ArrayList<>();
     private static final List<RequestInterceptor> interceptors = new ArrayList<>();
 
     public static DominoRestConfig initDefaults() {
-        RestfullRequestContext.setFactory(new JsRestfulRequestFactory());
+        RestfullRequestContext.setFactory(new JavaRestfulRequestFactory());
         DominoRestContext.init(DominoRestConfig.getInstance());
         return DominoRestConfig.getInstance();
     }

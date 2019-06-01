@@ -3,7 +3,7 @@ package org.dominokit.domino.rest.gwt;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.Location;
 
-public class DefaulServiceRoot {
+public class DefaultServiceRoot {
 
     public static String get(){
         Location location = DomGlobal.window.location;

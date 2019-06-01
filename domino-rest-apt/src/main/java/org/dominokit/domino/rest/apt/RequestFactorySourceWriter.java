@@ -1,6 +1,5 @@
 package org.dominokit.domino.rest.apt;
 
-
 import com.squareup.javapoet.*;
 import org.dominokit.domino.apt.commons.AbstractSourceBuilder;
 import org.dominokit.domino.apt.commons.DominoTypeBuilder;

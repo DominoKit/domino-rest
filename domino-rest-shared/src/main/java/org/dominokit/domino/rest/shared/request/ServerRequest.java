@@ -210,25 +210,30 @@ public class ServerRequest<R, S>
         Map<String, String> callArguments = this.getCallArguments();
         new ArrayList<>(tempToken.paths())
                 .stream()
-                .filter(path -> path.startsWith(":") && callArguments.containsKey(path.replace(":", "")))
-                .forEach(path -> {
-                    tempToken.replacePath(path, callArguments.get(path.replace(":", "")));
-                });
+                .filter(path -> isExpressionToken(path) && callArguments.containsKey(replaceExpressionMarkers(path)))
+                .forEach(path -> tempToken.replacePath(path, callArguments.get(replaceExpressionMarkers(path))));
 
         tempToken.queryParameters()
                 .entrySet()
                 .stream()
-                .filter(entry -> entry.getValue().startsWith(":") && callArguments.containsKey(entry.getValue().replace(":", "")))
-                .forEach(entry -> {
-                    tempToken.replaceParameter(entry.getKey(), entry.getKey(), callArguments.get(entry.getValue().replace(":", "")));
-                });
+                .filter(entry -> isExpressionToken(entry.getValue()) && callArguments.containsKey(replaceExpressionMarkers(entry.getValue())))
+                .forEach(entry -> tempToken.replaceParameter(entry.getKey(), entry.getKey(), callArguments.get(replaceExpressionMarkers(entry.getValue()))));
 
         new ArrayList<>(tempToken.fragments())
                 .stream()
-                .filter(fragment -> fragment.startsWith(":") && callArguments.containsKey(fragment.replace(":", "")))
-                .forEach(fragment -> {
-                    tempToken.replaceFragment(fragment, callArguments.get(fragment.replace(":", "")));
-                });
+                .filter(fragment -> isExpressionToken(fragment) && callArguments.containsKey(replaceExpressionMarkers(fragment)))
+                .forEach(fragment -> tempToken.replaceFragment(fragment, callArguments.get(replaceExpressionMarkers(fragment))));
+    }
+
+    private boolean isExpressionToken(String tokenPath) {
+        return tokenPath.startsWith(":") || tokenPath.startsWith("{");
+    }
+
+    private String replaceExpressionMarkers(String replace) {
+        return replace
+                .replace(":", "")
+                .replace("{", "")
+                .replace("}", "");
     }
 
     private String asTokenString(String url) {

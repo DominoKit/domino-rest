@@ -25,7 +25,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web-client</artifactId>
             <version>3.6.3</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

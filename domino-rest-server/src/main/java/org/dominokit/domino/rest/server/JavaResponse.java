@@ -1,4 +1,4 @@
-package org.dominokit.domino.rest;
+package org.dominokit.domino.rest.server;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;

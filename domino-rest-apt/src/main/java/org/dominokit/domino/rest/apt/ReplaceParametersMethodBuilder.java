@@ -29,28 +29,28 @@ class ReplaceParametersMethodBuilder {
         try {
 
             CodeBlock.Builder bodyBuilder = CodeBlock.builder()
-                    .beginControlFlow("if (token.value().contains(\":\"))");
+                    .beginControlFlow("if (token.hasVariables())");
             StateHistoryToken token = new StateHistoryToken(path);
             Set<String> methodParams = this.method.getParameters().stream().map(methodParam -> methodParam.getSimpleName().toString())
                     .collect(Collectors.toSet());
 
             token.paths()
                     .stream()
-                    .filter(tokenPath -> tokenPath.startsWith(":") && !methodParams.contains(tokenPath.replace(":","")))
-                    .forEach(tokenPath -> bodyBuilder.addStatement("token.replacePath(\"" + tokenPath + "\", " + convertParameterToGetter(tokenPath.replace(":", "")) + "+\"\")", Objects.class));
+                    .filter(tokenPath -> isExpressionToken(tokenPath) && !methodParams.contains(replaceExpressionMarkers(tokenPath)))
+                    .forEach(tokenPath -> bodyBuilder.addStatement("token.replacePath(\"" + tokenPath + "\", " + convertParameterToGetter(replaceExpressionMarkers(tokenPath)) + "+\"\")", Objects.class));
 
             token.queryParameters()
                     .entrySet()
                     .stream()
-                    .filter(entry -> entry.getValue().startsWith(":"))
+                    .filter(entry -> isExpressionToken(entry.getValue()))
                     .forEach(entry -> {
-                        bodyBuilder.addStatement("token.replaceParameter(\"" + entry.getKey() + "\", \"" + entry.getKey() + "\", " + convertParameterToGetter(entry.getValue().replace(":", "")) + "+\"\")", Objects.class);
+                        bodyBuilder.addStatement("token.replaceParameter(\"" + entry.getKey() + "\", \"" + entry.getKey() + "\", " + convertParameterToGetter(replaceExpressionMarkers(entry.getValue())) + "+\"\")", Objects.class);
                     });
 
             token.fragments()
                     .stream()
-                    .filter(fragment -> fragment.startsWith(":"))
-                    .forEach(fragment -> bodyBuilder.addStatement("token.replaceFragment(\"" + fragment + "\", " + convertParameterToGetter(fragment.replace(":", "")) + "+\"\")", Objects.class));
+                    .filter(fragment -> isExpressionToken(fragment))
+                    .forEach(fragment -> bodyBuilder.addStatement("token.replaceFragment(\"" + fragment + "\", " + convertParameterToGetter(replaceExpressionMarkers(fragment)) + "+\"\")", Objects.class));
 
             bodyBuilder.endControlFlow();
             replacerBuilder
@@ -68,10 +68,19 @@ class ReplaceParametersMethodBuilder {
         return replacerBuilder.build();
     }
 
-    private String convertParameterToGetter(String parameter) {
-        String names = parameter
+    private boolean isExpressionToken(String tokenPath) {
+        return tokenPath.startsWith(":") || tokenPath.startsWith("{");
+    }
+
+    private String replaceExpressionMarkers(String replace) {
+        return replace
+                .replace(":", "")
                 .replace("{", "")
                 .replace("}", "");
+    }
+
+    private String convertParameterToGetter(String parameter) {
+        String names = replaceExpressionMarkers(parameter);
 
         String[] fieldsNames = names.contains(".") ? names.split("\\.") : new String[]{names};
 
