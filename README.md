@@ -106,7 +106,7 @@ Domino-rest can be used in two modes :
 
 ### GWT module inheritance
 ```xml
-<inherits name="org.dominokit.rest.GwtRest"/>
+<inherits name="org.dominokit.domino.rest.GwtRest"/>
 ```
 ### Usage
 
