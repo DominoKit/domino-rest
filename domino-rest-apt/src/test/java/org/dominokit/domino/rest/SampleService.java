@@ -9,6 +9,7 @@ import org.dominokit.domino.rest.shared.request.service.annotations.Retries;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import java.util.List;
 
 @RequestFactory
@@ -47,6 +48,11 @@ public interface SampleService {
     @GET
     @Path("someService/:id")
     String[] getById6(int id);
+
+
+    @GET
+    @Path("someService")
+    String getByIdQuery(@QueryParam("userId") int id, @QueryParam("userName") String name);
 
     @GET
     @Path("someService/:id")

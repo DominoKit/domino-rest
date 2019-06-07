@@ -61,9 +61,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 .stream()
                 .map(executableElement -> {
                     String name = executableElement.getSimpleName().toString();
-                    if(hasClassifier(executableElement)){
+                    if (hasClassifier(executableElement)) {
                         return new ServiceMethod(executableElement, 0);
-                    }else {
+                    } else {
                         if (!methodCount.containsKey(name)) {
                             methodCount.put(name, 1);
                             return new ServiceMethod(executableElement, 0);
@@ -122,6 +122,14 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
         serviceMethod.method.getParameters()
                 .forEach(parameter -> request.addStatement("instance.addCallArgument($S, String.valueOf($L))", parameter.getSimpleName().toString(), parameter.getSimpleName().toString()));
+
+        serviceMethod.method.getParameters()
+                .stream()
+                .filter(parameter -> nonNull(parameter.getAnnotation(QueryParam.class)))
+                .forEach(parameter -> request.addStatement("instance.setParameter($S, $T.valueOf($L))",
+                        parameter.getAnnotation(QueryParam.class).value(),
+                        String.class,
+                        parameter.getSimpleName()));
 
         request.addStatement("return instance");
 
@@ -220,16 +228,16 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     private boolean isRequestBody(VariableElement parameter) {
         TypeMirror typeMirror = parameter.asType();
-        if(isPrimitive(typeMirror)
+        if (isPrimitive(typeMirror)
                 || Type.isArray(typeMirror)
                 || Type.is2dArray(typeMirror)
                 || Type.isEnum(typeMirror)
                 || Type.isCollection(typeMirror)
                 || Type.isPrimitiveArray(typeMirror)
-                || Type.isIterable(typeMirror)){
+                || Type.isIterable(typeMirror)) {
 
             return nonNull(parameter.getAnnotation(RequestBody.class));
-        }else{
+        } else {
             TypeElement typeElement = elements.getTypeElement(typeMirror.toString());
             RequestBody pojoAnnotation = typeElement.getAnnotation(RequestBody.class);
             JSONMapper mapperAnnotation = typeElement.getAnnotation(JSONMapper.class);
@@ -259,7 +267,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 .addStatement("setServiceRoot($S)", getServiceRoot(method));
 
         Retries retries = method.getAnnotation(Retries.class);
-        if(nonNull(retries)) {
+        if (nonNull(retries)) {
             constructorBuilder.addStatement("setTimeout($L)", retries.timeout());
             constructorBuilder.addStatement("setMaxRetries($L)", retries.maxRetries());
         }
