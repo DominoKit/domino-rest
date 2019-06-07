@@ -34,11 +34,18 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     private final Element serviceElement;
     private final String requestsServiceRoot;
+    private final String servicePath;
 
     public RequestFactorySourceWriter(Element serviceElement, ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);
         this.serviceElement = serviceElement;
         this.requestsServiceRoot = serviceElement.getAnnotation(RequestFactory.class).serviceRoot();
+
+        if (nonNull(serviceElement.getAnnotation(Path.class))) {
+            this.servicePath = serviceElement.getAnnotation(Path.class).value();
+        } else {
+            this.servicePath = "";
+        }
 
         ObjectMapperProcessor.elementUtils = elements;
         ObjectMapperProcessor.typeUtils = types;
@@ -375,12 +382,18 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
 
     private String getPath(ExecutableElement method) {
-        return method.getAnnotation(Path.class).value();
+        String methodPath = method.getAnnotation(Path.class).value();
+        return this.servicePath + pathsSplitter(methodPath) + methodPath;
+    }
+
+    private String pathsSplitter(String methodPath) {
+        return (this.servicePath.endsWith("/") || methodPath.startsWith("/")) ? "" : "/";
     }
 
     private String getServiceRoot(ExecutableElement method) {
-        if (nonNull(method.getAnnotation(ServiceRoot.class))) {
-            return method.getAnnotation(ServiceRoot.class).value();
+        ServiceRoot serviceRoot = method.getAnnotation(ServiceRoot.class);
+        if (nonNull(serviceRoot)) {
+            return serviceRoot.value();
         } else {
             return requestsServiceRoot;
         }

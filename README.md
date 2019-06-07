@@ -377,6 +377,82 @@ for example : calling `getMovieByName` and pass the movie name `hulk` as argumen
 
 if we are passing a request body in the method argument we can use that request properties to replace path variable parameters, the variable path parameter name will be match with the property name from the request pojo.
 
+#### Service path
+
+the `@Path` annotation provides the ability to define a shared path for all service method.
+
+Sample
+
+instead of 
+```java
+@RequestFactory
+public interface MoviesService {
+
+    @Path("library/movies/:movieName")
+    @GET
+    Movie getMovieByName(String movieName);
+
+    @Path("library/movies")
+    @GET
+    List<Movie> listMovies();
+
+    @Path("library/movies/:name")
+    @PUT
+    void updateMovie(@RequestBody Movie movie);
+}
+```
+
+we can define it like this
+
+```java
+@RequestFactory
+@Path("library")
+public interface MoviesService {
+
+    @Path("/movies/:movieName")
+    @GET
+    Movie getMovieByName(String movieName);
+
+    @Path("/movies")
+    @GET
+    List<Movie> listMovies();
+
+    @Path("/movies/:name")
+    @PUT
+    void updateMovie(@RequestBody Movie movie);
+}
+```
+
+#### Query parameters
+
+if a service method argument is annotated with `@QueryParam` then will be automatically added to the request path as a query parameter.
+
+Sample:
+
+if we have the following service definition 
+
+```java
+@RequestFactory
+public interface MoviesService {
+
+    @Path("library/movies")
+    @GET
+    Movie getMovieByName(@QueryParam("name") String movieName);
+}
+```
+then when we make the following request
+
+```java
+MoviesServiceFactory.INSTANCE
+    .getMovieByName("hulk")
+    .onSuccess(movie ->{})
+    .send();
+```
+
+then the request made to the server will have the following path 
+
+`http://localhost:8080/service/library/movies?name=hulk`
+
 #### Request body
 
 In case of `POST`, `PUT`, `PATCH` http requests we normally sends a body in the request, in domino-rest the body of the request is determined from the call argument using one of the following in order :

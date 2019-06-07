@@ -13,6 +13,7 @@ import javax.ws.rs.QueryParam;
 import java.util.List;
 
 @RequestFactory
+@Path("library/")
 public interface SampleService {
 
     @GET
