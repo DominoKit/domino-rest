@@ -1,4 +1,5 @@
 ![GWT3/J2CL compatible](https://img.shields.io/badge/GWT3/J2CL-compatible-brightgreen.svg)
+[![Build Status](https://travis-ci.org/DominoKit/domino-rest.svg?branch=master)](https://travis-ci.org/DominoKit/domino-rest)
 
 # domino-rest
 
