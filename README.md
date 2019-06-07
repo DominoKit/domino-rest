@@ -107,7 +107,7 @@ Domino-rest can be used in two modes :
 
 ### GWT module inheritance
 ```xml
-<inherits name="org.dominokit.rest.GwtRest"/>
+<inherits name="org.dominokit.domino.rest.GwtRest"/>
 ```
 ### Usage
 
@@ -264,13 +264,13 @@ DominoRestConfig.getInstance()
     );
 ```
 
-Any service that is'nt matched with of the defined matcher will be mapped to the default service root.
+Any service that isn't matched with of the defined matcher will be mapped to the default service root.
 
 We can also use dynamic service roots to remove the host and port mapping from the service definition while keeping using a custom service root for that interface
 
 for example instead of defining the movies service like this :
 ```java
-@RequestFactory(serviceRoot = "htp://localhost:7070/")
+@RequestFactory(serviceRoot = "http://localhost:7070/")
 public interface MoviesService {
 
     @Path("library/movies/:movieName")
