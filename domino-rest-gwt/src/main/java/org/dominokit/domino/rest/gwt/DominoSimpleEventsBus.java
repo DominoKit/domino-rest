@@ -1,5 +1,6 @@
 package org.dominokit.domino.rest.gwt;
 
+import org.dominokit.domino.rest.shared.EventProcessor;
 import org.dominokit.domino.rest.shared.EventsBus;
 import org.gwtproject.event.shared.Event;
 import org.gwtproject.event.shared.EventBus;
@@ -13,11 +14,17 @@ public class DominoSimpleEventsBus implements EventsBus<Event<GwtEventProcessor>
     public static final EventsBus INSTANCE = new DominoSimpleEventsBus(new RequestEventProcessor());
 
     private final EventBus simpleGwtEventsBus;
+    private final GwtEventProcessor eventProcessor;
 
     public DominoSimpleEventsBus(GwtEventProcessor eventProcessor) {
         this.simpleGwtEventsBus = new SimpleEventBus();
-        simpleGwtEventsBus.addHandler(ServerSuccessRequestGwtEvent.SERVER_SUCCESS_REQUEST_EVENT_TYPE, eventProcessor);
-        simpleGwtEventsBus.addHandler(ServerFailedRequestGwtEvent.SERVER_FAILED_REQUEST_EVENT_TYPE, eventProcessor);
+        this.eventProcessor = eventProcessor;
+        addEvent(ServerSuccessRequestGwtEvent.SERVER_SUCCESS_REQUEST_EVENT_TYPE);
+        addEvent(ServerFailedRequestGwtEvent.SERVER_FAILED_REQUEST_EVENT_TYPE);
+    }
+
+    public void addEvent(Event.Type<EventProcessor> type){
+        simpleGwtEventsBus.addHandler(type, eventProcessor);
     }
 
     @Override
