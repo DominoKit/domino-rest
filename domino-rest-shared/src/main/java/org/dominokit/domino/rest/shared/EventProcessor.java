@@ -1,6 +1,8 @@
 package org.dominokit.domino.rest.shared;
 
-@FunctionalInterface
-public interface EventProcessor {
-    void process(Event event);
+public class EventProcessor {
+
+    public void process(Event event) {
+        event.process();
+    }
 }

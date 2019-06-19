@@ -8,15 +8,15 @@ import org.gwtproject.event.shared.SimpleEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DominoSimpleEventsBus implements EventsBus<Event<GwtEventProcessor>> {
+public class DominoSimpleEventsBus implements EventsBus<Event<EventProcessor>> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DominoSimpleEventsBus.class);
 
-    public static final EventsBus INSTANCE = new DominoSimpleEventsBus(new RequestEventProcessor());
+    public static final EventsBus INSTANCE = new DominoSimpleEventsBus(new EventProcessor());
 
     private final EventBus simpleGwtEventsBus;
-    private final GwtEventProcessor eventProcessor;
+    private final EventProcessor eventProcessor;
 
-    public DominoSimpleEventsBus(GwtEventProcessor eventProcessor) {
+    public DominoSimpleEventsBus(EventProcessor eventProcessor) {
         this.simpleGwtEventsBus = new SimpleEventBus();
         this.eventProcessor = eventProcessor;
         addEvent(ServerSuccessRequestGwtEvent.SERVER_SUCCESS_REQUEST_EVENT_TYPE);
@@ -28,7 +28,7 @@ public class DominoSimpleEventsBus implements EventsBus<Event<GwtEventProcessor>
     }
 
     @Override
-    public void publishEvent(RequestEvent<Event<GwtEventProcessor>> event) {
+    public void publishEvent(RequestEvent<Event<EventProcessor>> event) {
         try {
             simpleGwtEventsBus.fireEvent(event.asEvent());
         } catch (Exception ex) {
