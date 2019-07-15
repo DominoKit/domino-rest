@@ -364,8 +364,8 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
 
     private String getContentType(ExecutableElement method) {
-        if (nonNull(method.getAnnotation(Produces.class))) {
-            return Arrays.stream(method.getAnnotation(Produces.class).value()).map(s -> "\"" + s + "\"")
+        if (nonNull(method.getAnnotation(Consumes.class))) {
+            return Arrays.stream(method.getAnnotation(Consumes.class).value()).map(s -> "\"" + s + "\"")
                     .collect(joining(","));
         } else {
             return "\"" + MediaType.APPLICATION_JSON + "\"";
@@ -373,8 +373,8 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
 
     private String getAcceptResponse(ExecutableElement method) {
-        if (nonNull(method.getAnnotation(Consumes.class))) {
-            return Arrays.stream(method.getAnnotation(Consumes.class).value()).map(s -> "\"" + s + "\"")
+        if (nonNull(method.getAnnotation(Produces.class))) {
+            return Arrays.stream(method.getAnnotation(Produces.class).value()).map(s -> "\"" + s + "\"")
                     .collect(joining(","));
         } else {
             return "\"" + MediaType.APPLICATION_JSON + "\"";
