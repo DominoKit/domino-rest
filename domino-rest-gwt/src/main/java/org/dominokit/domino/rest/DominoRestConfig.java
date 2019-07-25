@@ -1,7 +1,6 @@
 package org.dominokit.domino.rest;
 
 import org.dominokit.domino.rest.gwt.DefaultServiceRoot;
-import org.dominokit.domino.rest.shared.request.DefaultRequestAsyncSender;
 import org.dominokit.domino.rest.gwt.ServerEventFactory;
 import org.dominokit.domino.rest.shared.request.*;
 
@@ -17,7 +16,8 @@ public class DominoRestConfig implements RestConfig {
     private static String defaultResourceRootPath = "service";
     private static String defaultJsonDateFormat = null;
 
-    private static final RequestRouter<ServerRequest> serverRouter = new ServerRouter(new DefaultRequestAsyncSender(new ServerEventFactory()));
+    private static final RequestRouter<ServerRequest> serverRouter = new ServerRouter(
+            new DefaultRequestAsyncSender(new ServerEventFactory(), new RequestSender<>()));
     private static List<DynamicServiceRoot> dynamicServiceRoots = new ArrayList<>();
     private static final List<RequestInterceptor> interceptors = new ArrayList<>();
 
@@ -62,7 +62,7 @@ public class DominoRestConfig implements RestConfig {
 
     public String getDefaultServiceRoot() {
         if (isNull(defaultServiceRoot)) {
-            return DefaultServiceRoot.get() + defaultResourceRootPath+"/";
+            return DefaultServiceRoot.get() + defaultResourceRootPath + "/";
         }
         return defaultServiceRoot;
     }
@@ -87,9 +87,9 @@ public class DominoRestConfig implements RestConfig {
     }
 
     public String getDefaultResourceRootPath() {
-        if(nonNull(defaultResourceRootPath) && !defaultResourceRootPath.trim().isEmpty()) {
+        if (nonNull(defaultResourceRootPath) && !defaultResourceRootPath.trim().isEmpty()) {
             return defaultResourceRootPath + "/";
-        }else {
+        } else {
             return "";
         }
     }

@@ -16,6 +16,21 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.gwtproject.timer</groupId>
+            <artifactId>gwt-timer</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-dev</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-slf4j-logger</artifactId>
             <version>${project.version}</version>
@@ -41,13 +56,11 @@
             <version>HEAD-SNAPSHOT</version>
             <classifier>sources</classifier>
         </dependency>
-
         <dependency>
             <groupId>org.gwtproject</groupId>
             <artifactId>xhr</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

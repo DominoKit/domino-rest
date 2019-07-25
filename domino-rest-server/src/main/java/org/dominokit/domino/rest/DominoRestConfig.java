@@ -16,7 +16,8 @@ public class DominoRestConfig implements RestConfig {
     private static String defaultResourceRootPath = "service";
     private static String defaultJsonDateFormat = null;
 
-    private static RequestRouter<ServerRequest> serverRouter = new ServerRouter(new DefaultRequestAsyncSender(new OnServerRequestEventFactory()));
+    private static RequestRouter<ServerRequest> serverRouter = new ServerRouter(
+            new DefaultRequestAsyncSender(new OnServerRequestEventFactory(), new RequestSender<>()));
     private static List<DynamicServiceRoot> dynamicServiceRoots = new ArrayList<>();
     private static List<RequestInterceptor> interceptors = new ArrayList<>();
 

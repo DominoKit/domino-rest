@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 
-public abstract class RequestSender<R, S> implements RequestRestSender<R, S> {
+public class RequestSender<R, S> implements RequestRestSender<R, S> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestSender.class);
 
