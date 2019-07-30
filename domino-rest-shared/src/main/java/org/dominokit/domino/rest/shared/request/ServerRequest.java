@@ -47,25 +47,11 @@ public class ServerRequest<R, S>
 
     private Success<S> success = response -> {
     };
-    private Fail fail =
-            failedResponse -> {
-                if (nonNull(failedResponse.getThrowable())) {
-                    LOGGER.debug("could not execute request on server: ", failedResponse.getThrowable());
-                } else {
-                    LOGGER.debug("could not execute request on server: status [" + failedResponse.getStatusCode() + "], body [" + failedResponse.getBody() + "]");
-                }
-            };
 
     private final RequestState<ServerSuccessRequestStateContext> executedOnServer = context -> {
         success.onSuccess((S) context.responseBean);
         state = completed;
     };
-
-    private final RequestState<ServerFailedRequestStateContext> failedOnServer =
-            context -> {
-                fail.onFail(context.response);
-                state = completed;
-            };
 
     private final RequestState<ServerResponseReceivedStateContext> sent = context -> {
         if (context.nextContext instanceof ServerSuccessRequestStateContext) {

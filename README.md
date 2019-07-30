@@ -583,7 +583,7 @@ MoviesServiceFactory.INSTANCE
 ```
 
 
-#### Global interceptors
+#### Global request interceptors
 
 In many cases we might need to intercept all rest requests to add some extra headers, like security headers or authentication tokens, and it would be painful to do this for each request one at a time.
 and for this domino-rest allow defining global interceptors that can intercept all requests using `DominoRestConfig`, we can define global interceptors like the following :
@@ -598,4 +598,81 @@ public class TokenInterceptor implements RequestInterceptor {
 }
 ```
 
-The request interceptors are blocking which allows us to do some other rest calls before or async operation and only send the request after all interceptors calls the complete method of the contextWait received in the argument.
+The request interceptors are blocking which allows us to do some other rest calls or async operation and only send the request after all interceptors calls the complete method of the contextWait received in the argument.
+
+
+### Global response handlers
+
+We can use global response handlers to handle generic responses, like authentication or errors, and we can add as many global response handlers as we want.
+those global handlers will be called before calling the actual request success or fail handlers, then the success or the fail handler will be called, unless for fail handler we instruct the request to skip it. 
+
+Sample
+
+```java
+DominoRestConfig.getInstance()
+	.addGlobalResponseHandler(new GlobalResponseHandler() {
+		@Override
+		public void interceptOnSuccess(ServerRequest serverRequest, String body) {
+			//do something with the success response
+		}
+
+		@Override
+		public void interceptOnFailed(ServerRequest serverRequest, FailedResponseBean failedResponse) {
+			if(failedResponse.getStatusCode()==401){
+				serverRequest.skipFailHandler();
+			}
+			//do something with the failed response, maybe forward to login page.
+		}
+	});
+```
+
+both methods of the `GlobalResponseHandler` are default to do nothing.
+
+
+### Default failed response handler
+
+In a service factory setting up the request fail handler is optional, and in case we dont specify a fail handler a default one will be used, the default response handler from domino-rest will just log the exception.
+we can override the default fail handler using DominoRestConfig.
+
+```java
+DominoRestConfig.getInstance()
+    .setDefaultFailHandler(failedResponse -> {
+        //do something for a failed request that did not specify a fail handler.
+    });
+```
+
+### Interface inheritance
+
+A request factory interface can extend from other interfaces that does or does not have the request factory annotation.
+this means that we can generate a single request factory for multiple jax-rs interfaces, or we can generate a request factory for jax-rs interfaces when we dont have access to the source code to add the RequestFactory annotation.
+each inherited interface can have it own `@Path` annotation.
+
+Sample :
+
+```java
+@RequestFactory
+public interface SomeService extends FirstService, SecondService {
+
+    @Path("some-path")
+    SomeResponse someRequest();
+}
+
+```
+
+```java
+@Path("first-root-path")
+public interface FirstService {
+    @Path("first-path")
+    SomeResponse firstRequest();
+}
+```
+
+```java
+@Path("second-root-path")
+public interface SecondService {
+    @Path("second-path")
+    SomeResponse secondRequest();
+}
+```
+
+So this will generate a factory for all service methods from all three services, where `FirstService` and `SecondService` could be coming from an external dependency.

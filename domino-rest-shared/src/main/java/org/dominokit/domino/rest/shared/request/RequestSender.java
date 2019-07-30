@@ -53,18 +53,34 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
             LOGGER.info("Retrying request : " + retriesCounter[0]);
             doSendRequest(request, restfulRequest);
         } else {
-            FailedResponseBean failedResponseBean = new FailedResponseBean(throwable);
-            LOGGER.info("Failed to execute request : ", failedResponseBean);
-            callBack.onFailure(failedResponseBean);
+            FailedResponseBean failedResponse = new FailedResponseBean(throwable);
+            LOGGER.info("Failed to execute request : ", failedResponse);
+            callFailedResponseHandlers(request, failedResponse);
+            callBack.onFailure(failedResponse);
         }
     }
 
     private void handleResponse(ServerRequest<R, S> request, ServerRequestCallBack callBack, Response response) {
         if (Arrays.stream(request.getSuccessCodes()).anyMatch(code -> code.equals(response.getStatusCode()))) {
+            callSuccessGlobalHandlers(request, response);
             callBack.onSuccess(request.getResponseReader().read(response.getBodyAsString()));
         } else {
-            callBack.onFailure(new FailedResponseBean(response.getStatusCode(), response.getStatusText(), response.getBodyAsString(), response.getHeaders()));
+            FailedResponseBean failedResponse = new FailedResponseBean(response.getStatusCode(), response.getStatusText(), response.getBodyAsString(), response.getHeaders());
+            callFailedResponseHandlers(request, failedResponse);
+            callBack.onFailure(failedResponse);
         }
+    }
+
+    private void callSuccessGlobalHandlers(ServerRequest<R, S> request, Response response) {
+        DominoRestContext.make().getConfig()
+                .getGlobalResponseHandlers()
+                .forEach(globalResponseHandler -> globalResponseHandler.interceptOnSuccess(request, response.getBodyAsString()));
+    }
+
+    private void callFailedResponseHandlers(ServerRequest request, FailedResponseBean failedResponse) {
+        DominoRestContext.make().getConfig()
+                .getGlobalResponseHandlers()
+                .forEach(globalResponseHandler -> globalResponseHandler.interceptOnFailed(request, failedResponse));
     }
 
     private void setTimeout(ServerRequest<R, S> request, RestfulRequest restfulRequest) {

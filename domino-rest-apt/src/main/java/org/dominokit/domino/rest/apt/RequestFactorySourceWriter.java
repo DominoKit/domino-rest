@@ -34,18 +34,12 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     private final Element serviceElement;
     private final String requestsServiceRoot;
-    private final String servicePath;
+    private Map<String, Integer> methodCount;
 
     public RequestFactorySourceWriter(Element serviceElement, ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);
         this.serviceElement = serviceElement;
         this.requestsServiceRoot = serviceElement.getAnnotation(RequestFactory.class).serviceRoot();
-
-        if (nonNull(serviceElement.getAnnotation(Path.class))) {
-            this.servicePath = serviceElement.getAnnotation(Path.class).value();
-        } else {
-            this.servicePath = "";
-        }
 
         ObjectMapperProcessor.elementUtils = elements;
         ObjectMapperProcessor.typeUtils = types;
@@ -61,26 +55,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 .initializer("new " + factoryName + "()")
                 .build();
 
-        Map<String, Integer> methodCount = new HashMap<>();
+        methodCount = new HashMap<>();
 
-        List<ServiceMethod> serviceMethods = processorUtil
-                .getElementMethods(serviceElement)
-                .stream()
-                .map(executableElement -> {
-                    String name = executableElement.getSimpleName().toString();
-                    if (hasClassifier(executableElement)) {
-                        return new ServiceMethod(executableElement, 0);
-                    } else {
-                        if (!methodCount.containsKey(name)) {
-                            methodCount.put(name, 1);
-                            return new ServiceMethod(executableElement, 0);
-                        } else {
-                            Integer index = methodCount.get(name);
-                            methodCount.put(name, methodCount.get(name) + 1);
-                            return new ServiceMethod(executableElement, index);
-                        }
-                    }
-                }).collect(toList());
+        List<ServiceMethod> serviceMethods = getServiceMethods(serviceElement);
 
         List<TypeSpec> requests = serviceMethods
                 .stream()
@@ -104,11 +81,52 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return Collections.singletonList(factory);
     }
 
+    public List<ServiceMethod> getServiceMethods(Element serviceElement) {
+        TypeElement serviceType = (TypeElement) serviceElement;
+        if (serviceType.getInterfaces().isEmpty()) {
+            return getMethods(serviceElement);
+        }
+
+        List<ServiceMethod> methods = new ArrayList<>();
+        methods.addAll(getMethods(serviceElement));
+        ((TypeElement) serviceElement).getInterfaces().forEach(superInterface -> methods.addAll(getServiceMethods(types.asElement(superInterface))));
+
+        return methods;
+    }
+
+    private List<ServiceMethod> getMethods(Element serviceElement) {
+        return processorUtil.getElementMethods(serviceElement)
+                .stream()
+                .map(executableElement ->
+                        asServiceMethod(serviceElement, executableElement)
+                ).collect(toList());
+    }
+
+    private ServiceMethod asServiceMethod(Element serviceElement, ExecutableElement executableElement) {
+        String servicePath = "";
+        if (nonNull(serviceElement.getAnnotation(Path.class))) {
+            servicePath = serviceElement.getAnnotation(Path.class).value();
+        }
+        String name = executableElement.getSimpleName().toString();
+        if (hasClassifier(executableElement)) {
+            return new ServiceMethod(executableElement, 0, servicePath);
+        } else {
+            if (!methodCount.containsKey(name)) {
+                methodCount.put(name, 1);
+                return new ServiceMethod(executableElement, 0, servicePath);
+            } else {
+                Integer index = methodCount.get(name);
+                methodCount.put(name, methodCount.get(name) + 1);
+                return new ServiceMethod(executableElement, index, servicePath);
+            }
+        }
+    }
+
     private MethodSpec makeRequestFactoryMethod(ServiceMethod serviceMethod) {
         String classifier = getMethodClassifier(serviceMethod);
 
-        TypeName requestTypeName = TypeName.get(getRequestBeanType(serviceMethod.method));
-        TypeMirror responseBean = getResponseBeanType(serviceMethod.method);
+        TypeName requestTypeName = TypeName.get(getRequestBeanType(serviceMethod));
+        TypeMirror responseBean = getResponseBeanType(serviceMethod);
 
         MethodSpec.Builder request = MethodSpec.methodBuilder(serviceMethod.method.getSimpleName().toString())
                 .addModifiers(Modifier.PUBLIC)
@@ -145,9 +163,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     private TypeSpec makeRequestClass(ServiceMethod serviceMethod) {
         String classifier = getMethodClassifier(serviceMethod);
-        TypeMirror requestType = getRequestBeanType(serviceMethod.method);
+        TypeMirror requestType = getRequestBeanType(serviceMethod);
         TypeName requestTypeName = TypeName.get(requestType);
-        TypeMirror responseBean = getResponseBeanType(serviceMethod.method);
+        TypeMirror responseBean = getResponseBeanType(serviceMethod);
 
         TypeSpec.Builder requestBuilder = TypeSpec
                 .classBuilder(serviceElement.getSimpleName().toString() + "_" + serviceMethod.method.getSimpleName() + classifier)
@@ -156,7 +174,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 .superclass(ParameterizedTypeName.get(ClassName.get(ServerRequest.class),
                         requestTypeName,
                         ClassName.get(responseBean)))
-                .addMethod(constructor(requestType, serviceMethod.method));
+                .addMethod(constructor(requestType, serviceMethod));
 
         return requestBuilder.build();
     }
@@ -177,8 +195,8 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return nonNull(classifierAnnotation) && !classifierAnnotation.value().trim().isEmpty();
     }
 
-    private TypeMirror getResponseBeanType(ExecutableElement method) {
-        return getMappingType(method.getReturnType());
+    private TypeMirror getResponseBeanType(ServiceMethod serviceMethod) {
+        return getMappingType(serviceMethod.method.getReturnType());
     }
 
     private TypeMirror getMappingType(TypeMirror returnType) {
@@ -206,8 +224,8 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return typeMirror.getKind().isPrimitive();
     }
 
-    private TypeMirror getRequestBeanType(ExecutableElement method) {
-        List<? extends VariableElement> parameters = method.getParameters();
+    private TypeMirror getRequestBeanType(ServiceMethod serviceMethod) {
+        List<? extends VariableElement> parameters = serviceMethod.method.getParameters();
 
         TypeMirror typeMirror = parameters.stream()
                 .filter(this::isBodyParameter)
@@ -257,7 +275,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return processorUtil.isAssignableFrom(parameter, RequestBean.class);
     }
 
-    private MethodSpec constructor(TypeMirror requestBean, ExecutableElement method) {
+    private MethodSpec constructor(TypeMirror requestBean, ServiceMethod serviceMethod) {
         MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder();
         if (isVoidType(requestBean)) {
             constructorBuilder.addStatement("super(null)");
@@ -267,46 +285,46 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                     .addStatement("super(request)");
         }
 
-        constructorBuilder.addStatement("setHttpMethod($S)", getHttpMethod(method))
-                .addStatement("setContentType(new String[]{$L})", getContentType(method))
-                .addStatement("setAccept(new String[]{$L})", getAcceptResponse(method))
-                .addStatement("setPath($S)", getPath(method))
-                .addStatement("setServiceRoot($S)", getServiceRoot(method));
+        constructorBuilder.addStatement("setHttpMethod($S)", getHttpMethod(serviceMethod))
+                .addStatement("setContentType(new String[]{$L})", getContentType(serviceMethod))
+                .addStatement("setAccept(new String[]{$L})", getAcceptResponse(serviceMethod))
+                .addStatement("setPath($S)", getPath(serviceMethod))
+                .addStatement("setServiceRoot($S)", getServiceRoot(serviceMethod.method));
 
-        Retries retries = method.getAnnotation(Retries.class);
+        Retries retries = serviceMethod.method.getAnnotation(Retries.class);
         if (nonNull(retries)) {
             constructorBuilder.addStatement("setTimeout($L)", retries.timeout());
             constructorBuilder.addStatement("setMaxRetries($L)", retries.maxRetries());
         }
-        if (nonNull(method.getAnnotation(SuccessCodes.class))) {
-            constructorBuilder.addStatement("setSuccessCodes(new Integer[]{$L})", getSuccessCodes(method));
+        if (nonNull(serviceMethod.method.getAnnotation(SuccessCodes.class))) {
+            constructorBuilder.addStatement("setSuccessCodes(new Integer[]{$L})", getSuccessCodes(serviceMethod));
         }
 
-        if (!isVoidType(method)) {
-            constructorBuilder.addCode(getRequestWriter(method));
+        if (!isVoidType(serviceMethod)) {
+            constructorBuilder.addCode(getRequestWriter(serviceMethod));
         }
 
-        if (!isVoidType(method.getReturnType())) {
-            constructorBuilder.addCode(getResponseReader(method));
+        if (!isVoidType(serviceMethod.method.getReturnType())) {
+            constructorBuilder.addCode(getResponseReader(serviceMethod));
         }
 
-        if (!isVoidType(method)) {
-            constructorBuilder.addCode(new ReplaceParametersMethodBuilder(messager, getPath(method), method).build());
+        if (!isVoidType(serviceMethod)) {
+            constructorBuilder.addCode(new ReplaceParametersMethodBuilder(messager, getPath(serviceMethod), serviceMethod.method).build());
         }
 
         return constructorBuilder.build();
     }
 
-    private CodeBlock getRequestWriter(ExecutableElement method) {
+    private CodeBlock getRequestWriter(ServiceMethod serviceMethod) {
         CodeBlock.Builder builder = CodeBlock.builder();
 
 
-        Writer annotation = method.getAnnotation(Writer.class);
+        Writer annotation = serviceMethod.method.getAnnotation(Writer.class);
         if (nonNull(annotation)) {
-            Optional<TypeMirror> value = processorUtil.getClassValueFromAnnotation(method, Writer.class, "value");
+            Optional<TypeMirror> value = processorUtil.getClassValueFromAnnotation(serviceMethod.method, Writer.class, "value");
             value.ifPresent(writerType -> builder.addStatement("setRequestWriter(bean -> new $T().write(bean))", TypeName.get(writerType)));
         } else {
-            TypeMirror requestBeanType = getRequestBeanType(method);
+            TypeMirror requestBeanType = getRequestBeanType(serviceMethod);
             CodeBlock instance = new FieldSerializerChainBuilder(requestBeanType).getInstance(requestBeanType);
             TypeSpec.Builder writerType = TypeSpec.anonymousClassBuilder("$S", requestBeanType)
                     .addSuperinterface(ParameterizedTypeName.get(ClassName.get(AbstractObjectWriter.class), TypeName.get(requestBeanType)))
@@ -325,16 +343,16 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return builder.build();
     }
 
-    private CodeBlock getResponseReader(ExecutableElement method) {
+    private CodeBlock getResponseReader(ServiceMethod serviceMethod) {
         CodeBlock.Builder builder = CodeBlock.builder();
 
-        Reader annotation = method.getAnnotation(Reader.class);
+        Reader annotation = serviceMethod.method.getAnnotation(Reader.class);
         if (nonNull(annotation)) {
-            Optional<TypeMirror> value = processorUtil.getClassValueFromAnnotation(method, Reader.class, "value");
+            Optional<TypeMirror> value = processorUtil.getClassValueFromAnnotation(serviceMethod.method, Reader.class, "value");
             value.ifPresent(readerType -> builder.addStatement("setResponseReader(response -> new $T().read(response))", TypeName.get(readerType)));
         } else {
 
-            TypeMirror responseBeanType = getResponseBeanType(method);
+            TypeMirror responseBeanType = getResponseBeanType(serviceMethod);
             CodeBlock instance = new FieldDeserializersChainBuilder(responseBeanType).getInstance(responseBeanType);
             TypeSpec.Builder readerType = TypeSpec.anonymousClassBuilder("$S", responseBeanType)
                     .addSuperinterface(ParameterizedTypeName.get(ClassName.get(AbstractObjectReader.class), TypeName.get(responseBeanType)))
@@ -357,39 +375,39 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return ClassName.get(elements.getPackageOf(type).getQualifiedName().toString(), type.getSimpleName().toString() + "_MapperImpl");
     }
 
-    private boolean isVoidType(ExecutableElement method) {
-        return isVoidType(getRequestBeanType(method));
+    private boolean isVoidType(ServiceMethod serviceMethod) {
+        return isVoidType(getRequestBeanType(serviceMethod));
     }
 
     private boolean isVoidType(TypeMirror type) {
         return TypeKind.VOID.equals(type.getKind()) || types.isSameType(elements.getTypeElement(Void.class.getCanonicalName()).asType(), type);
     }
 
-    private String getContentType(ExecutableElement method) {
-        if (nonNull(method.getAnnotation(Consumes.class))) {
-            return Arrays.stream(method.getAnnotation(Consumes.class).value()).map(s -> "\"" + s + "\"")
+    private String getContentType(ServiceMethod serviceMethod) {
+        if (nonNull(serviceMethod.method.getAnnotation(Consumes.class))) {
+            return Arrays.stream(serviceMethod.method.getAnnotation(Consumes.class).value()).map(s -> "\"" + s + "\"")
                     .collect(joining(","));
         } else {
             return "\"" + MediaType.APPLICATION_JSON + "\"";
         }
     }
 
-    private String getAcceptResponse(ExecutableElement method) {
-        if (nonNull(method.getAnnotation(Produces.class))) {
-            return Arrays.stream(method.getAnnotation(Produces.class).value()).map(s -> "\"" + s + "\"")
+    private String getAcceptResponse(ServiceMethod serviceMethod) {
+        if (nonNull(serviceMethod.method.getAnnotation(Produces.class))) {
+            return Arrays.stream(serviceMethod.method.getAnnotation(Produces.class).value()).map(s -> "\"" + s + "\"")
                     .collect(joining(","));
         } else {
             return "\"" + MediaType.APPLICATION_JSON + "\"";
         }
     }
 
-    private String getPath(ExecutableElement method) {
-        String methodPath = method.getAnnotation(Path.class).value();
-        return this.servicePath + pathsSplitter(methodPath) + methodPath;
+    private String getPath(ServiceMethod serviceMethod) {
+        String methodPath = serviceMethod.method.getAnnotation(Path.class).value();
+        return serviceMethod.servicePath + pathsSplitter(serviceMethod.servicePath, methodPath) + methodPath;
     }
 
-    private String pathsSplitter(String methodPath) {
-        return (this.servicePath.endsWith("/") || methodPath.startsWith("/")) ? "" : "/";
+    private String pathsSplitter(String servicePath, String methodPath) {
+        return (servicePath.endsWith("/") || methodPath.startsWith("/")) ? "" : "/";
     }
 
     private String getServiceRoot(ExecutableElement method) {
@@ -401,15 +419,16 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         }
     }
 
-    private String getSuccessCodes(ExecutableElement method) {
-        return IntStream.of(method.getAnnotation(SuccessCodes.class).value())
+    private String getSuccessCodes(ServiceMethod serviceMethod) {
+        return IntStream.of(serviceMethod.method.getAnnotation(SuccessCodes.class).value())
                 .boxed()
                 .map(String::valueOf)
                 .collect(joining(","));
     }
 
-    private String getHttpMethod(ExecutableElement method) {
+    private String getHttpMethod(ServiceMethod serviceMethod) {
 
+        ExecutableElement method = serviceMethod.method;
         if (nonNull(method.getAnnotation(GET.class))) {
             return HttpMethod.GET;
         }
@@ -445,10 +464,12 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     private static class ServiceMethod {
         private ExecutableElement method;
         private Integer index;
+        private String servicePath;
 
-        public ServiceMethod(ExecutableElement method, Integer index) {
+        public ServiceMethod(ExecutableElement method, Integer index, String servicePath) {
             this.method = method;
             this.index = index;
+            this.servicePath = servicePath;
         }
     }
 

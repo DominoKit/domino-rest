@@ -3,6 +3,8 @@ package org.dominokit.domino.rest;
 import org.dominokit.domino.rest.server.DefaultServiceRoot;
 import org.dominokit.domino.rest.server.OnServerRequestEventFactory;
 import org.dominokit.domino.rest.shared.request.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,8 @@ import static java.util.Objects.nonNull;
 
 public class DominoRestConfig implements RestConfig {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DominoRestConfig.class);
+
     private static String defaultServiceRoot;
     private static String defaultResourceRootPath = "service";
     private static String defaultJsonDateFormat = null;
@@ -20,6 +24,14 @@ public class DominoRestConfig implements RestConfig {
             new DefaultRequestAsyncSender(new OnServerRequestEventFactory(), new RequestSender<>()));
     private static List<DynamicServiceRoot> dynamicServiceRoots = new ArrayList<>();
     private static List<RequestInterceptor> interceptors = new ArrayList<>();
+    private static final List<GlobalResponseHandler> globalResponseHandlers = new ArrayList<>();
+    private static Fail defaultFailHandler = failedResponse -> {
+        if (nonNull(failedResponse.getThrowable())) {
+            LOGGER.debug("could not execute request on server: ", failedResponse.getThrowable());
+        } else {
+            LOGGER.debug("could not execute request on server: status [" + failedResponse.getStatusCode() + "], body [" + failedResponse.getBody() + "]");
+        }
+    };
 
     public static DominoRestConfig initDefaults() {
         RestfullRequestContext.setFactory(new JavaRestfulRequestFactory());
@@ -58,6 +70,34 @@ public class DominoRestConfig implements RestConfig {
 
     public List<RequestInterceptor> getRequestInterceptors() {
         return interceptors;
+    }
+
+
+    public DominoRestConfig addGlobalResponseHandler(GlobalResponseHandler globalResponseHandler){
+        this.getGlobalResponseHandlers().add(globalResponseHandler);
+        return this;
+    }
+
+    public DominoRestConfig removeGlobalResponseHandler(GlobalResponseHandler globalResponseHandler){
+        this.getGlobalResponseHandlers().remove(globalResponseHandler);
+        return this;
+    }
+
+    @Override
+    public List<GlobalResponseHandler> getGlobalResponseHandlers() {
+        return globalResponseHandlers;
+    }
+
+    public DominoRestConfig setDefaultFailHandler(Fail fail){
+        if(nonNull(fail)){
+            this.defaultFailHandler = fail;
+        }
+        return this;
+    }
+
+    @Override
+    public Fail getDefaultFailHandler() {
+        return defaultFailHandler;
     }
 
     public String getDefaultServiceRoot() {

@@ -12,7 +12,11 @@ public interface RestConfig {
 
     List<RequestInterceptor> getRequestInterceptors();
 
+    List<GlobalResponseHandler> getGlobalResponseHandlers();
+
     String getDefaultResourceRootPath();
+
+    Fail getDefaultFailHandler();
 
     AsyncRunner asyncRunner();
 }
