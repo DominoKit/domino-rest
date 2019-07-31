@@ -23,8 +23,8 @@ public class DominoRestConfig implements RestConfig {
     private static RequestRouter<ServerRequest> serverRouter = new ServerRouter(
             new DefaultRequestAsyncSender(new OnServerRequestEventFactory(), new RequestSender<>()));
     private static List<DynamicServiceRoot> dynamicServiceRoots = new ArrayList<>();
-    private static List<RequestInterceptor> interceptors = new ArrayList<>();
-    private static final List<GlobalResponseHandler> globalResponseHandlers = new ArrayList<>();
+    private static List<RequestInterceptor> requestInterceptors = new ArrayList<>();
+    private static final List<ResponseInterceptor> responseInterceptors = new ArrayList<>();
     private static Fail defaultFailHandler = failedResponse -> {
         if (nonNull(failedResponse.getThrowable())) {
             LOGGER.debug("could not execute request on server: ", failedResponse.getThrowable());
@@ -59,33 +59,33 @@ public class DominoRestConfig implements RestConfig {
     }
 
     public DominoRestConfig addRequestInterceptor(RequestInterceptor interceptor) {
-        this.interceptors.add(interceptor);
+        this.requestInterceptors.add(interceptor);
         return this;
     }
 
     public DominoRestConfig removeRequestInterceptor(RequestInterceptor interceptor) {
-        this.interceptors.remove(interceptor);
+        this.requestInterceptors.remove(interceptor);
         return this;
     }
 
     public List<RequestInterceptor> getRequestInterceptors() {
-        return interceptors;
+        return requestInterceptors;
     }
 
 
-    public DominoRestConfig addGlobalResponseHandler(GlobalResponseHandler globalResponseHandler){
-        this.getGlobalResponseHandlers().add(globalResponseHandler);
+    public DominoRestConfig addResponseInterceptor(ResponseInterceptor responseInterceptor){
+        this.getResponseInterceptors().add(responseInterceptor);
         return this;
     }
 
-    public DominoRestConfig removeGlobalResponseHandler(GlobalResponseHandler globalResponseHandler){
-        this.getGlobalResponseHandlers().remove(globalResponseHandler);
+    public DominoRestConfig removeResponseInterceptor(ResponseInterceptor responseInterceptor){
+        this.getResponseInterceptors().remove(responseInterceptor);
         return this;
     }
 
     @Override
-    public List<GlobalResponseHandler> getGlobalResponseHandlers() {
-        return globalResponseHandlers;
+    public List<ResponseInterceptor> getResponseInterceptors() {
+        return responseInterceptors;
     }
 
     public DominoRestConfig setDefaultFailHandler(Fail fail){

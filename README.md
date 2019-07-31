@@ -583,7 +583,9 @@ MoviesServiceFactory.INSTANCE
 ```
 
 
-#### Global request interceptors
+#### Global interceptors
+
+##### Requests
 
 In many cases we might need to intercept all rest requests to add some extra headers, like security headers or authentication tokens, and it would be painful to do this for each request one at a time.
 and for this domino-rest allow defining global interceptors that can intercept all requests using `DominoRestConfig`, we can define global interceptors like the following :
@@ -600,17 +602,17 @@ public class TokenInterceptor implements RequestInterceptor {
 
 The request interceptors are blocking which allows us to do some other rest calls or async operation and only send the request after all interceptors calls the complete method of the contextWait received in the argument.
 
+##### Response
 
-### Global response handlers
 
-We can use global response handlers to handle generic responses, like authentication or errors, and we can add as many global response handlers as we want.
-those global handlers will be called before calling the actual request success or fail handlers, then the success or the fail handler will be called, unless for fail handler we instruct the request to skip it. 
+We can use response interceptors to intercepts generic responses, like authentication or errors, and we can add as many response interceptors as we want.
+those interceptors will be called before calling the actual request success or fail handlers, then the success or the fail handler will be called, unless for fail handler we instruct the request to skip it. 
 
 Sample
 
 ```java
 DominoRestConfig.getInstance()
-	.addGlobalResponseHandler(new GlobalResponseHandler() {
+	.addResponseInterceptor(new ResponseInterceptor() {
 		@Override
 		public void interceptOnSuccess(ServerRequest serverRequest, String body) {
 			//do something with the success response
@@ -626,8 +628,7 @@ DominoRestConfig.getInstance()
 	});
 ```
 
-both methods of the `GlobalResponseHandler` are default to do nothing.
-
+both methods of the `ResponseInterceptor` are default to do nothing.
 
 ### Default failed response handler
 

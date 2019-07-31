@@ -12,7 +12,7 @@ public interface RestConfig {
 
     List<RequestInterceptor> getRequestInterceptors();
 
-    List<GlobalResponseHandler> getGlobalResponseHandlers();
+    List<ResponseInterceptor> getResponseInterceptors();
 
     String getDefaultResourceRootPath();
 
