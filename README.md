@@ -148,7 +148,7 @@ public interface MoviesService {
 
     @Path("library/movies/:movieName")
     @GET
-    MovieResponse getMovieByName(String movieName);
+    Movie getMovieByName(String movieName);
 
     @Path("library/movies")
     @GET
