@@ -142,17 +142,20 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
         if (requestBodyParamName.isPresent()) {
             request.addStatement(initializeStatement + "(" + requestBodyParamName.get() + ")");
-        } else
+        } else {
             request.addStatement(initializeStatement + "()");
+        }
 
         serviceMethod.method.getParameters()
-                .forEach(parameter -> request.addStatement("instance.addCallArgument($S, String.valueOf($L))", parameter.getSimpleName().toString(), parameter.getSimpleName().toString()));
+                .forEach(parameter -> request.addStatement("instance.addCallArgument($S, $T.isNull($L)?\"\":$T.valueOf($L))", parameter.getSimpleName().toString(), Objects.class, parameter.getSimpleName().toString(), String.class, parameter.getSimpleName().toString()));
 
         serviceMethod.method.getParameters()
                 .stream()
                 .filter(parameter -> nonNull(parameter.getAnnotation(QueryParam.class)))
-                .forEach(parameter -> request.addStatement("instance.setParameter($S, $T.valueOf($L))",
+                .forEach(parameter -> request.addStatement("instance.setParameter($S, $T.isNull($L)?\"\":$T.valueOf($L))",
                         parameter.getAnnotation(QueryParam.class).value(),
+                        Objects.class,
+                        parameter.getSimpleName(),
                         String.class,
                         parameter.getSimpleName()));
 
@@ -317,7 +320,6 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     private CodeBlock getRequestWriter(ServiceMethod serviceMethod) {
         CodeBlock.Builder builder = CodeBlock.builder();
-
 
         Writer annotation = serviceMethod.method.getAnnotation(Writer.class);
         if (nonNull(annotation)) {
