@@ -508,6 +508,46 @@ public interface MoviesService {
 }
 ```
 
+- ##### Reader
+
+if want a service method to read the response body in a format other than JSON we can write a custom deserializer or reader by implementing the generic interface `ResponseReader<T>` 
+
+e.g if want the update method to read the movie in the body in `xml` format instead of JSON, we introduce a reader class :
+
+```java
+    public class XmlMovieReader implements RequestReader<Movie>{
+        @Override
+        public Movie read(String request) {
+            Movie movieFromXml = //convert the xml to Movie
+            return movieFromXml;
+        }
+    }
+```
+
+then in our service definition, we change the `@Produces` and specify the reader using the `@Reader` annotation 
+
+```java
+@RequestFactory
+public interface MoviesService {
+
+    @Path("library/movies/:movieName")
+    @GET
+    @Produce(MediaType.APPLICATION_XML)
+    @Reader(XmlMovieReader.class)
+    Movie getMovieByName(String movieName);
+
+    @Path("library/movies")
+    @GET
+    List<Movie> listMovies();
+
+    @Path("movies/:name")
+    @PUT
+    @Consumes(MediaType.APPLICATION_XML)
+    @Writer(MovieXmlWriter.class)
+    void updateMovie(@RequestBody Movie movie);
+}
+```
+
 #### Success codes
 
 By default status codes `200`,`201`,`202`,`203`,`204` are considered a success for all requests, if we need to change this behavior we can change this for a single request using the `@SuccessCodes` annotation.
