@@ -1,6 +1,7 @@
 package org.dominokit.domino.rest.gwt;
 
 import elemental2.core.ArrayBuffer;
+import jsinterop.base.Js;
 import org.dominokit.domino.rest.shared.Response;
 import org.gwtproject.xhr.client.XMLHttpRequest;
 
@@ -47,6 +48,6 @@ public class JsResponse implements Response {
     }
 
     public ArrayBuffer getResponseArrayBuffer() {
-        return request.getResponseArrayBuffer();
+        return Js.cast(request.getResponseArrayBuffer());
     }
 }
