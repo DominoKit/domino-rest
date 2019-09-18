@@ -22,7 +22,7 @@ public class ServerRequest<R, S>
     private static final String ACCEPT = "Accept";
 
     //should remain anonymous till a bug is fixed in j2cl
-    private SenderSupplier<R,S> senderSupplier = new SenderSupplier<>(() -> new RequestSender<R, S>() {
+    private SenderSupplier<R, S> senderSupplier = new SenderSupplier<>(() -> new RequestSender<R, S>() {
     });
 
     private Map<String, String> headers = new HashMap<>();
@@ -65,6 +65,7 @@ public class ServerRequest<R, S>
                     "Request cannot be processed until a responseBean is received from the server");
         }
     };
+    private String responseType;
 
     protected ServerRequest() {
     }
@@ -88,6 +89,7 @@ public class ServerRequest<R, S>
 
     /**
      * Use this method to intercept the request before it is sent to the server, this is good for setting headers or adding extra parameters.
+     *
      * @param interceptor
      * @return the same request instance
      */
@@ -112,6 +114,7 @@ public class ServerRequest<R, S>
 
     /**
      * set a request a header, this will add a new header or override existing one
+     *
      * @param name
      * @param value
      * @return the same request instance
@@ -123,6 +126,7 @@ public class ServerRequest<R, S>
 
     /**
      * sets request headers from a map
+     *
      * @param headers
      * @return the same request instance
      */
@@ -135,6 +139,7 @@ public class ServerRequest<R, S>
 
     /**
      * sets a query parameter or override an existing one
+     *
      * @param name
      * @param value
      * @return the same request instance
@@ -146,6 +151,7 @@ public class ServerRequest<R, S>
 
     /**
      * set request query parameters from a map
+     *
      * @param parameters
      * @return the same request instance
      */
@@ -239,6 +245,7 @@ public class ServerRequest<R, S>
 
     /**
      * override the request url, when the url is set it is used as is, and no configuration or parameter replacement is used.
+     *
      * @param url
      * @return same request instance.
      */
@@ -249,6 +256,7 @@ public class ServerRequest<R, S>
 
     /**
      * add an on before send handler
+     *
      * @param handler
      * @return same request instance.
      */
@@ -259,6 +267,7 @@ public class ServerRequest<R, S>
 
     /**
      * add a call argument to be used in parameter replacement process.
+     *
      * @param name
      * @param value
      * @return same request instance.
@@ -270,6 +279,7 @@ public class ServerRequest<R, S>
 
     /**
      * removes a call argument
+     *
      * @param name
      * @return same request instance.
      */
@@ -287,6 +297,7 @@ public class ServerRequest<R, S>
 
     /**
      * define the on success handler
+     *
      * @param success
      * @return
      */
@@ -298,6 +309,7 @@ public class ServerRequest<R, S>
 
     /**
      * sets the Content-type header
+     *
      * @param contentType
      * @return same request instance.
      */
@@ -308,6 +320,7 @@ public class ServerRequest<R, S>
 
     /**
      * sets the Accept header
+     *
      * @param accept
      * @return same request instance.
      */
@@ -318,6 +331,7 @@ public class ServerRequest<R, S>
 
     /**
      * sets the http method
+     *
      * @param httpMethod
      * @return same request instance.
      */
@@ -343,6 +357,7 @@ public class ServerRequest<R, S>
 
     /**
      * sets an array of integers to be considered as success response status code as success.
+     *
      * @param successCodes
      * @return
      */
@@ -360,6 +375,7 @@ public class ServerRequest<R, S>
 
     /**
      * sets the service root for this request
+     *
      * @param serviceRoot
      * @return same request instance.
      */
@@ -377,6 +393,7 @@ public class ServerRequest<R, S>
 
     /**
      * sets the writer to be used to serialize the request body
+     *
      * @param requestWriter
      */
     public void setRequestWriter(RequestWriter<R> requestWriter) {
@@ -445,6 +462,15 @@ public class ServerRequest<R, S>
 
     public void setMaxRetries(int maxRetries) {
         this.maxRetries = maxRetries;
+    }
+
+    public ServerRequest<R, S> setResponseType(String responseType) {
+        this.responseType = responseType;
+        return this;
+    }
+
+    public String getResponseType() {
+        return responseType;
     }
 
     @FunctionalInterface

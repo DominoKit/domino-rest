@@ -38,6 +38,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
         final int[] retriesCounter = new int[]{0};
         RestfulRequest restfulRequest = RestfulRequest.request(request.getUrl(), request.getHttpMethod().toUpperCase());
         restfulRequest
+                .setResponseType(request.getResponseType())
                 .putHeaders(request.headers())
                 .putParameters(request.parameters())
                 .onSuccess(response -> handleResponse(request, callBack, response))
@@ -63,7 +64,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
     private void handleResponse(ServerRequest<R, S> request, ServerRequestCallBack callBack, Response response) {
         if (Arrays.stream(request.getSuccessCodes()).anyMatch(code -> code.equals(response.getStatusCode()))) {
             callSuccessGlobalHandlers(request, response);
-            callBack.onSuccess(request.getResponseReader().read(response.getBodyAsString()));
+            callBack.onSuccess(request.getResponseReader().read(response));
         } else {
             FailedResponseBean failedResponse = new FailedResponseBean(response.getStatusCode(), response.getStatusText(), response.getBodyAsString(), response.getHeaders());
             callFailedResponseHandlers(request, failedResponse);

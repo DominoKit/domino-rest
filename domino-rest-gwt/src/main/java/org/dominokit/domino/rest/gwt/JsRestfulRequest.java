@@ -16,6 +16,8 @@ import static java.util.stream.Collectors.joining;
 
 public class JsRestfulRequest extends BaseRestfulRequest {
 
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String APPLICATION_PDF = "application/pdf";
     private XMLHttpRequest request;
     private Map<String, List<String>> params = new LinkedHashMap<>();
     private Map<String, String> headers = new LinkedHashMap<>();
@@ -70,13 +72,18 @@ public class JsRestfulRequest extends BaseRestfulRequest {
 
     @Override
     public RestfulRequest putHeader(String key, String value) {
+        if (CONTENT_TYPE.equalsIgnoreCase(key)) {
+            if (APPLICATION_PDF.equalsIgnoreCase(value)) {
+                request.setResponseType(XMLHttpRequest.ResponseType.ArrayBuffer);
+            }
+        }
         headers.put(key, value);
         return this;
     }
 
     @Override
     public RestfulRequest putHeaders(Map<String, String> headers) {
-        if(nonNull(headers)){
+        if (nonNull(headers)) {
             headers.forEach(this::putHeader);
         }
         return this;
@@ -84,7 +91,7 @@ public class JsRestfulRequest extends BaseRestfulRequest {
 
     @Override
     public RestfulRequest putParameters(Map<String, String> parameters) {
-        if(nonNull(parameters) && !parameters.isEmpty()){
+        if (nonNull(parameters) && !parameters.isEmpty()) {
             parameters.forEach(this::addQueryParam);
         }
         return this;
@@ -121,8 +128,14 @@ public class JsRestfulRequest extends BaseRestfulRequest {
         request.send();
     }
 
+    @Override
+    public RestfulRequest setResponseType(String responseType) {
+        request.setResponseType(responseType);
+        return this;
+    }
+
     private void setContentType(String contentType) {
-        headers.put("Content-Type", contentType);
+        headers.put(CONTENT_TYPE, contentType);
     }
 
     private void initRequest() {

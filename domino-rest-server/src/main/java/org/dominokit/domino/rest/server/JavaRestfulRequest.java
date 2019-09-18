@@ -113,6 +113,11 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
             errorHandler.onError(event.cause());
     }
 
+    @Override
+    public RestfulRequest setResponseType(String responseType) {
+        return this;
+    }
+
     private WebClient getWebClient() {
         if (isNull(this.webClient)) {
             Iterator<VertxInstanceProvider> iterator = ServiceLoader.load(VertxInstanceProvider.class).iterator();

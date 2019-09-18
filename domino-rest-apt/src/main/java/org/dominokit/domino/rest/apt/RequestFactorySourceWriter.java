@@ -367,14 +367,10 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                             .addCode(";")
                             .build());
 
-            builder.addStatement("setResponseReader(response -> $L.read(response))", readerType.build());
+            builder.addStatement("setResponseReader(response -> $L.read(response.getBodyAsString()))", readerType.build());
         }
 
         return builder.build();
-    }
-
-    private ClassName mapperClassName(Element type) {
-        return ClassName.get(elements.getPackageOf(type).getQualifiedName().toString(), type.getSimpleName().toString() + "_MapperImpl");
     }
 
     private boolean isVoidType(ServiceMethod serviceMethod) {
