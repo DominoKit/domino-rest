@@ -75,7 +75,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
     private void callSuccessGlobalHandlers(ServerRequest<R, S> request, Response response) {
         DominoRestContext.make().getConfig()
                 .getResponseInterceptors()
-                .forEach(responseInterceptor -> responseInterceptor.interceptOnSuccess(request, response.getBodyAsString()));
+                .forEach(responseInterceptor -> responseInterceptor.interceptOnSuccess(request, response));
     }
 
     private void callFailedResponseHandlers(ServerRequest request, FailedResponseBean failedResponse) {
