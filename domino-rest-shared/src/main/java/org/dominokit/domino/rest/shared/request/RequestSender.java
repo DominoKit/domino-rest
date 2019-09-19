@@ -38,11 +38,14 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
         final int[] retriesCounter = new int[]{0};
         RestfulRequest restfulRequest = RestfulRequest.request(request.getUrl(), request.getHttpMethod().toUpperCase());
         restfulRequest
-                .setResponseType(request.getResponseType())
                 .putHeaders(request.headers())
                 .putParameters(request.parameters())
                 .onSuccess(response -> handleResponse(request, callBack, response))
                 .onError(throwable -> handleError(request, callBack, retriesCounter, restfulRequest, throwable));
+
+        if (nonNull(request.getResponseType())) {
+            restfulRequest.setResponseType(request.getResponseType());
+        }
 
         setTimeout(request, restfulRequest);
         doSendRequest(request, restfulRequest);
