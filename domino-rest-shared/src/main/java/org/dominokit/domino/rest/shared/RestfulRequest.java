@@ -69,7 +69,9 @@ public interface RestfulRequest {
     String getMethod();
 
     RestfulRequest putHeader(String key, String value);
+
     RestfulRequest putHeaders(Map<String, String> headers);
+
     RestfulRequest putParameters(Map<String, String> parameters);
 
     Map<String, String> getHeaders();
@@ -85,6 +87,8 @@ public interface RestfulRequest {
     void send(String data);
 
     void send();
+
+    RestfulRequest setResponseType(String responseType);
 
     RestfulRequest onSuccess(SuccessHandler successHandler);
 

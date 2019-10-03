@@ -43,6 +43,10 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
                 .onSuccess(response -> handleResponse(request, callBack, response))
                 .onError(throwable -> handleError(request, callBack, retriesCounter, restfulRequest, throwable));
 
+        if (nonNull(request.getResponseType())) {
+            restfulRequest.setResponseType(request.getResponseType());
+        }
+
         setTimeout(request, restfulRequest);
         doSendRequest(request, restfulRequest);
     }
@@ -63,7 +67,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
     private void handleResponse(ServerRequest<R, S> request, ServerRequestCallBack callBack, Response response) {
         if (Arrays.stream(request.getSuccessCodes()).anyMatch(code -> code.equals(response.getStatusCode()))) {
             callSuccessGlobalHandlers(request, response);
-            callBack.onSuccess(request.getResponseReader().read(response.getBodyAsString()));
+            callBack.onSuccess(request.getResponseReader().read(response));
         } else {
             FailedResponseBean failedResponse = new FailedResponseBean(response.getStatusCode(), response.getStatusText(), response.getBodyAsString(), response.getHeaders());
             callFailedResponseHandlers(request, failedResponse);
@@ -74,7 +78,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
     private void callSuccessGlobalHandlers(ServerRequest<R, S> request, Response response) {
         DominoRestContext.make().getConfig()
                 .getResponseInterceptors()
-                .forEach(responseInterceptor -> responseInterceptor.interceptOnSuccess(request, response.getBodyAsString()));
+                .forEach(responseInterceptor -> responseInterceptor.interceptOnSuccess(request, response));
     }
 
     private void callFailedResponseHandlers(ServerRequest request, FailedResponseBean failedResponse) {
