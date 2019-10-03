@@ -1,13 +1,6 @@
 sudo: false
-addons:
-  apt:
-    packages:
-    - oracle-java8-installer
 language: java
-jdk: oraclejdk8
-branches: 
-only:
-- master
+jdk: openjdk8
 cache:
   directories:
   - "$HOME/.m2"
