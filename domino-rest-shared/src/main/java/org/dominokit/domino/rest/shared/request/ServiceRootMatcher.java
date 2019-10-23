@@ -9,10 +9,10 @@ public class ServiceRootMatcher {
 
     public static String matchedServiceRoot(String path) {
         final List<DynamicServiceRoot> serviceRoots = DominoRestContext.make().getConfig().getServiceRoots();
-        return serviceRoots.stream().filter(r -> r.isMatchingPath(path)).findFirst().orElse(defaultRoot).onMatchingPath();
+        return serviceRoots.stream().filter(r -> r.isMatchingPath(path)).findFirst().orElse(defaultRoot).onMatchingPath(path);
     }
 
-    public static boolean hasServiceRoot(String path){
+    public static boolean hasServiceRoot(String path) {
         final List<DynamicServiceRoot> serviceRoots = DominoRestContext.make().getConfig().getServiceRoots();
         return serviceRoots.stream().anyMatch(r -> r.isMatchingPath(path));
     }

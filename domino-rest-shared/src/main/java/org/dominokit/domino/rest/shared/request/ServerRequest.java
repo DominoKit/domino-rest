@@ -182,7 +182,7 @@ public class ServerRequest<R, S>
     public void normalizeUrl() {
         if (isNull(this.url)) {
             String root = (isNull(this.serviceRoot) || this.serviceRoot.isEmpty()) ? ServiceRootMatcher.matchedServiceRoot(path) : ServiceRootMatcher.matchedServiceRoot(this.serviceRoot + path);
-            this.setUrl(formatUrl(root + path));
+            this.setUrl(formatUrl(root));
         }
     }
 
@@ -233,13 +233,10 @@ public class ServerRequest<R, S>
             RegExp regExp = RegExp.compile("^((.*:)//([a-z0-9\\-.]+)(|:[0-9]+)/)(.*)$");
             MatchResult matcher = regExp.exec(url);
             boolean matchFound = matcher != null; // equivalent to regExp.test(inputStr);
-
             if (matchFound) {
-                String suffixPart = matcher.getGroup(matcher.getGroupCount() - 1);
-                return suffixPart;
+                return matcher.getGroup(matcher.getGroupCount() - 1);
             }
         }
-
         return url;
     }
 
