@@ -6,11 +6,11 @@ import org.dominokit.domino.rest.shared.request.service.annotations.RequestBody;
 import org.dominokit.domino.rest.shared.request.service.annotations.RequestFactory;
 import org.dominokit.domino.rest.shared.request.service.annotations.Retries;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequestFactory
 @Path("library/")
@@ -18,7 +18,12 @@ public interface SampleService {
 
     @GET
     @Path("someService/:id")
-    SampleResponse getById(@RequestBody int id);
+    SampleResponse getById(@RequestBody int id, int count);
+
+    @POST
+    @Path("someService/create")
+    @Produces(MediaType.APPLICATION_JSON)
+    Void registerUser(@RequestBody HashMap<String, String> personalData);
 
     @POST
     @Path("somePath/:name")

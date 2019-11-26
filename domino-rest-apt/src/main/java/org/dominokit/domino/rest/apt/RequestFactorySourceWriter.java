@@ -262,7 +262,8 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 || Type.isEnum(typeMirror)
                 || Type.isCollection(typeMirror)
                 || Type.isPrimitiveArray(typeMirror)
-                || Type.isIterable(typeMirror)) {
+                || Type.isIterable(typeMirror)
+                || Type.isMap(typeMirror)) {
 
             return nonNull(parameter.getAnnotation(RequestBody.class));
         } else {
