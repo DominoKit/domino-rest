@@ -25,7 +25,7 @@ public class JsResponse implements Response {
     @Override
     public Map<String, String> getHeaders() {
         String allResponseHeaders = request.getAllResponseHeaders();
-        String[] headers = allResponseHeaders.split("\n");
+        String[] headers = allResponseHeaders.split("\r\n");
         return Stream.of(headers)
                 .filter(header -> !header.isEmpty())
                 .map(header -> header.split(":", 2))
