@@ -334,7 +334,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                     .addMethod(MethodSpec.methodBuilder("newSerializer")
                             .addAnnotation(Override.class)
                             .addModifiers(Modifier.PROTECTED)
-                            .returns(ParameterizedTypeName.get(ClassName.get(JsonSerializer.class), TypeName.get(requestBeanType)))
+                            .returns(ParameterizedTypeName.get(ClassName.get(JsonSerializer.class), TypeVariableName.get("?")))
                             .addCode("return ")
                             .addCode(instance)
                             .addCode(";")
