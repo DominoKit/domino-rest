@@ -73,4 +73,29 @@ public interface SampleService {
     @Retries(timeout = 3000, maxRetries = 5)
     int[][] getByI98(int id);
 
+    @Path("path0")
+    interface Int0{
+        @Path("00")
+        void get0();
+    }
+
+    @Path("path1")
+    interface Int1 extends Int0{
+        @Path("11")
+        void get1();
+    }
+
+    @Path("path2")
+    interface Int2{
+        @Path("22")
+        void get2();
+    }
+
+    @Path("pathX")
+    @RequestFactory
+    interface IntX extends Int1, Int2{
+        @Path("xx")
+        void getX();
+    }
+
 }

@@ -57,7 +57,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
         methodCount = new HashMap<>();
 
-        List<ServiceMethod> serviceMethods = getServiceMethods(serviceElement);
+        List<ServiceMethod> serviceMethods = getServiceMethods("", serviceElement);
 
         List<TypeSpec> requests = serviceMethods
                 .stream()
@@ -81,32 +81,45 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return Collections.singletonList(factory);
     }
 
-    public List<ServiceMethod> getServiceMethods(Element serviceElement) {
+    /*
+
+    getServiceMethods(interface, parentPath)
+    {
+        parent interfaces -> getServiceMethods(parentInterface, null)
+        ServiceMethod -> parentPath + interface path + method path
+    }
+
+     */
+
+    public List<ServiceMethod> getServiceMethods(String servicePath, Element serviceElement) {
         TypeElement serviceType = (TypeElement) serviceElement;
+        String[] currentPath = new String[1];
+        if (nonNull(serviceElement.getAnnotation(Path.class))) {
+            String currentInterfacePath = serviceElement.getAnnotation(Path.class).value();
+            currentPath[0] = servicePath.isEmpty() ? currentInterfacePath : (servicePath + pathsSplitter(servicePath, currentInterfacePath) + currentInterfacePath);
+        }
         if (serviceType.getInterfaces().isEmpty()) {
-            return getMethods(serviceElement);
+            return getMethods(currentPath[0], serviceElement);
         }
 
         List<ServiceMethod> methods = new ArrayList<>();
-        methods.addAll(getMethods(serviceElement));
-        ((TypeElement) serviceElement).getInterfaces().forEach(superInterface -> methods.addAll(getServiceMethods(types.asElement(superInterface))));
+        methods.addAll(getMethods(currentPath[0], serviceElement));
+        ((TypeElement) serviceElement)
+                .getInterfaces()
+                .forEach(superInterface -> methods.addAll(getServiceMethods(currentPath[0], types.asElement(superInterface))));
 
         return methods;
     }
 
-    private List<ServiceMethod> getMethods(Element serviceElement) {
+    private List<ServiceMethod> getMethods(String servicePath, Element serviceElement) {
         return processorUtil.getElementMethods(serviceElement)
                 .stream()
                 .map(executableElement ->
-                        asServiceMethod(serviceElement, executableElement)
+                        asServiceMethod(servicePath, executableElement)
                 ).collect(toList());
     }
 
-    private ServiceMethod asServiceMethod(Element serviceElement, ExecutableElement executableElement) {
-        String servicePath = "";
-        if (nonNull(serviceElement.getAnnotation(Path.class))) {
-            servicePath = serviceElement.getAnnotation(Path.class).value();
-        }
+    private ServiceMethod asServiceMethod(String servicePath, ExecutableElement executableElement) {
         String name = executableElement.getSimpleName().toString();
         if (hasClassifier(executableElement)) {
             return new ServiceMethod(executableElement, 0, servicePath);
