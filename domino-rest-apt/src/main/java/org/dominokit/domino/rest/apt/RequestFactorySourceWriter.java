@@ -97,6 +97,8 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         if (nonNull(serviceElement.getAnnotation(Path.class))) {
             String currentInterfacePath = serviceElement.getAnnotation(Path.class).value();
             currentPath[0] = servicePath.isEmpty() ? currentInterfacePath : (servicePath + pathsSplitter(servicePath, currentInterfacePath) + currentInterfacePath);
+        } else {
+            currentPath[0] = servicePath;
         }
         if (serviceType.getInterfaces().isEmpty()) {
             return getMethods(currentPath[0], serviceElement);
