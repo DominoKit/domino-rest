@@ -4,7 +4,7 @@
     <parent>
         <artifactId>domino-rest</artifactId>
         <groupId>org.dominokit</groupId>
-        <version>1.0-rc.4-SNAPSHOT</version>
+        <version>1.0-ps-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>org.dominokit.jackson</groupId>
             <artifactId>jackson-apt-processor</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0-ps-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
