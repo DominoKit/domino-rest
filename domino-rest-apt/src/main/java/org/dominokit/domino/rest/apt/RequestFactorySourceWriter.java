@@ -26,6 +26,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.*;
 import java.util.stream.IntStream;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -57,7 +58,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
         methodCount = new HashMap<>();
 
-        List<ServiceMethod> serviceMethods = getServiceMethods("", serviceElement);
+        List<ProcessedType> processedTypes = new ArrayList<>();
+
+        List<org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod> serviceMethods = getServiceMethods(processedTypes, "", serviceElement);
 
         List<TypeSpec> requests = serviceMethods
                 .stream()
@@ -77,67 +80,73 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                 .addTypes(requests)
                 .addMethods(overrideMethods);
 
-
         return Collections.singletonList(factory);
     }
 
-    /*
-
-    getServiceMethods(interface, parentPath)
-    {
-        parent interfaces -> getServiceMethods(parentInterface, null)
-        ServiceMethod -> parentPath + interface path + method path
-    }
-
-     */
-
-    public List<ServiceMethod> getServiceMethods(String servicePath, Element serviceElement) {
+    public List<org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod> getServiceMethods(List<ProcessedType> processedTypes, String servicePath, Element serviceElement) {
         TypeElement serviceType = (TypeElement) serviceElement;
         String[] currentPath = new String[]{""};
+
         if (nonNull(serviceElement.getAnnotation(Path.class))) {
             String currentInterfacePath = serviceElement.getAnnotation(Path.class).value();
             currentPath[0] = servicePath.isEmpty() ? currentInterfacePath : (servicePath + pathsSplitter(servicePath, currentInterfacePath) + currentInterfacePath);
         } else {
             currentPath[0] = servicePath;
         }
+
         if (serviceType.getInterfaces().isEmpty()) {
-            return getMethods(currentPath[0], serviceElement);
+            return getMethods(processedTypes, currentPath[0], serviceElement);
         }
 
-        List<ServiceMethod> methods = new ArrayList<>();
-        methods.addAll(getMethods(currentPath[0], serviceElement));
+        List<org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod> methods = new ArrayList<>();
+        methods.addAll(getMethods(processedTypes, currentPath[0], serviceElement));
         ((TypeElement) serviceElement)
                 .getInterfaces()
-                .forEach(superInterface -> methods.addAll(getServiceMethods(currentPath[0], types.asElement(superInterface))));
+                .forEach(superInterface -> methods.addAll(getServiceMethods(processedTypes, currentPath[0], types.asElement(superInterface))));
 
         return methods;
     }
 
-    private List<ServiceMethod> getMethods(String servicePath, Element serviceElement) {
+    private List<org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod> getMethods(List<ProcessedType> processedTypes, String servicePath, Element serviceElement) {
+        ProcessedType processedType = new ProcessedType(elements, (TypeElement) serviceElement);
+        processedTypes.add(processedType);
         return processorUtil.getElementMethods(serviceElement)
                 .stream()
-                .map(executableElement ->
-                        asServiceMethod(servicePath, executableElement)
-                ).collect(toList());
+                .filter(executableElement -> notOverridden(executableElement, processedTypes))
+                .map(executableElement -> {
+                            processedType.addMethod(executableElement);
+                            return asServiceMethod(servicePath, executableElement);
+                        }
+                )
+                .collect(toList());
     }
 
-    private ServiceMethod asServiceMethod(String servicePath, ExecutableElement executableElement) {
+    private boolean notOverridden(ExecutableElement method, List<ProcessedType> processedTypes) {
+        for (ProcessedType processedType : processedTypes) {
+            if (processedType.overrides(method)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod asServiceMethod(String servicePath, ExecutableElement executableElement) {
         String name = executableElement.getSimpleName().toString();
         if (hasClassifier(executableElement)) {
-            return new ServiceMethod(executableElement, 0, servicePath);
+            return new org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod(executableElement, 0, servicePath);
         } else {
             if (!methodCount.containsKey(name)) {
                 methodCount.put(name, 1);
-                return new ServiceMethod(executableElement, 0, servicePath);
+                return new org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod(executableElement, 0, servicePath);
             } else {
                 Integer index = methodCount.get(name);
                 methodCount.put(name, methodCount.get(name) + 1);
-                return new ServiceMethod(executableElement, index, servicePath);
+                return new org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod(executableElement, index, servicePath);
             }
         }
     }
 
-    private MethodSpec makeRequestFactoryMethod(ServiceMethod serviceMethod) {
+    private MethodSpec makeRequestFactoryMethod(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         String classifier = getMethodClassifier(serviceMethod);
 
         TypeName requestTypeName = TypeName.get(getRequestBeanType(serviceMethod));
@@ -179,7 +188,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return request.build();
     }
 
-    private TypeSpec makeRequestClass(ServiceMethod serviceMethod) {
+    private TypeSpec makeRequestClass(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         String classifier = getMethodClassifier(serviceMethod);
         TypeMirror requestType = getRequestBeanType(serviceMethod);
         TypeName requestTypeName = TypeName.get(requestType);
@@ -197,7 +206,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return requestBuilder.build();
     }
 
-    private String getMethodClassifier(ServiceMethod serviceMethod) {
+    private String getMethodClassifier(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         String classifier;
         Classifier classifierAnnotation = serviceMethod.method.getAnnotation(Classifier.class);
         if (hasClassifier(serviceMethod.method)) {
@@ -213,7 +222,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return nonNull(classifierAnnotation) && !classifierAnnotation.value().trim().isEmpty();
     }
 
-    private TypeMirror getResponseBeanType(ServiceMethod serviceMethod) {
+    private TypeMirror getResponseBeanType(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         return getMappingType(serviceMethod.method.getReturnType());
     }
 
@@ -242,7 +251,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return typeMirror.getKind().isPrimitive();
     }
 
-    private TypeMirror getRequestBeanType(ServiceMethod serviceMethod) {
+    private TypeMirror getRequestBeanType(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         List<? extends VariableElement> parameters = serviceMethod.method.getParameters();
 
         TypeMirror typeMirror = parameters.stream()
@@ -294,7 +303,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return processorUtil.isAssignableFrom(parameter, RequestBean.class);
     }
 
-    private MethodSpec constructor(TypeMirror requestBean, ServiceMethod serviceMethod) {
+    private MethodSpec constructor(TypeMirror requestBean, org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder();
         if (isVoidType(requestBean)) {
             constructorBuilder.addStatement("super(null)");
@@ -334,7 +343,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return constructorBuilder.build();
     }
 
-    private CodeBlock getRequestWriter(ServiceMethod serviceMethod) {
+    private CodeBlock getRequestWriter(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         CodeBlock.Builder builder = CodeBlock.builder();
 
         Writer annotation = serviceMethod.method.getAnnotation(Writer.class);
@@ -361,7 +370,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return builder.build();
     }
 
-    private CodeBlock getResponseReader(ServiceMethod serviceMethod) {
+    private CodeBlock getResponseReader(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         CodeBlock.Builder builder = CodeBlock.builder();
 
         Reader annotation = serviceMethod.method.getAnnotation(Reader.class);
@@ -389,7 +398,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return builder.build();
     }
 
-    private boolean isVoidType(ServiceMethod serviceMethod) {
+    private boolean isVoidType(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         return isVoidType(getRequestBeanType(serviceMethod));
     }
 
@@ -397,7 +406,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         return TypeKind.VOID.equals(type.getKind()) || types.isSameType(elements.getTypeElement(Void.class.getCanonicalName()).asType(), type);
     }
 
-    private String getContentType(ServiceMethod serviceMethod) {
+    private String getContentType(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         if (nonNull(serviceMethod.method.getAnnotation(Consumes.class))) {
             return Arrays.stream(serviceMethod.method.getAnnotation(Consumes.class).value()).map(s -> "\"" + s + "\"")
                     .collect(joining(","));
@@ -406,7 +415,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         }
     }
 
-    private String getAcceptResponse(ServiceMethod serviceMethod) {
+    private String getAcceptResponse(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         if (nonNull(serviceMethod.method.getAnnotation(Produces.class))) {
             return Arrays.stream(serviceMethod.method.getAnnotation(Produces.class).value()).map(s -> "\"" + s + "\"")
                     .collect(joining(","));
@@ -415,8 +424,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         }
     }
 
-    private String getPath(ServiceMethod serviceMethod) {
-        String methodPath = serviceMethod.method.getAnnotation(Path.class).value();
+    private String getPath(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
+        Path pathAnnotation = serviceMethod.method.getAnnotation(Path.class);
+        String methodPath = isNull(pathAnnotation) ? "" : pathAnnotation.value();
         return serviceMethod.servicePath + pathsSplitter(serviceMethod.servicePath, methodPath) + methodPath;
     }
 
@@ -433,14 +443,14 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         }
     }
 
-    private String getSuccessCodes(ServiceMethod serviceMethod) {
+    private String getSuccessCodes(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
         return IntStream.of(serviceMethod.method.getAnnotation(SuccessCodes.class).value())
                 .boxed()
                 .map(String::valueOf)
                 .collect(joining(","));
     }
 
-    private String getHttpMethod(ServiceMethod serviceMethod) {
+    private String getHttpMethod(org.dominokit.domino.rest.apt.RequestFactorySourceWriter.ServiceMethod serviceMethod) {
 
         ExecutableElement method = serviceMethod.method;
         if (nonNull(method.getAnnotation(GET.class))) {
@@ -470,7 +480,6 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         if (nonNull(method.getAnnotation(HEAD.class))) {
             return HttpMethod.HEAD;
         }
-
 
         return HttpMethod.GET;
     }
