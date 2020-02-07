@@ -41,6 +41,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.dominokit</groupId>
+            <artifactId>jaxrs-super</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.gwtproject.core</groupId>
             <artifactId>gwt-core</artifactId>
             <version>1.0-SNAPSHOT</version>

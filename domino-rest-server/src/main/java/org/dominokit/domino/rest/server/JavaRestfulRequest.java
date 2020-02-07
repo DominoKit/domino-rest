@@ -106,6 +106,11 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
         request.send(this::handleResponse);
     }
 
+    @Override
+    public void abort() {
+        //TODO not implemented yet
+    }
+
     private void handleResponse(AsyncResult<HttpResponse<Buffer>> event) {
         if (event.succeeded())
             successHandler.onResponseReceived(new JavaResponse(event.result()));

@@ -3,6 +3,7 @@ package org.dominokit.domino.rest.apt;
 import com.google.auto.service.AutoService;
 import org.dominokit.domino.apt.commons.BaseProcessor;
 import org.dominokit.domino.rest.shared.request.service.annotations.RequestFactory;
+import org.dominokit.domino.rest.shared.request.service.annotations.ResourceList;
 
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -21,6 +22,7 @@ public class RequestFactoryProcessor extends BaseProcessor {
 
     public RequestFactoryProcessor() {
         supportedAnnotations.add(RequestFactory.class.getCanonicalName());
+        supportedAnnotations.add(ResourceList.class.getCanonicalName());
     }
 
     @Override
@@ -41,6 +43,13 @@ public class RequestFactoryProcessor extends BaseProcessor {
                 .build()
                 .process(roundEnv.getElementsAnnotatedWith(RequestFactory.class)
                         .stream().filter(e -> ElementKind.INTERFACE.equals(e.getKind()))
+                        .collect(Collectors.toSet()));
+
+        new ResourceListProcessingStep.Builder()
+                .setProcessingEnv(processingEnv)
+                .build()
+                .process(roundEnv.getElementsAnnotatedWith(ResourceList.class)
+                        .stream().filter(e -> ElementKind.PACKAGE.equals(e.getKind()))
                         .collect(Collectors.toSet()));
         return false;
     }

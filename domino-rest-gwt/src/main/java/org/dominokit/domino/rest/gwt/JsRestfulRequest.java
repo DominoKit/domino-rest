@@ -32,7 +32,6 @@ public class JsRestfulRequest extends BaseRestfulRequest {
         super(uri, method);
         request = XMLHttpRequest.create();
         parseUri(uri);
-
     }
 
     private void parseUri(String uri) {
@@ -126,6 +125,12 @@ public class JsRestfulRequest extends BaseRestfulRequest {
     public void send() {
         initRequest();
         request.send();
+    }
+
+    @Override
+    public void abort() {
+        request.clearOnReadyStateChange();
+        request.abort();
     }
 
     @Override

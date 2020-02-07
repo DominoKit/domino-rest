@@ -1,6 +1,7 @@
 package org.dominokit.domino.rest.shared.request;
 
 import org.dominokit.domino.history.StateHistoryToken;
+import org.dominokit.domino.rest.shared.RestfulRequest;
 import org.gwtproject.regexp.shared.MatchResult;
 import org.gwtproject.regexp.shared.RegExp;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import javax.ws.rs.HttpMethod;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static java.util.Objects.*;
@@ -26,10 +28,13 @@ public class ServerRequest<R, S>
     });
 
     private Map<String, String> headers = new HashMap<>();
-    private Map<String, String> parameters = new HashMap<>();
+    private Map<String, String> queryParameters = new HashMap<>();
+    private Map<String, String> pathParameters = new HashMap<>();
     private Map<String, String> callArguments = new HashMap<>();
 
+    private RequestMeta requestMeta;
     private R requestBean;
+    private RestfulRequest httpRequest;
 
     private String url;
     private String httpMethod = HttpMethod.GET;
@@ -53,16 +58,24 @@ public class ServerRequest<R, S>
         state = completed;
     };
 
+    private final RequestState<ServerSuccessRequestStateContext> aborted = context -> {
+        LOGGER.info("Request have already been aborted.!");
+    };
+
     private final RequestState<ServerResponseReceivedStateContext> sent = context -> {
-        if (context.nextContext instanceof ServerSuccessRequestStateContext) {
-            state = executedOnServer;
-            ServerRequest.this.applyState(context.nextContext);
-        } else if (context.nextContext instanceof ServerFailedRequestStateContext) {
-            state = failedOnServer;
-            ServerRequest.this.applyState(context.nextContext);
+        if (state.equals(aborted)) {
+            LOGGER.info("Request aborted, not response will be processed.");
         } else {
-            throw new InvalidRequestState(
-                    "Request cannot be processed until a responseBean is received from the server");
+            if (context.nextContext instanceof ServerSuccessRequestStateContext) {
+                state = executedOnServer;
+                ServerRequest.this.applyState(context.nextContext);
+            } else if (context.nextContext instanceof ServerFailedRequestStateContext) {
+                state = failedOnServer;
+                ServerRequest.this.applyState(context.nextContext);
+            } else {
+                throw new InvalidRequestState(
+                        "Request cannot be processed until a responseBean is received from the server");
+            }
         }
     };
     private String responseType;
@@ -70,7 +83,8 @@ public class ServerRequest<R, S>
     protected ServerRequest() {
     }
 
-    protected ServerRequest(R requestBean) {
+    protected ServerRequest(RequestMeta requestMeta, R requestBean) {
+        this.requestMeta = requestMeta;
         this.requestBean = requestBean;
     }
 
@@ -102,6 +116,30 @@ public class ServerRequest<R, S>
     public void startRouting() {
         state = sent;
         requestContext.getConfig().getServerRouter().routeRequest(this);
+    }
+
+    void setHttpRequest(RestfulRequest httpRequest) {
+        this.httpRequest = httpRequest;
+    }
+
+    @Override
+    public void abort() {
+        if (state.equals(ready)) {
+            state = aborted;
+        } else if (state.equals(sent)) {
+            if (nonNull(httpRequest)) {
+                httpRequest.abort();
+            }
+            state = aborted;
+            LOGGER.info("Request have been aborted : " + this.getClass().getCanonicalName());
+        } else if (state.equals(completed)) {
+            LOGGER.info("Could not abort request, request have already been completed.!");
+        }
+    }
+
+    @Override
+    public RequestMeta getMeta() {
+        return requestMeta;
     }
 
     public RequestRestSender getSender() {
@@ -144,21 +182,67 @@ public class ServerRequest<R, S>
      * @param value
      * @return the same request instance
      */
-    public ServerRequest<R, S> setParameter(String name, String value) {
-        parameters.put(name, value);
+    public ServerRequest<R, S> setQueryParameter(String name, String value) {
+        queryParameters.put(name, value);
         return this;
     }
 
     /**
      * set request query parameters from a map
      *
-     * @param parameters
+     * @param queryParameters
      * @return the same request instance
      */
-    public ServerRequest<R, S> setParameters(Map<String, String> parameters) {
-        if (nonNull(parameters) && !parameters.isEmpty()) {
-            this.parameters.putAll(parameters);
+    public ServerRequest<R, S> setQueryParameters(Map<String, String> queryParameters) {
+        if (nonNull(queryParameters) && !queryParameters.isEmpty()) {
+            this.queryParameters.putAll(queryParameters);
         }
+        return this;
+    }
+
+    /**
+     * use {@link #setQueryParameter(String, String)}
+     */
+    @Deprecated
+    public ServerRequest<R, S> setParameter(String name, String value) {
+        queryParameters.put(name, value);
+        return this;
+    }
+
+    /**
+     * use {@link #setQueryParameters(Map)}
+     */
+    @Deprecated
+    public ServerRequest<R, S> setParameters(Map<String, String> queryParameters) {
+        if (nonNull(queryParameters) && !queryParameters.isEmpty()) {
+            this.queryParameters.putAll(queryParameters);
+        }
+        return this;
+    }
+
+    @Override
+    public HasHeadersAndParameters<R, S> setPathParameters(Map<String, String> pathParameters) {
+        if (nonNull(queryParameters) && !queryParameters.isEmpty()) {
+            this.queryParameters.putAll(queryParameters);
+        }
+        return this;
+    }
+
+    @Override
+    public HasHeadersAndParameters<R, S> setPathParameter(String name, String value) {
+        queryParameters.put(name, value);
+        return this;
+    }
+
+    @Override
+    public HasHeadersAndParameters<R, S> setHeaderParameters(Map<String, String> headerParameters) {
+        headers.putAll(headerParameters);
+        return this;
+    }
+
+    @Override
+    public HasHeadersAndParameters<R, S> setHeaderParameter(String name, String value) {
+        headers.put(name, value);
         return this;
     }
 
@@ -172,8 +256,15 @@ public class ServerRequest<R, S>
     /**
      * @return new map containing all headers defined in the request
      */
-    public Map<String, String> parameters() {
-        return new HashMap<>(parameters);
+    public Map<String, String> queryParameters() {
+        return new HashMap<>(queryParameters);
+    }
+
+    /**
+     * @return new map containing all headers defined in the request
+     */
+    public Map<String, String> pathParameters() {
+        return new HashMap<>(pathParameters);
     }
 
     /**
@@ -199,22 +290,48 @@ public class ServerRequest<R, S>
     }
 
     private void replaceUrlParamsWithArguments(StateHistoryToken tempToken) {
-        Map<String, String> callArguments = this.getCallArguments();
+        Map<String, String> callArguments = new HashMap<>(this.callArguments);
         new ArrayList<>(tempToken.paths())
                 .stream()
-                .filter(path -> isExpressionToken(path) && callArguments.containsKey(replaceExpressionMarkers(path)))
-                .forEach(path -> tempToken.replacePath(path, callArguments.get(replaceExpressionMarkers(path))));
+                .filter(path -> isExpressionToken(path) && hasPathParameter(path))
+                .forEach(path -> tempToken.replacePath(path, getPathValue(path)));
 
         tempToken.queryParameters()
                 .entrySet()
                 .stream()
-                .filter(entry -> isExpressionToken(entry.getValue()) && callArguments.containsKey(replaceExpressionMarkers(entry.getValue())))
-                .forEach(entry -> tempToken.replaceParameter(entry.getKey(), entry.getKey(), callArguments.get(replaceExpressionMarkers(entry.getValue()))));
+                .filter(entry -> isExpressionToken(entry.getValue()) && hasQueryParameter(entry))
+                .forEach(entry -> tempToken.replaceParameter(entry.getKey(), entry.getKey(), getQueryValue(entry)));
 
         new ArrayList<>(tempToken.fragments())
                 .stream()
                 .filter(fragment -> isExpressionToken(fragment) && callArguments.containsKey(replaceExpressionMarkers(fragment)))
                 .forEach(fragment -> tempToken.replaceFragment(fragment, callArguments.get(replaceExpressionMarkers(fragment))));
+    }
+
+    private boolean hasPathParameter(String path) {
+        String pathName = replaceExpressionMarkers(path);
+        return pathParameters.containsKey(pathName) || callArguments.containsKey(pathName);
+    }
+
+    private String getPathValue(String path) {
+        String pathName = replaceExpressionMarkers(path);
+        if (pathParameters.containsKey(pathName)) {
+            return pathParameters.get(pathName);
+        }
+        return callArguments.get(pathName);
+    }
+
+    private boolean hasQueryParameter(Map.Entry<String, String> entry) {
+        String queryName = replaceExpressionMarkers(entry.getValue());
+        return queryParameters.containsKey(queryName) || callArguments.containsKey(queryName);
+    }
+
+    private String getQueryValue(Map.Entry<String, String> entry) {
+        String queryName = replaceExpressionMarkers(entry.getValue());
+        if (queryParameters.containsKey(queryName)) {
+            return queryParameters.get(queryName);
+        }
+        return callArguments.get(queryName);
     }
 
     private boolean isExpressionToken(String tokenPath) {
@@ -289,7 +406,12 @@ public class ServerRequest<R, S>
      * @return new map of all added call arguments.
      */
     public Map<String, String> getCallArguments() {
-        return new HashMap<>(callArguments);
+        Map<String, String> result = new HashMap<>();
+        result.putAll(callArguments);
+        result.putAll(queryParameters);
+        result.putAll(pathParameters);
+        result.putAll(headers);
+        return result;
     }
 
     /**
@@ -385,7 +507,16 @@ public class ServerRequest<R, S>
      * @return the writer class to be used for serializing the request body
      */
     public RequestWriter<R> getRequestWriter() {
-        return requestWriter;
+        if (nonNull(requestWriter)) {
+            return requestWriter;
+        } else {
+            Optional<? extends RequestWriter<?>> reader = CustomMappersRegistry.INSTANCE.findWriter(this);
+            if (reader.isPresent()) {
+                return (RequestWriter<R>) reader.get();
+            } else {
+                throw new NoResponseReaderFoundForRequest(this);
+            }
+        }
     }
 
     /**
@@ -393,16 +524,27 @@ public class ServerRequest<R, S>
      *
      * @param requestWriter
      */
-    public void setRequestWriter(RequestWriter<R> requestWriter) {
+    public ServerRequest<R, S> setRequestWriter(RequestWriter<R> requestWriter) {
         this.requestWriter = requestWriter;
+        return this;
     }
 
     public ResponseReader<S> getResponseReader() {
-        return responseReader;
+        if (nonNull(responseReader)) {
+            return responseReader;
+        } else {
+            Optional<? extends ResponseReader<?>> reader = CustomMappersRegistry.INSTANCE.findReader(this);
+            if (reader.isPresent()) {
+                return (ResponseReader<S>) reader.get();
+            } else {
+                throw new NoResponseReaderFoundForRequest(this);
+            }
+        }
     }
 
-    public void setResponseReader(ResponseReader<S> responseReader) {
+    public ServerRequest<R, S> setResponseReader(ResponseReader<S> responseReader) {
         this.responseReader = responseReader;
+        return this;
     }
 
     public String getPath() {
@@ -418,6 +560,11 @@ public class ServerRequest<R, S>
     public CanSend onFailed(Fail fail) {
         this.fail = fail;
         return this;
+    }
+
+    @Override
+    public boolean isAborted() {
+        return state.equals(aborted);
     }
 
     public boolean isVoidRequest() {

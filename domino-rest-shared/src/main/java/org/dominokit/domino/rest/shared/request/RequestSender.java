@@ -37,18 +37,21 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
     private void onAfterInterception(ServerRequest<R, S> request, ServerRequestCallBack callBack) {
         final int[] retriesCounter = new int[]{0};
         RestfulRequest restfulRequest = RestfulRequest.request(request.getUrl(), request.getHttpMethod().toUpperCase());
-        restfulRequest
-                .putHeaders(request.headers())
-                .putParameters(request.parameters())
-                .onSuccess(response -> handleResponse(request, callBack, response))
-                .onError(throwable -> handleError(request, callBack, retriesCounter, restfulRequest, throwable));
+        request.setHttpRequest(restfulRequest);
+        if (!request.isAborted()) {
+            restfulRequest
+                    .putHeaders(request.headers())
+                    .putParameters(request.queryParameters())
+                    .onSuccess(response -> handleResponse(request, callBack, response))
+                    .onError(throwable -> handleError(request, callBack, retriesCounter, restfulRequest, throwable));
 
-        if (nonNull(request.getResponseType())) {
-            restfulRequest.setResponseType(request.getResponseType());
+            if (nonNull(request.getResponseType())) {
+                restfulRequest.setResponseType(request.getResponseType());
+            }
+
+            setTimeout(request, restfulRequest);
+            doSendRequest(request, restfulRequest);
         }
-
-        setTimeout(request, restfulRequest);
-        doSendRequest(request, restfulRequest);
     }
 
     private void handleError(ServerRequest<R, S> request, ServerRequestCallBack callBack, int[] retriesCounter, RestfulRequest restfulRequest, Throwable throwable) {

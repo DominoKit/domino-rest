@@ -28,5 +28,10 @@
             <artifactId>jackson-apt-processor</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.dominokit</groupId>
+            <artifactId>jaxrs-super</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

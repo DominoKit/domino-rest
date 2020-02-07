@@ -25,6 +25,7 @@ public class DominoRestConfig implements RestConfig {
     private static List<DynamicServiceRoot> dynamicServiceRoots = new ArrayList<>();
     private static final List<RequestInterceptor> requestInterceptors = new ArrayList<>();
     private static final List<ResponseInterceptor> responseInterceptors = new ArrayList<>();
+
     private static Fail defaultFailHandler = failedResponse -> {
         if (nonNull(failedResponse.getThrowable())) {
             LOGGER.debug("could not execute request on server: ", failedResponse.getThrowable());

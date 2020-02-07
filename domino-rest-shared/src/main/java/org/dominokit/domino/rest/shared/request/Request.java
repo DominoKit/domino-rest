@@ -2,10 +2,10 @@ package org.dominokit.domino.rest.shared.request;
 
 public interface Request {
 
-    class DefaultRequestStateContext implements RequestStateContext{
+    class DefaultRequestStateContext implements RequestStateContext {
     }
 
-    class ServerResponseReceivedStateContext implements  RequestStateContext{
+    class ServerResponseReceivedStateContext implements RequestStateContext {
         protected final RequestStateContext nextContext;
 
         public ServerResponseReceivedStateContext(RequestStateContext nextContext) {
@@ -13,7 +13,7 @@ public interface Request {
         }
     }
 
-    class ServerSuccessRequestStateContext<T> implements RequestStateContext{
+    class ServerSuccessRequestStateContext<T> implements RequestStateContext {
 
         protected final T responseBean;
 
@@ -22,12 +22,12 @@ public interface Request {
         }
     }
 
-    class ServerFailedRequestStateContext implements RequestStateContext{
+    class ServerFailedRequestStateContext implements RequestStateContext {
 
         protected final FailedResponseBean response;
 
         public ServerFailedRequestStateContext(FailedResponseBean response) {
-            this.response=response;
+            this.response = response;
         }
     }
 
@@ -35,7 +35,18 @@ public interface Request {
 
     void applyState(RequestStateContext context);
 
-    class InvalidRequestState extends RuntimeException{
+    default RequestMeta getMeta() {
+        return null;
+    }
+
+    default void abort() {
+    }
+
+    default boolean isAborted(){
+        return false;
+    }
+
+    class InvalidRequestState extends RuntimeException {
 
         private static final long serialVersionUID = 1976356149064117774L;
 

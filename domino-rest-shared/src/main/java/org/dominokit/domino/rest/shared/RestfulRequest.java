@@ -88,6 +88,8 @@ public interface RestfulRequest {
 
     void send();
 
+    void abort();
+
     RestfulRequest setResponseType(String responseType);
 
     RestfulRequest onSuccess(SuccessHandler successHandler);
