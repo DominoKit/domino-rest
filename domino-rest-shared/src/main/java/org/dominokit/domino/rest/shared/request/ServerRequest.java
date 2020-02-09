@@ -433,6 +433,7 @@ public class ServerRequest<R, S>
      * @return same request instance.
      */
     public ServerRequest<R, S> setContentType(String[] contentType) {
+        requestMeta.setConsume(contentType);
         setHeader(CONTENT_TYPE, String.join(", ", contentType));
         return this;
     }
@@ -444,6 +445,7 @@ public class ServerRequest<R, S>
      * @return same request instance.
      */
     public ServerRequest<R, S> setAccept(String[] accept) {
+        requestMeta.setProduce(accept);
         setHeader(ACCEPT, String.join(", ", accept));
         return this;
     }

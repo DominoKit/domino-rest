@@ -6,6 +6,8 @@ public class RequestMeta {
     private String methodName;
     private Class<?> requestClass;
     private Class<?> responseClass;
+    private String[] consume;
+    private String[] produce;
 
     public RequestMeta(Class<?> serviceClass, String methodName, Class<?> requestClass, Class<?> responseClass) {
         this.serviceClass = serviceClass;
@@ -28,6 +30,22 @@ public class RequestMeta {
 
     public Class<?> getResponseClass() {
         return responseClass;
+    }
+
+    void setConsume(String[] consume) {
+        this.consume = consume;
+    }
+
+    void setProduce(String[] produce) {
+        this.produce = produce;
+    }
+
+    public String[] getConsume() {
+        return consume;
+    }
+
+    public String[] getProduce() {
+        return produce;
     }
 
     @Override
