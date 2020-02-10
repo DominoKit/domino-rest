@@ -222,15 +222,15 @@ public class ServerRequest<R, S>
 
     @Override
     public HasHeadersAndParameters<R, S> setPathParameters(Map<String, String> pathParameters) {
-        if (nonNull(queryParameters) && !queryParameters.isEmpty()) {
-            this.queryParameters.putAll(queryParameters);
+        if (nonNull(pathParameters) && !pathParameters.isEmpty()) {
+            this.pathParameters.putAll(pathParameters);
         }
         return this;
     }
 
     @Override
     public HasHeadersAndParameters<R, S> setPathParameter(String name, String value) {
-        queryParameters.put(name, value);
+        pathParameters.put(name, value);
         return this;
     }
 
@@ -273,88 +273,15 @@ public class ServerRequest<R, S>
     public void normalizeUrl() {
         if (isNull(this.url)) {
             String root = (isNull(this.serviceRoot) || this.serviceRoot.isEmpty()) ? ServiceRootMatcher.matchedServiceRoot(path) : (this.serviceRoot + path);
-            this.setUrl(formatUrl(root));
+            UrlFormatter<R> urlFormatter = new UrlFormatterBuilder<R>()
+                    .setCallArguments(callArguments)
+                    .setPathParameters(pathParameters)
+                    .setQueryParameters(queryParameters)
+                    .setRequestParametersReplacer(requestParametersReplacer)
+                    .setRequestBean(requestBean)
+                    .build();
+            this.setUrl(urlFormatter.formatUrl(root));
         }
-    }
-
-    protected String formatUrl(String targetUrl) {
-        String postfix = asTokenString(targetUrl);
-        String prefix = targetUrl.replace(postfix, "");
-
-        StateHistoryToken tempToken = new StateHistoryToken(postfix);
-
-        replaceUrlParamsWithArguments(tempToken);
-
-        String formattedPostfix = requestParametersReplacer.replace(tempToken, requestBean);
-        return prefix + formattedPostfix;
-    }
-
-    private void replaceUrlParamsWithArguments(StateHistoryToken tempToken) {
-        Map<String, String> callArguments = new HashMap<>(this.callArguments);
-        new ArrayList<>(tempToken.paths())
-                .stream()
-                .filter(path -> isExpressionToken(path) && hasPathParameter(path))
-                .forEach(path -> tempToken.replacePath(path, getPathValue(path)));
-
-        tempToken.queryParameters()
-                .entrySet()
-                .stream()
-                .filter(entry -> isExpressionToken(entry.getValue()) && hasQueryParameter(entry))
-                .forEach(entry -> tempToken.replaceParameter(entry.getKey(), entry.getKey(), getQueryValue(entry)));
-
-        new ArrayList<>(tempToken.fragments())
-                .stream()
-                .filter(fragment -> isExpressionToken(fragment) && callArguments.containsKey(replaceExpressionMarkers(fragment)))
-                .forEach(fragment -> tempToken.replaceFragment(fragment, callArguments.get(replaceExpressionMarkers(fragment))));
-    }
-
-    private boolean hasPathParameter(String path) {
-        String pathName = replaceExpressionMarkers(path);
-        return pathParameters.containsKey(pathName) || callArguments.containsKey(pathName);
-    }
-
-    private String getPathValue(String path) {
-        String pathName = replaceExpressionMarkers(path);
-        if (pathParameters.containsKey(pathName)) {
-            return pathParameters.get(pathName);
-        }
-        return callArguments.get(pathName);
-    }
-
-    private boolean hasQueryParameter(Map.Entry<String, String> entry) {
-        String queryName = replaceExpressionMarkers(entry.getValue());
-        return queryParameters.containsKey(queryName) || callArguments.containsKey(queryName);
-    }
-
-    private String getQueryValue(Map.Entry<String, String> entry) {
-        String queryName = replaceExpressionMarkers(entry.getValue());
-        if (queryParameters.containsKey(queryName)) {
-            return queryParameters.get(queryName);
-        }
-        return callArguments.get(queryName);
-    }
-
-    private boolean isExpressionToken(String tokenPath) {
-        return tokenPath.startsWith(":") || tokenPath.startsWith("{");
-    }
-
-    private String replaceExpressionMarkers(String replace) {
-        return replace
-                .replace(":", "")
-                .replace("{", "")
-                .replace("}", "");
-    }
-
-    private String asTokenString(String url) {
-        if (url.contains("http:") || url.contains("https:")) {
-            RegExp regExp = RegExp.compile("^((.*:)//([a-z0-9\\-.]+)(|:[0-9]+)/)(.*)$");
-            MatchResult matcher = regExp.exec(url);
-            boolean matchFound = matcher != null; // equivalent to regExp.test(inputStr);
-            if (matchFound) {
-                return matcher.getGroup(matcher.getGroupCount() - 1);
-            }
-        }
-        return url;
     }
 
     /**
