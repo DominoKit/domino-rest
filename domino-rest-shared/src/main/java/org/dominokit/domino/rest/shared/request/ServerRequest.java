@@ -1,14 +1,10 @@
 package org.dominokit.domino.rest.shared.request;
 
-import org.dominokit.domino.history.StateHistoryToken;
 import org.dominokit.domino.rest.shared.RestfulRequest;
-import org.gwtproject.regexp.shared.MatchResult;
-import org.gwtproject.regexp.shared.RegExp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.HttpMethod;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

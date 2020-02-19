@@ -43,41 +43,49 @@ public class DominoRestConfig implements RestConfig {
         return new DominoRestConfig();
     }
 
+    @Override
     public DominoRestConfig setDefaultServiceRoot(String defaultServiceRoot) {
         this.defaultServiceRoot = defaultServiceRoot;
         return this;
     }
 
+    @Override
     public DominoRestConfig setDefaultJsonDateFormat(String defaultJsonDateFormat) {
         this.defaultJsonDateFormat = defaultJsonDateFormat;
         return this;
     }
 
+    @Override
     public DominoRestConfig addDynamicServiceRoot(DynamicServiceRoot dynamicServiceRoot) {
         dynamicServiceRoots.add(dynamicServiceRoot);
         return this;
     }
 
+    @Override
     public DominoRestConfig addRequestInterceptor(RequestInterceptor interceptor) {
         this.requestInterceptors.add(interceptor);
         return this;
     }
 
+    @Override
     public DominoRestConfig removeRequestInterceptor(RequestInterceptor interceptor) {
         this.requestInterceptors.remove(interceptor);
         return this;
     }
 
+    @Override
     public List<RequestInterceptor> getRequestInterceptors() {
         return requestInterceptors;
     }
 
 
+    @Override
     public DominoRestConfig addResponseInterceptor(ResponseInterceptor responseInterceptor){
         this.getResponseInterceptors().add(responseInterceptor);
         return this;
     }
 
+    @Override
     public DominoRestConfig removeResponseInterceptor(ResponseInterceptor responseInterceptor){
         this.getResponseInterceptors().remove(responseInterceptor);
         return this;
@@ -88,6 +96,7 @@ public class DominoRestConfig implements RestConfig {
         return responseInterceptors;
     }
 
+    @Override
     public DominoRestConfig setDefaultFailHandler(Fail fail){
         if(nonNull(fail)){
             this.defaultFailHandler = fail;
@@ -100,6 +109,7 @@ public class DominoRestConfig implements RestConfig {
         return defaultFailHandler;
     }
 
+    @Override
     public String getDefaultServiceRoot() {
         if (isNull(defaultServiceRoot)) {
             return DefaultServiceRoot.get() + defaultResourceRootPath + "/";
@@ -107,14 +117,17 @@ public class DominoRestConfig implements RestConfig {
         return defaultServiceRoot;
     }
 
+    @Override
     public String getDefaultJsonDateFormat() {
         return defaultJsonDateFormat;
     }
 
+    @Override
     public List<DynamicServiceRoot> getServiceRoots() {
         return dynamicServiceRoots;
     }
 
+    @Override
     public DominoRestConfig setDefaultResourceRootPath(String rootPath) {
         if (nonNull(rootPath)) {
             this.defaultResourceRootPath = rootPath;
@@ -122,10 +135,12 @@ public class DominoRestConfig implements RestConfig {
         return this;
     }
 
+    @Override
     public RequestRouter<ServerRequest> getServerRouter() {
         return serverRouter;
     }
 
+    @Override
     public String getDefaultResourceRootPath() {
         if (nonNull(defaultResourceRootPath) && !defaultResourceRootPath.trim().isEmpty()) {
             return defaultResourceRootPath + "/";

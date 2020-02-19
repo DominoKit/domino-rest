@@ -1,7 +1,5 @@
 package org.dominokit.domino.rest;
 
-import org.dominokit.domino.rest.shared.request.RequestBean;
-
 public class SampleDTOX {
 
     private int id;
