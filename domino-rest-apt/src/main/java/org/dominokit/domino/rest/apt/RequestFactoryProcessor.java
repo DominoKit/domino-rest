@@ -1,7 +1,7 @@
 package org.dominokit.domino.rest.apt;
 
-import com.google.auto.service.AutoService;
-import org.dominokit.domino.apt.commons.BaseProcessor;
+import dominojackson.shaded.com.google.auto.service.AutoService;
+import dominojackson.shaded.org.dominokit.domino.apt.commons.BaseProcessor;
 import org.dominokit.domino.rest.shared.request.service.annotations.RequestFactory;
 import org.dominokit.domino.rest.shared.request.service.annotations.ResourceList;
 

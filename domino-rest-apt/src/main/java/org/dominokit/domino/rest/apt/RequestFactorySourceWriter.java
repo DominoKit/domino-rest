@@ -1,11 +1,11 @@
 package org.dominokit.domino.rest.apt;
 
-import com.squareup.javapoet.*;
-import org.dominokit.domino.apt.commons.AbstractSourceBuilder;
-import org.dominokit.domino.apt.commons.DominoTypeBuilder;
+import dominojackson.shaded.com.squareup.javapoet.*;
+import dominojackson.shaded.org.dominokit.domino.apt.commons.AbstractSourceBuilder;
+import dominojackson.shaded.org.dominokit.domino.apt.commons.DominoTypeBuilder;
 import org.dominokit.domino.rest.shared.request.*;
-import org.dominokit.domino.rest.shared.request.service.annotations.*;
 import org.dominokit.domino.rest.shared.request.service.annotations.Request;
+import org.dominokit.domino.rest.shared.request.service.annotations.*;
 import org.dominokit.jacksonapt.AbstractObjectReader;
 import org.dominokit.jacksonapt.AbstractObjectWriter;
 import org.dominokit.jacksonapt.JsonDeserializer;
@@ -28,7 +28,6 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.math.BigDecimal;
-import java.sql.Statement;
 import java.util.*;
 import java.util.stream.IntStream;
 

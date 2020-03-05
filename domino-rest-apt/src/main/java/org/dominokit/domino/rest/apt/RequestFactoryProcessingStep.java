@@ -15,9 +15,9 @@
  */
 package org.dominokit.domino.rest.apt;
 
-import org.dominokit.domino.apt.commons.AbstractProcessingStep;
-import org.dominokit.domino.apt.commons.ExceptionUtil;
-import org.dominokit.domino.apt.commons.StepBuilder;
+import dominojackson.shaded.org.dominokit.domino.apt.commons.AbstractProcessingStep;
+import dominojackson.shaded.org.dominokit.domino.apt.commons.ExceptionUtil;
+import dominojackson.shaded.org.dominokit.domino.apt.commons.StepBuilder;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
