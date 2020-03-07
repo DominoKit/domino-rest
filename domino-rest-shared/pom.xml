@@ -27,15 +27,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
-        </dependency>
-        <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>jaxrs-super</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
+<!--            <scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.dominokit.jackson</groupId>
