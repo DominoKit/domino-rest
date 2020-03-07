@@ -1,7 +1,7 @@
 package org.dominokit.domino.rest.apt;
 
-import com.squareup.javapoet.CodeBlock;
-import org.dominokit.domino.apt.commons.ExceptionUtil;
+import dominojackson.shaded.com.squareup.javapoet.CodeBlock;
+import dominojackson.shaded.org.dominokit.domino.apt.commons.ExceptionUtil;
 import org.dominokit.domino.history.StateHistoryToken;
 
 import javax.annotation.processing.Messager;

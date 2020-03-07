@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-slf4j-logger</artifactId>
-            <version>${project.version}</version>
+            <version>${domino.logger.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dominokit</groupId>

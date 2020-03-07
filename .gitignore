@@ -70,3 +70,4 @@ gradle-app.setting
 **/.vertx/
 .vertx/**/*.*
 **/war/*
+**/pom.xml.versionsBackup

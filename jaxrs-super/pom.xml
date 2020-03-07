@@ -9,24 +9,17 @@
     </parent>
 
     <artifactId>jaxrs-super</artifactId>
-    <packaging>gwt-lib</packaging>
+    <packaging>jar</packaging>
     <name>jaxrs-super</name>
 
     <url>https://github.com/DominoKit/domino-rest</url>
     <description>domino rest jax-rs super</description>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>net.ltgt.gwt.maven</groupId>
-                <artifactId>gwt-maven-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <moduleName>javax.ws.rs.JaxRs</moduleName>
-                    <moduleShortName>jaxrs</moduleShortName>
-                </configuration>
-            </plugin>
-        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+            </resource>
+        </resources>
     </build>
-
 </project>
