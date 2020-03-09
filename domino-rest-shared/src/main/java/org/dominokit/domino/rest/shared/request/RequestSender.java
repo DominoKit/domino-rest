@@ -72,7 +72,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
             callSuccessGlobalHandlers(request, response);
             callBack.onSuccess(request.getResponseReader().read(response));
         } else {
-            FailedResponseBean failedResponse = new FailedResponseBean(response.getStatusCode(), response.getStatusText(), response.getBodyAsString(), response.getHeaders());
+            FailedResponseBean failedResponse = new FailedResponseBean(request, response);
             callFailedResponseHandlers(request, failedResponse);
             callBack.onFailure(failedResponse);
         }
