@@ -1,6 +1,10 @@
 package org.dominokit.domino.rest.shared.request;
 
+import org.dominokit.domino.rest.shared.Response;
+
 import java.util.Map;
+
+import static java.util.Objects.isNull;
 
 public class FailedResponseBean implements ResponseBean {
 
@@ -19,11 +23,18 @@ public class FailedResponseBean implements ResponseBean {
         this.throwable = throwable;
     }
 
-    public FailedResponseBean(int statusCode, String statusText, String body, Map<String, String> headers) {
-        this.statusCode = statusCode;
-        this.statusText = statusText;
-        this.body = body;
-        this.headers = headers;
+    public <R, S> FailedResponseBean(ServerRequest<R, S> request, Response response) {
+        this.statusCode = response.getStatusCode();
+        this.statusText = response.getStatusText();
+        this.body = getResponseTextBody(request, response);
+        this.headers = response.getHeaders();
+    }
+
+    private <R, S> String getResponseTextBody(ServerRequest<R, S> request, Response response) {
+        if(isNull(request.getResponseType()) || request.getResponseType().isEmpty() || "text".equalsIgnoreCase(request.getResponseType())){
+            return response.getBodyAsString();
+        }
+        return "";
     }
 
     public int getStatusCode() {
