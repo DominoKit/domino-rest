@@ -71,7 +71,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
             namePrefix = serviceElement.getEnclosingElement().getSimpleName().toString() + "_";
         }
 
-        String factoryName = namePrefix+serviceElement.getSimpleName().toString() + "Factory";
+        String factoryName = namePrefix + serviceElement.getSimpleName().toString() + "Factory";
 
         FieldSpec instanceField = FieldSpec.builder(ClassName.bestGuess(factoryName), "INSTANCE", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer("new " + factoryName + "()")
@@ -192,11 +192,6 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
             request.addStatement(initializeStatement + "()");
         }
 
-        getMethodParameters(serviceMethod)
-                .stream()
-                .filter(variableElement -> isCallArgument(variableElement))
-                .forEach(parameter -> request.addStatement("instance.addCallArgument($S, $T.isNull($L)?\"\":$T.valueOf($L))", parameter.getSimpleName().toString(), Objects.class, parameter.getSimpleName().toString(), String.class, parameter.getSimpleName().toString()));
-
         serviceMethod.method.getParameters()
                 .stream()
                 .filter(parameter -> nonNull(parameter.getAnnotation(QueryParam.class)))
@@ -227,9 +222,102 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                         String.class,
                         parameter.getSimpleName()));
 
+        serviceMethod.method.getParameters()
+                .stream()
+                .filter(parameter -> nonNull(parameter.getAnnotation(BeanParam.class)))
+                .forEach(parameter -> {
+                            CodeBlock.Builder builder = CodeBlock.builder();
+                            getBeanParams(builder, parameter);
+                            request.addCode(builder.build());
+                        }
+                );
+
         request.addStatement("return instance");
 
         return request.build();
+    }
+
+    private void getBeanParams(CodeBlock.Builder codeBlock, VariableElement parameter) {
+
+        TypeMirror beanType = parameter.asType();
+
+        Element beanElement = types.asElement(beanType);
+
+        getBeanParams(codeBlock, beanElement, parameter.getSimpleName().toString());
+
+    }
+
+    private void getBeanParams(CodeBlock.Builder codeBlock, Element beanElement, String getterPrefixLiteral) {
+        beanElement.getEnclosedElements()
+                .stream()
+                .filter(element -> ElementKind.FIELD.equals(element.getKind()))
+                .forEach(field -> {
+                    if (isParamField(field)) {
+                        if (nonNull(field.getAnnotation(PathParam.class))) {
+                            PathParam pathParam = field.getAnnotation(PathParam.class);
+                            codeBlock.addStatement("instance.setPathParameter($S, $T.emptyOrStringValue(() -> $L.$L))",
+                                    pathParam.value(),
+                                    ServerRequest.class,
+                                    getterPrefixLiteral,
+                                    fieldOrGetter(beanElement, field)
+                            );
+                        }
+
+                        if (nonNull(field.getAnnotation(QueryParam.class))) {
+                            QueryParam pathParam = field.getAnnotation(QueryParam.class);
+                            codeBlock.addStatement("instance.setQueryParameter($S, $T.emptyOrStringValue(() -> $L.$L))",
+                                    pathParam.value(),
+                                    ServerRequest.class,
+                                    getterPrefixLiteral,
+                                    fieldOrGetter(beanElement, field)
+                            );
+                        }
+
+                        if (nonNull(field.getAnnotation(HeaderParam.class))) {
+                            HeaderParam pathParam = field.getAnnotation(HeaderParam.class);
+                            codeBlock.addStatement("instance.setHeaderParameter($S, $T.emptyOrStringValue(() -> $L.$L))",
+                                    pathParam.value(),
+                                    ServerRequest.class,
+                                    getterPrefixLiteral,
+                                    fieldOrGetter(beanElement, field)
+                            );
+                        }
+                    }else {
+                        if(couldHaveNestedParams(field)) {
+                            getBeanParams(codeBlock, types.asElement(field.asType()), getterPrefixLiteral + "." + fieldOrGetter(beanElement, field));
+                        }
+                    }
+                });
+    }
+
+    private boolean couldHaveNestedParams(Element field) {
+        return !(isPrimitive(field.asType())
+                || isWrapperType(field.asType())
+                || processorUtil.isEnum(field.asType())
+                || processorUtil.isArray(field.asType())
+                || processorUtil.is2dArray(field.asType())
+                || processorUtil.isCollection(field.asType())
+                || processorUtil.isIterable(field.asType())
+                || processorUtil.isMap(field.asType())
+                || processorUtil.isStringType(field.asType())
+                || processorUtil.isPrimitiveArray(field.asType())
+        );
+    }
+
+    private boolean isParamField(Element field) {
+        return nonNull(field.getAnnotation(PathParam.class))
+                || nonNull(field.getAnnotation(QueryParam.class))
+                || nonNull(field.getAnnotation(HeaderParam.class));
+    }
+
+
+    private String fieldOrGetter(Element beanElement, Element field) {
+        BeanAccessors beanAccessors = new BeanAccessors(processorUtil, beanElement);
+        AccessorInfo accessorInfo = beanAccessors.getterInfo(field);
+        if (accessorInfo.method.isPresent()) {
+            return accessorInfo.getName() + "()";
+        }
+        return accessorInfo.getName();
     }
 
     private boolean isCallArgument(VariableElement variableElement) {
@@ -316,7 +404,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     private RequestBodyParam getRequestBeanType(ServiceMethod serviceMethod) {
         List<? extends VariableElement> parameters = serviceMethod.method.getParameters();
 
-        if(!isBodyHttpMethod(serviceMethod)){
+        if (!isBodyHttpMethod(serviceMethod)) {
             return RequestBodyParam.ofVoid(getMappingType(elements.getTypeElement(Void.class.getCanonicalName()).asType()));
         }
 
@@ -433,10 +521,6 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         if (!isVoidType(serviceMethod.method.getReturnType())) {
             Optional<CodeBlock> responseReader = getResponseReader(serviceMethod);
             responseReader.ifPresent(constructorBuilder::addCode);
-        }
-
-        if (!isVoidType(serviceMethod)) {
-            constructorBuilder.addCode(new ReplaceParametersMethodBuilder(messager, getPath(serviceMethod), serviceMethod.method).build());
         }
 
         return constructorBuilder.build();

@@ -16,14 +16,11 @@ public class UrlFormatterTest {
 
     private Map<String, String> queryParameters = new HashMap<>();
     private Map<String, String> pathParameters =  new HashMap<>();
-    private Map<String, String> callArguments =  new HashMap<>();
-    private RequestParametersReplacer<SampleRequestBean> requestParametersReplacer;
     private SampleRequestBean requestBean;
 
     @Before
     public void setUp() throws Exception {
         requestBean = new SampleRequestBean(100, "SampleName");
-        requestParametersReplacer= (token, request) -> token.value();
     }
 
     @Test
@@ -62,28 +59,17 @@ public class UrlFormatterTest {
     }
 
     @Test
-    public void when_url_has_path_parameter_and_the_parameter_was_provided_as_call_argument_then_should_replace_path_parameter() {
-        buildFormatter();
-        callArguments.put("name", "hulk");
-        assertThat(urlFormatter.formatUrl("{name}")).isEqualTo("hulk");
-        assertThat(urlFormatter.formatUrl("/movies/:name")).isEqualTo("/movies/hulk");
-    }
-
-    @Test
     public void when_url_has_path_parameter_and_the_parameter_was_provided_as_path_parameter_and_call_argument_then_should_replace_path_parameter_from_pth_parameters() {
         buildFormatter();
         pathParameters.put("name", "hulk");
-        callArguments.put("name", "troy");
         assertThat(urlFormatter.formatUrl("/movies/{name}")).isEqualTo("/movies/hulk");
         assertThat(urlFormatter.formatUrl("/movies/:name")).isEqualTo("/movies/hulk");
     }
 
     private void buildFormatter(){
         urlFormatter = new UrlFormatterBuilder<SampleRequestBean>()
-                .setCallArguments(callArguments)
                 .setPathParameters(pathParameters)
                 .setQueryParameters(queryParameters)
-                .setRequestParametersReplacer(requestParametersReplacer)
                 .setRequestBean(requestBean)
                 .build();
     }

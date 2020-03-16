@@ -1,7 +1,9 @@
 package org.dominokit.domino.rest;
 
+import javax.ws.rs.PathParam;
+
 public interface ChildService {
-    String getById(int id);
-    String getById(String id);
-    String anotherGetById(int id);
+    String getById(@PathParam("id") int id);
+    String getById(@PathParam("id") String id);
+    String anotherGetById(@PathParam("id") int id);
 }

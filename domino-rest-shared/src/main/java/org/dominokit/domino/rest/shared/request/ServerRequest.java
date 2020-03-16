@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static java.util.Objects.*;
 
@@ -26,7 +27,6 @@ public class ServerRequest<R, S>
     private Map<String, String> headers = new HashMap<>();
     private Map<String, String> queryParameters = new HashMap<>();
     private Map<String, String> pathParameters = new HashMap<>();
-    private Map<String, String> callArguments = new HashMap<>();
 
     private RequestMeta requestMeta;
     private R requestBean;
@@ -44,7 +44,6 @@ public class ServerRequest<R, S>
 
     private RequestWriter<R> requestWriter = request -> null;
     private ResponseReader<S> responseReader = request -> null;
-    private RequestParametersReplacer<R> requestParametersReplacer = (token, request) -> token.value();
 
     private Success<S> success = response -> {
     };
@@ -270,10 +269,8 @@ public class ServerRequest<R, S>
         if (isNull(this.url)) {
             String root = (isNull(this.serviceRoot) || this.serviceRoot.isEmpty()) ? ServiceRootMatcher.matchedServiceRoot(path) : (this.serviceRoot + path);
             UrlFormatter<R> urlFormatter = new UrlFormatterBuilder<R>()
-                    .setCallArguments(callArguments)
                     .setPathParameters(pathParameters)
                     .setQueryParameters(queryParameters)
-                    .setRequestParametersReplacer(requestParametersReplacer)
                     .setRequestBean(requestBean)
                     .build();
             this.setUrl(urlFormatter.formatUrl(root));
@@ -302,35 +299,12 @@ public class ServerRequest<R, S>
         return this;
     }
 
-    /**
-     * add a call argument to be used in parameter replacement process.
-     *
-     * @param name
-     * @param value
-     * @return same request instance.
-     */
-    public ServerRequest<R, S> addCallArgument(String name, String value) {
-        callArguments.put(name, value);
-        return this;
-    }
-
-    /**
-     * removes a call argument
-     *
-     * @param name
-     * @return same request instance.
-     */
-    public ServerRequest<R, S> removeCallArgument(String name) {
-        callArguments.remove(name);
-        return this;
-    }
 
     /**
      * @return new map of all added call arguments.
      */
-    public Map<String, String> getCallArguments() {
+    public Map<String, String> getRequestParameters() {
         Map<String, String> result = new HashMap<>();
-        result.putAll(callArguments);
         result.putAll(queryParameters);
         result.putAll(pathParameters);
         result.putAll(headers);
@@ -508,15 +482,6 @@ public class ServerRequest<R, S>
         return this.url;
     }
 
-    public RequestParametersReplacer<R> getRequestParametersReplacer() {
-        return requestParametersReplacer;
-    }
-
-    public ServerRequest<R, S> setRequestParametersReplacer(RequestParametersReplacer<R> requestParametersReplacer) {
-        this.requestParametersReplacer = requestParametersReplacer;
-        return this;
-    }
-
     public int getTimeout() {
         return timeout;
     }
@@ -540,6 +505,14 @@ public class ServerRequest<R, S>
 
     public String getResponseType() {
         return responseType;
+    }
+
+    public static String emptyOrStringValue(Supplier<?> supplier) {
+        try {
+            return String.valueOf(supplier.get());
+        } catch (NullPointerException e) {
+            return "";
+        }
     }
 
     @FunctionalInterface

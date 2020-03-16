@@ -16,15 +16,11 @@ public class UrlFormatter<R> {
 
     private final Map<String, String> queryParameters;
     private final Map<String, String> pathParameters;
-    private final Map<String, String> callArguments;
-    private final RequestParametersReplacer<R> requestParametersReplacer;
     private final R requestBean;
 
-    public UrlFormatter(Map<String, String> queryParameters, Map<String, String> pathParameters, Map<String, String> callArguments, RequestParametersReplacer<R> requestParametersReplacer, R requestBean) {
+    public UrlFormatter(Map<String, String> queryParameters, Map<String, String> pathParameters, R requestBean) {
         this.queryParameters = queryParameters;
         this.pathParameters = pathParameters;
-        this.callArguments = callArguments;
-        this.requestParametersReplacer = requestParametersReplacer;
         this.requestBean = requestBean;
     }
 
@@ -46,8 +42,7 @@ public class UrlFormatter<R> {
 
         replaceUrlParamsWithArguments(tempToken);
 
-        String formattedPostfix = requestParametersReplacer.replace(tempToken, requestBean);
-        return prefix + (targetUrl.startsWith("/") ? "/" : "") + formattedPostfix;
+        return prefix + (targetUrl.startsWith("/") ? "/" : "") + tempToken.value();
     }
 
     private boolean hasExpressions(String url) {
@@ -55,14 +50,8 @@ public class UrlFormatter<R> {
     }
 
     private void replaceUrlParamsWithArguments(StateHistoryToken tempToken) {
-        Map<String, String> callArguments = new HashMap<>(this.callArguments);
         replacePaths(tempToken);
         replaceQueryParams(tempToken);
-
-        new ArrayList<>(tempToken.fragments())
-                .stream()
-                .filter(fragment -> isExpressionToken(fragment) && callArguments.containsKey(replaceExpressionMarkers(fragment)))
-                .forEach(fragment -> tempToken.replaceFragment(fragment, callArguments.get(replaceExpressionMarkers(fragment))));
     }
 
     private void replaceQueryParams(StateHistoryToken tempToken) {
@@ -94,7 +83,7 @@ public class UrlFormatter<R> {
 
     private boolean hasPathParameter(String path) {
         String pathName = replaceExpressionMarkers(path);
-        return pathParameters.containsKey(pathName) || callArguments.containsKey(pathName);
+        return pathParameters.containsKey(pathName);
     }
 
     private String getPathValue(String path) {
@@ -102,26 +91,20 @@ public class UrlFormatter<R> {
             throw new PathParameterMissingException(path);
         }
         String pathName = replaceExpressionMarkers(path);
-        if (pathParameters.containsKey(pathName)) {
-            return pathParameters.get(pathName);
-        }
-        return callArguments.get(pathName);
+        return pathParameters.get(pathName);
     }
 
     private boolean hasQueryParameter(Map.Entry<String, String> entry) {
         String queryName = replaceExpressionMarkers(entry.getValue());
-        return queryParameters.containsKey(queryName) || callArguments.containsKey(queryName);
+        return queryParameters.containsKey(queryName);
     }
 
     private String getQueryValue(Map.Entry<String, String> entry) {
-        if(!hasQueryParameter(entry)){
+        if (!hasQueryParameter(entry)) {
             throw new QueryParameterMissingException(entry.getKey());
         }
         String queryName = replaceExpressionMarkers(entry.getValue());
-        if (queryParameters.containsKey(queryName)) {
-            return queryParameters.get(queryName);
-        }
-        return callArguments.get(queryName);
+        return queryParameters.get(queryName);
     }
 
     private boolean isExpressionToken(String tokenPath) {

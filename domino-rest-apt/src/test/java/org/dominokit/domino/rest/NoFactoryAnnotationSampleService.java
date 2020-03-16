@@ -15,8 +15,8 @@ import java.util.List;
 public interface NoFactoryAnnotationSampleService {
 
     @GET
-    @Path("someService/:id")
-    SampleResponse getById(@RequestBody int id, int count);
+    @Path("someService/{id}")
+    SampleResponse getById(@PathParam("id") @RequestBody int id, int count);
 
     @POST
     @Path("someService/create")
@@ -28,8 +28,8 @@ public interface NoFactoryAnnotationSampleService {
     SampleResponse annotatedBody(SampleRequest sampleRequest);
 
     @POST
-    @Path("somePath/{name}")
-    SampleResponse annotatedBody2(SampleRequest sampleRequest);
+    @Path("somePath/{name}/{name2}")
+    SampleResponse annotatedBody2(@BeanParam SampleRequest sampleRequest);
 
     @GET
     @Path("someService/:id")
