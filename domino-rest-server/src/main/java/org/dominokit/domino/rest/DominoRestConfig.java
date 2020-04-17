@@ -3,18 +3,18 @@ package org.dominokit.domino.rest;
 import org.dominokit.domino.rest.server.DefaultServiceRoot;
 import org.dominokit.domino.rest.server.OnServerRequestEventFactory;
 import org.dominokit.domino.rest.shared.request.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 public class DominoRestConfig implements RestConfig {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DominoRestConfig.class);
+    private static final Logger LOGGER = Logger.getLogger(DominoRestConfig.class.getName());
 
     private static String defaultServiceRoot;
     private static String defaultResourceRootPath = "service";
@@ -27,9 +27,9 @@ public class DominoRestConfig implements RestConfig {
     private static final List<ResponseInterceptor> responseInterceptors = new ArrayList<>();
     private static Fail defaultFailHandler = failedResponse -> {
         if (nonNull(failedResponse.getThrowable())) {
-            LOGGER.debug("could not execute request on server: ", failedResponse.getThrowable());
+            LOGGER.log(Level.FINE, "could not execute request on server: ", failedResponse.getThrowable());
         } else {
-            LOGGER.debug("could not execute request on server: status [" + failedResponse.getStatusCode() + "], body [" + failedResponse.getBody() + "]");
+            LOGGER.log(Level.FINE, "could not execute request on server: status [" + failedResponse.getStatusCode() + "], body [" + failedResponse.getBody() + "]");
         }
     };
 

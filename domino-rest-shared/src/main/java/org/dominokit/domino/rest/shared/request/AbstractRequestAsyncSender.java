@@ -1,11 +1,11 @@
 package org.dominokit.domino.rest.shared.request;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class AbstractRequestAsyncSender implements RequestAsyncSender {
 
-        private static final Logger LOGGER = LoggerFactory.getLogger(RequestAsyncSender.class);
+    private static final Logger LOGGER = Logger.getLogger(RequestAsyncSender.class.getName());
     private final ServerRequestEventFactory requestEventFactory;
 
     public AbstractRequestAsyncSender(ServerRequestEventFactory requestEventFactory) {
@@ -32,7 +32,7 @@ public abstract class AbstractRequestAsyncSender implements RequestAsyncSender {
 
         @Override
         public void onFailed(Throwable error) {
-            LOGGER.debug("Could not RunAsync request [" + request + "]", error);
+            LOGGER.log(Level.SEVERE, "Could not RunAsync request [" + request + "]", error);
         }
     }
 

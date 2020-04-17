@@ -3,18 +3,18 @@ package org.dominokit.domino.rest.shared.request;
 import org.dominokit.domino.api.shared.extension.ContextAggregator;
 import org.dominokit.domino.rest.shared.Response;
 import org.dominokit.domino.rest.shared.RestfulRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 
 public class RequestSender<R, S> implements RequestRestSender<R, S> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RequestSender.class);
+    private static final Logger LOGGER = Logger.getLogger(RequestSender.class.getName());
 
     private final List<String> SEND_BODY_METHODS = Arrays.asList("POST", "PUT", "PATCH");
 
@@ -61,7 +61,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
             doSendRequest(request, restfulRequest);
         } else {
             FailedResponseBean failedResponse = new FailedResponseBean(throwable);
-            LOGGER.info("Failed to execute request : ", failedResponse);
+            LOGGER.log(Level.SEVERE, "Failed to execute request : ", failedResponse);
             callFailedResponseHandlers(request, failedResponse);
             callBack.onFailure(failedResponse);
         }

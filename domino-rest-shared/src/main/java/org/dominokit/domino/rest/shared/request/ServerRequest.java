@@ -1,8 +1,6 @@
 package org.dominokit.domino.rest.shared.request;
 
 import org.dominokit.domino.rest.shared.RestfulRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.HttpMethod;
 import java.util.HashMap;
@@ -10,13 +8,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import static java.util.Objects.*;
 
 public class ServerRequest<R, S>
         extends BaseRequest implements Response<S>, CanFailOrSend, HasHeadersAndParameters<R, S> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServerRequest.class);
+    private static final Logger LOGGER = Logger.getLogger(ServerRequest.class.getName());
+
     private static final String CONTENT_TYPE = "Content-type";
     private static final String ACCEPT = "Accept";
 
