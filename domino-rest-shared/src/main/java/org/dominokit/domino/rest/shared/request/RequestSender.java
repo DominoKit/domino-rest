@@ -61,7 +61,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
             doSendRequest(request, restfulRequest);
         } else {
             FailedResponseBean failedResponse = new FailedResponseBean(throwable);
-            LOGGER.log(Level.SEVERE, "Failed to execute request : ", failedResponse);
+            LOGGER.log(Level.SEVERE, "Failed to execute request : ", failedResponse.getThrowable());
             callFailedResponseHandlers(request, failedResponse);
             callBack.onFailure(failedResponse);
         }
