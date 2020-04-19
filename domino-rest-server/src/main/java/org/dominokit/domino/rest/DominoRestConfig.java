@@ -3,6 +3,7 @@ package org.dominokit.domino.rest;
 import org.dominokit.domino.rest.server.DefaultServiceRoot;
 import org.dominokit.domino.rest.server.OnServerRequestEventFactory;
 import org.dominokit.domino.rest.shared.request.*;
+import org.dominokit.jacksonapt.JacksonContextProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,8 @@ public class DominoRestConfig implements RestConfig {
 
     @Override
     public DominoRestConfig setDefaultJsonDateFormat(String defaultJsonDateFormat) {
-        this.defaultJsonDateFormat = defaultJsonDateFormat;
+        JacksonContextProvider.get().defaultDeserializerParameters()
+                .setPattern(defaultJsonDateFormat);
         return this;
     }
 
@@ -119,7 +121,7 @@ public class DominoRestConfig implements RestConfig {
 
     @Override
     public String getDefaultJsonDateFormat() {
-        return defaultJsonDateFormat;
+        return JacksonContextProvider.get().defaultDeserializerParameters().getPattern();
     }
 
     @Override
