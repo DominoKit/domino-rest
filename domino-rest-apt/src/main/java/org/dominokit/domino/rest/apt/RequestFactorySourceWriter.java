@@ -195,32 +195,55 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         serviceMethod.method.getParameters()
                 .stream()
                 .filter(parameter -> nonNull(parameter.getAnnotation(QueryParam.class)))
-                .forEach(parameter -> request.addStatement("instance.setQueryParameter($S, $T.isNull($L)?\"\":$T.valueOf($L))",
-                        parameter.getAnnotation(QueryParam.class).value(),
-                        Objects.class,
-                        parameter.getSimpleName(),
-                        String.class,
-                        parameter.getSimpleName()));
+                .forEach(parameter -> {
+                    if (processorUtil.isAssignableFrom(parameter, Date.class) && nonNull(parameter.getAnnotation(DateFormat.class))) {
+                        request.addStatement("instance.setQueryParameter($S, instance.formatDate(() -> $L, $S))",
+                                parameter.getAnnotation(QueryParam.class).value(),
+                                parameter.getSimpleName(),
+                                parameter.getAnnotation(DateFormat.class).value()
+                        );
+                    } else {
+                        request.addStatement("instance.setQueryParameter($S, instance.emptyOrStringValue(() -> $L))",
+                                parameter.getAnnotation(QueryParam.class).value(),
+                                parameter.getSimpleName());
+                    }
+                });
 
         serviceMethod.method.getParameters()
                 .stream()
                 .filter(parameter -> nonNull(parameter.getAnnotation(PathParam.class)))
-                .forEach(parameter -> request.addStatement("instance.setPathParameter($S, $T.isNull($L)?\"\":$T.valueOf($L))",
-                        parameter.getAnnotation(PathParam.class).value(),
-                        Objects.class,
-                        parameter.getSimpleName(),
-                        String.class,
-                        parameter.getSimpleName()));
+                .forEach(parameter -> {
+                            if (processorUtil.isAssignableFrom(parameter, Date.class) && nonNull(parameter.getAnnotation(DateFormat.class))) {
+                                request.addStatement("instance.setPathParameter($S, instance.formatDate(() -> $L, $S))",
+                                        parameter.getAnnotation(PathParam.class).value(),
+                                        parameter.getSimpleName(),
+                                        parameter.getAnnotation(DateFormat.class).value()
+                                );
+                            } else {
+                                request.addStatement("instance.setPathParameter($S, instance.emptyOrStringValue(() -> $L))",
+                                        parameter.getAnnotation(PathParam.class).value(),
+                                        parameter.getSimpleName());
+                            }
+                        }
+                );
 
         serviceMethod.method.getParameters()
                 .stream()
                 .filter(parameter -> nonNull(parameter.getAnnotation(HeaderParam.class)))
-                .forEach(parameter -> request.addStatement("instance.setHeaderParameter($S, $T.isNull($L)?\"\":$T.valueOf($L))",
-                        parameter.getAnnotation(HeaderParam.class).value(),
-                        Objects.class,
-                        parameter.getSimpleName(),
-                        String.class,
-                        parameter.getSimpleName()));
+                .forEach(parameter -> {
+                            if (processorUtil.isAssignableFrom(parameter, Date.class) && nonNull(parameter.getAnnotation(DateFormat.class))) {
+                                request.addStatement("instance.setPathParameter($S, instance.formatDate(() -> $L, $S))",
+                                        parameter.getAnnotation(HeaderParam.class).value(),
+                                        parameter.getSimpleName(),
+                                        parameter.getAnnotation(DateFormat.class).value()
+                                );
+                            } else {
+                                request.addStatement("instance.setHeaderParameter($S, instance.emptyOrStringValue(() -> $L))",
+                                        parameter.getAnnotation(HeaderParam.class).value(),
+                                        parameter.getSimpleName());
+                            }
+                        }
+                );
 
         serviceMethod.method.getParameters()
                 .stream()
@@ -255,35 +278,59 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                     if (isParamField(field)) {
                         if (nonNull(field.getAnnotation(PathParam.class))) {
                             PathParam pathParam = field.getAnnotation(PathParam.class);
-                            codeBlock.addStatement("instance.setPathParameter($S, $T.emptyOrStringValue(() -> $L.$L))",
-                                    pathParam.value(),
-                                    ServerRequest.class,
-                                    getterPrefixLiteral,
-                                    fieldOrGetter(beanElement, field)
-                            );
+                            if (processorUtil.isAssignableFrom(field, Date.class) && nonNull(field.getAnnotation(DateFormat.class))) {
+                                codeBlock.addStatement("instance.setPathParameter($S, instance.formatDate(() -> $L.$L, $S))",
+                                        pathParam.value(),
+                                        getterPrefixLiteral,
+                                        fieldOrGetter(beanElement, field),
+                                        field.getAnnotation(DateFormat.class).value()
+                                );
+                            }else{
+                                codeBlock.addStatement("instance.setPathParameter($S, instance.emptyOrStringValue(() -> $L.$L))",
+                                        pathParam.value(),
+                                        getterPrefixLiteral,
+                                        fieldOrGetter(beanElement, field)
+                                );
+                            }
                         }
 
                         if (nonNull(field.getAnnotation(QueryParam.class))) {
                             QueryParam pathParam = field.getAnnotation(QueryParam.class);
-                            codeBlock.addStatement("instance.setQueryParameter($S, $T.emptyOrStringValue(() -> $L.$L))",
-                                    pathParam.value(),
-                                    ServerRequest.class,
-                                    getterPrefixLiteral,
-                                    fieldOrGetter(beanElement, field)
-                            );
+                            if (processorUtil.isAssignableFrom(field, Date.class) && nonNull(field.getAnnotation(DateFormat.class))) {
+                                codeBlock.addStatement("instance.setQueryParameter($S, instance.formatDate(() -> $L.$L, $S))",
+                                        pathParam.value(),
+                                        getterPrefixLiteral,
+                                        fieldOrGetter(beanElement, field),
+                                        field.getAnnotation(DateFormat.class).value()
+                                );
+                            }else {
+                                codeBlock.addStatement("instance.setQueryParameter($S, instance.emptyOrStringValue(() -> $L.$L))",
+                                        pathParam.value(),
+                                        getterPrefixLiteral,
+                                        fieldOrGetter(beanElement, field)
+                                );
+                            }
                         }
 
                         if (nonNull(field.getAnnotation(HeaderParam.class))) {
                             HeaderParam pathParam = field.getAnnotation(HeaderParam.class);
-                            codeBlock.addStatement("instance.setHeaderParameter($S, $T.emptyOrStringValue(() -> $L.$L))",
-                                    pathParam.value(),
-                                    ServerRequest.class,
-                                    getterPrefixLiteral,
-                                    fieldOrGetter(beanElement, field)
-                            );
+                            if (processorUtil.isAssignableFrom(field, Date.class) && nonNull(field.getAnnotation(DateFormat.class))) {
+                                codeBlock.addStatement("instance.setHeaderParameter($S, instance.formatDate(() -> $L.$L, $S))",
+                                        pathParam.value(),
+                                        getterPrefixLiteral,
+                                        fieldOrGetter(beanElement, field),
+                                        field.getAnnotation(DateFormat.class).value()
+                                );
+                            }else{
+                                codeBlock.addStatement("instance.setHeaderParameter($S, instance.emptyOrStringValue(() -> $L.$L))",
+                                        pathParam.value(),
+                                        getterPrefixLiteral,
+                                        fieldOrGetter(beanElement, field)
+                                );
+                            }
                         }
-                    }else {
-                        if(couldHaveNestedParams(field)) {
+                    } else {
+                        if (couldHaveNestedParams(field)) {
                             getBeanParams(codeBlock, types.asElement(field.asType()), getterPrefixLiteral + "." + fieldOrGetter(beanElement, field));
                         }
                     }
@@ -318,12 +365,6 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
             return accessorInfo.getName() + "()";
         }
         return accessorInfo.getName();
-    }
-
-    private boolean isCallArgument(VariableElement variableElement) {
-        return isNull(variableElement.getAnnotation(QueryParam.class))
-                && isNull(variableElement.getAnnotation(PathParam.class))
-                && isNull(variableElement.getAnnotation(HeaderParam.class));
     }
 
     private List<VariableElement> getMethodParameters(ServiceMethod serviceMethod) {

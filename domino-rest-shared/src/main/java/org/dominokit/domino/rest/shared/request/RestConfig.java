@@ -1,5 +1,6 @@
 package org.dominokit.domino.rest.shared.request;
 
+import java.util.Date;
 import java.util.List;
 
 public interface RestConfig {
@@ -38,4 +39,12 @@ public interface RestConfig {
     Fail getDefaultFailHandler();
 
     AsyncRunner asyncRunner();
+
+    RestConfig setDateParamFormatter(DateParamFormatter formatter);
+    DateParamFormatter getDateParamFormatter();
+
+    @FunctionalInterface
+    interface DateParamFormatter {
+        String format(Date date, String pattern);
+    }
 }

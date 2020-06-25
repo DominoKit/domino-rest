@@ -1,16 +1,13 @@
 package org.dominokit.domino.rest;
 
 
-import org.dominokit.domino.rest.shared.request.service.annotations.Classifier;
-import org.dominokit.domino.rest.shared.request.service.annotations.RequestBody;
-import org.dominokit.domino.rest.shared.request.service.annotations.RequestFactory;
-import org.dominokit.domino.rest.shared.request.service.annotations.Retries;
+import org.dominokit.domino.rest.shared.request.service.annotations.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RequestFactory
 @Path("library/")
@@ -55,10 +52,13 @@ public interface SampleService {
     @Path("someService/:id")
     String[] getById6(int id);
 
-
     @GET
     @Path("someService")
     String getByIdQuery(@QueryParam("userId") int id, @QueryParam("userName") String name);
+
+    @GET
+    @Path("someService/{starting-date}")
+    String getByDate(@QueryParam("birth-date") @DateFormat("dd-MM-yyyy") Date birthDate, @PathParam("starting-date") Date startingDate);
 
     @GET
     @Path("someService/:id")

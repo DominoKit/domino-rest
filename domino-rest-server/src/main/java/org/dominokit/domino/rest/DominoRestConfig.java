@@ -5,6 +5,7 @@ import org.dominokit.domino.rest.server.OnServerRequestEventFactory;
 import org.dominokit.domino.rest.shared.request.*;
 import org.dominokit.jacksonapt.JacksonContextProvider;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -33,6 +34,8 @@ public class DominoRestConfig implements RestConfig {
             LOGGER.log(Level.FINE, "could not execute request on server: status [" + failedResponse.getStatusCode() + "], body [" + failedResponse.getBody() + "]");
         }
     };
+
+    private static DateParamFormatter dateParamFormatter= (date, pattern) -> new SimpleDateFormat(pattern).format(date);
 
     public static DominoRestConfig initDefaults() {
         RestfullRequestContext.setFactory(new JavaRestfulRequestFactory());
@@ -164,5 +167,16 @@ public class DominoRestConfig implements RestConfig {
 
     public void setServerRouter(RequestRouter<ServerRequest> serverRouter) {
         DominoRestConfig.serverRouter = serverRouter;
+    }
+
+    @Override
+    public RestConfig setDateParamFormatter(DateParamFormatter formatter) {
+        DominoRestConfig.dateParamFormatter = formatter;
+        return this;
+    }
+
+    @Override
+    public DateParamFormatter getDateParamFormatter() {
+        return DominoRestConfig.dateParamFormatter;
     }
 }

@@ -3,6 +3,7 @@ package org.dominokit.domino.rest.shared.request;
 import org.dominokit.domino.rest.shared.RestfulRequest;
 
 import javax.ws.rs.HttpMethod;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -507,12 +508,21 @@ public class ServerRequest<R, S>
         return responseType;
     }
 
-    public static String emptyOrStringValue(Supplier<?> supplier) {
-        try {
-            return String.valueOf(supplier.get());
-        } catch (NullPointerException e) {
+    public String emptyOrStringValue(Supplier<?> supplier) {
+        if (isNull(supplier) || isNull(supplier.get())) {
             return "";
         }
+        return String.valueOf(supplier.get());
+    }
+
+    public String formatDate(Supplier<Date> supplier, String pattern) {
+        if (isNull(supplier) || isNull(supplier.get())) {
+            return "";
+        }
+        return emptyOrStringValue(() -> requestContext
+                .getConfig()
+                .getDateParamFormatter()
+                .format(supplier.get(), pattern));
     }
 
     @FunctionalInterface

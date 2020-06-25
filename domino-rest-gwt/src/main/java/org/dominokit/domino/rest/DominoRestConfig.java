@@ -4,6 +4,7 @@ import org.dominokit.domino.rest.gwt.DefaultServiceRoot;
 import org.dominokit.domino.rest.gwt.ServerEventFactory;
 import org.dominokit.domino.rest.shared.request.*;
 import org.dominokit.jacksonapt.JacksonContextProvider;
+import org.gwtproject.i18n.shared.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,8 @@ public class DominoRestConfig implements RestConfig {
             LOGGER.debug("could not execute request on server: status [" + failedResponse.getStatusCode() + "], body [" + failedResponse.getBody() + "]");
         }
     };
+
+    private static DateParamFormatter dateParamFormatter = (date, pattern) -> DateTimeFormat.getFormat(pattern).format(date);
 
     public static DominoRestConfig initDefaults() {
         RestfullRequestContext.setFactory(new JsRestfulRequestFactory());
@@ -146,5 +149,16 @@ public class DominoRestConfig implements RestConfig {
                 asyncTask.onFailed(error);
             }
         };
+    }
+
+    @Override
+    public RestConfig setDateParamFormatter(DateParamFormatter formatter) {
+        DominoRestConfig.dateParamFormatter = formatter;
+        return this;
+    }
+
+    @Override
+    public DateParamFormatter getDateParamFormatter() {
+        return DominoRestConfig.dateParamFormatter;
     }
 }

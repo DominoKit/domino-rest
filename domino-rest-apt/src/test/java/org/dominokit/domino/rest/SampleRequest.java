@@ -1,11 +1,13 @@
 package org.dominokit.domino.rest;
 
+import org.dominokit.domino.rest.shared.request.service.annotations.DateFormat;
 import org.dominokit.domino.rest.shared.request.service.annotations.RequestBody;
 import org.dominokit.jacksonapt.annotation.JSONMapper;
 
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import java.util.Date;
 
 @JSONMapper
 @RequestBody
@@ -18,6 +20,10 @@ public class SampleRequest{
     public String anotherName;
     @HeaderParam("desc")
     public String description;
+
+    @QueryParam("birth-date")
+    @DateFormat("dd-MM-yyyy")
+    private Date birthDate;
 
     private NestedRequestBean accountInfo;
 
@@ -59,5 +65,13 @@ public class SampleRequest{
 
     public void setAccountInfo(NestedRequestBean accountInfo) {
         this.accountInfo = accountInfo;
+    }
+
+    public Date getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(Date birthDate) {
+        this.birthDate = birthDate;
     }
 }
