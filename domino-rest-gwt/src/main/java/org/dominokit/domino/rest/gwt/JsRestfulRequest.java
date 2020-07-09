@@ -134,6 +134,11 @@ public class JsRestfulRequest extends BaseRestfulRequest {
     }
 
     @Override
+    public void setWithCredentials(boolean withCredentials) {
+        request.setWithCredentials(withCredentials);
+    }
+
+    @Override
     public RestfulRequest setResponseType(String responseType) {
         request.setResponseType(responseType);
         return this;

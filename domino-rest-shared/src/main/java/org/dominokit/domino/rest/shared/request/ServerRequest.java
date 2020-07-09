@@ -134,6 +134,11 @@ public class ServerRequest<R, S>
     }
 
     @Override
+    public void setWithCredentials(boolean withCredentials) {
+        httpRequest.setWithCredentials(withCredentials);
+    }
+
+    @Override
     public RequestMeta getMeta() {
         return requestMeta;
     }

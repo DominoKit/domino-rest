@@ -111,6 +111,11 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
         //TODO not implemented yet
     }
 
+    @Override
+    public void setWithCredentials(boolean withCredentials) {
+        //TODO not implemented for java implementation
+    }
+
     private void handleResponse(AsyncResult<HttpResponse<Buffer>> event) {
         if (event.succeeded())
             successHandler.onResponseReceived(new JavaResponse(event.result()));

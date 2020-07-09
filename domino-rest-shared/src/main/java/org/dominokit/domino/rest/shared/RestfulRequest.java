@@ -90,6 +90,8 @@ public interface RestfulRequest {
 
     void abort();
 
+    void setWithCredentials(boolean withCredentials);
+
     RestfulRequest setResponseType(String responseType);
 
     RestfulRequest onSuccess(SuccessHandler successHandler);
