@@ -42,10 +42,6 @@ public interface Request {
     default void abort() {
     }
 
-    default void setWithCredentials(boolean withCredentials){
-
-    }
-
     default boolean isAborted(){
         return false;
     }

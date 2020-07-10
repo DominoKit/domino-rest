@@ -20,10 +20,12 @@ public interface SampleService {
     @POST
     @Path("someService/create")
     @Produces(MediaType.APPLICATION_JSON)
+    @WithCredentials(true)
     Void registerUser(@RequestBody HashMap<String, String> personalData);
 
     @POST
     @Path("somePath/:name")
+    @WithCredentials(false)
     SampleResponse annotatedBody(SampleRequest sampleRequest);
 
     @POST

@@ -1,6 +1,7 @@
 package org.dominokit.domino.rest.shared.request;
 
 import org.dominokit.domino.rest.shared.RestfulRequest;
+import org.dominokit.domino.rest.shared.request.service.annotations.WithCredentials;
 
 import javax.ws.rs.HttpMethod;
 import java.util.Date;
@@ -42,6 +43,7 @@ public class ServerRequest<R, S>
 
     private int timeout = -1;
     private int maxRetries = -1;
+    private Optional<WithCredentialsRequest> withCredentialsRequest = Optional.empty();
 
     private RequestWriter<R> requestWriter = request -> null;
     private ResponseReader<S> responseReader = request -> null;
@@ -133,9 +135,13 @@ public class ServerRequest<R, S>
         }
     }
 
-    @Override
-    public void setWithCredentials(boolean withCredentials) {
-        httpRequest.setWithCredentials(withCredentials);
+    public ServerRequest<R, S> setWithCredentials(boolean withCredentials) {
+        this.withCredentialsRequest = Optional.of(new WithCredentialsRequest(withCredentials));
+        return this;
+    }
+
+    public Optional<WithCredentialsRequest> getWithCredentialsRequest() {
+        return withCredentialsRequest;
     }
 
     @Override
@@ -533,5 +539,18 @@ public class ServerRequest<R, S>
     @FunctionalInterface
     public interface BeforeSendHandler {
         void onBeforeSend();
+    }
+
+    public static class WithCredentialsRequest {
+        private final boolean withCredentials;
+
+        public WithCredentialsRequest(boolean withCredentials) {
+            this.withCredentials = withCredentials;
+        }
+
+        public boolean isWithCredentials() {
+            return withCredentials;
+        }
+
     }
 }

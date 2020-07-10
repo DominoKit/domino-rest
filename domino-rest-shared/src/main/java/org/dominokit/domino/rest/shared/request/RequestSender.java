@@ -50,6 +50,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
             }
 
             setTimeout(request, restfulRequest);
+            setWithCredentials(request, restfulRequest);
             doSendRequest(request, restfulRequest);
         }
     }
@@ -93,6 +94,11 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
     private void setTimeout(ServerRequest<R, S> request, RestfulRequest restfulRequest) {
         if (request.getTimeout() > 0) {
             restfulRequest.timeout(request.getTimeout());
+        }
+    }
+    private void setWithCredentials(ServerRequest<R, S> request, RestfulRequest restfulRequest) {
+        if(request.getWithCredentialsRequest().isPresent()){
+            restfulRequest.setWithCredentials(request.getWithCredentialsRequest().get().isWithCredentials());
         }
     }
 

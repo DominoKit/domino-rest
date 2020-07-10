@@ -550,6 +550,12 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
             constructorBuilder.addStatement("setTimeout($L)", retries.timeout());
             constructorBuilder.addStatement("setMaxRetries($L)", retries.maxRetries());
         }
+
+        WithCredentials withCredentials = serviceMethod.method.getAnnotation(WithCredentials.class);
+        if(nonNull(withCredentials)){
+            constructorBuilder.addStatement("setWithCredentials($L)", withCredentials.value());
+        }
+
         if (nonNull(serviceMethod.method.getAnnotation(SuccessCodes.class))) {
             constructorBuilder.addStatement("setSuccessCodes(new Integer[]{$L})", getSuccessCodes(serviceMethod));
         }
