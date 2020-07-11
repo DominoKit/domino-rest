@@ -509,9 +509,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
             return nonNull(parameter.getAnnotation(RequestBody.class));
         } else {
-            TypeElement typeElement = elements.getTypeElement(typeMirror.toString());
-            RequestBody pojoAnnotation = typeElement.getAnnotation(RequestBody.class);
-            JSONMapper mapperAnnotation = typeElement.getAnnotation(JSONMapper.class);
+            Element element = types.asElement(typeMirror);
+            RequestBody pojoAnnotation = parameter.getAnnotation(RequestBody.class);
+            JSONMapper mapperAnnotation = element.getAnnotation(JSONMapper.class);
             return nonNull(parameter.getAnnotation(RequestBody.class)) ||
                     nonNull(pojoAnnotation) || nonNull(mapperAnnotation);
         }
