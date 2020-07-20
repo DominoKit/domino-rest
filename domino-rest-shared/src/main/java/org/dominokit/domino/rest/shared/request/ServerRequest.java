@@ -1,7 +1,6 @@
 package org.dominokit.domino.rest.shared.request;
 
 import org.dominokit.domino.rest.shared.RestfulRequest;
-import org.dominokit.domino.rest.shared.request.service.annotations.WithCredentials;
 
 import javax.ws.rs.HttpMethod;
 import java.util.Date;
@@ -15,7 +14,7 @@ import java.util.logging.Logger;
 import static java.util.Objects.*;
 
 public class ServerRequest<R, S>
-        extends BaseRequest implements Response<S>, CanFailOrSend, HasHeadersAndParameters<R, S> {
+        extends BaseRequest implements Response<S>, HasComplete, HasHeadersAndParameters<R, S> {
 
     private static final Logger LOGGER = Logger.getLogger(ServerRequest.class.getName());
 
@@ -54,10 +53,12 @@ public class ServerRequest<R, S>
     private final RequestState<ServerSuccessRequestStateContext> executedOnServer = context -> {
         success.onSuccess((S) context.responseBean);
         state = completed;
+        completeHandler.onCompleted();
     };
 
     private final RequestState<ServerSuccessRequestStateContext> aborted = context -> {
         LOGGER.info("Request have already been aborted.!");
+        completeHandler.onCompleted();
     };
 
     private final RequestState<ServerResponseReceivedStateContext> sent = context -> {
@@ -330,8 +331,16 @@ public class ServerRequest<R, S>
      * @return
      */
     @Override
-    public CanFailOrSend onSuccess(Success<S> success) {
+    public HasComplete onSuccess(Success<S> success) {
         this.success = success;
+        return this;
+    }
+
+    @Override
+    public CanFailOrSend onComplete(CompleteHandler completeHandler) {
+        if (nonNull(completeHandler)) {
+            this.completeHandler = completeHandler;
+        }
         return this;
     }
 
@@ -468,7 +477,7 @@ public class ServerRequest<R, S>
     }
 
     @Override
-    public CanSend onFailed(Fail fail) {
+    public CanCompleteOrSend onFailed(Fail fail) {
         this.fail = fail;
         return this;
     }

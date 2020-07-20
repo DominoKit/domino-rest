@@ -14,6 +14,9 @@ public abstract class BaseRequest implements Request {
         throw new InvalidRequestState("This request have already been completed!. [" + this.getClass().getCanonicalName() + "]");
     };
 
+    protected CompleteHandler completeHandler = () -> {
+    };
+
     protected Fail fail = requestContext.getConfig().getDefaultFailHandler();
 
     protected final RequestState<ServerFailedRequestStateContext> failedOnServer =
@@ -21,6 +24,7 @@ public abstract class BaseRequest implements Request {
                 if (!skipFailHandler) {
                     fail.onFail(context.response);
                 }
+                completeHandler.onCompleted();
             };
 
     public BaseRequest() {
