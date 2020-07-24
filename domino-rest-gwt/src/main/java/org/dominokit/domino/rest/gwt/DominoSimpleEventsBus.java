@@ -33,6 +33,7 @@ public class DominoSimpleEventsBus implements EventsBus<Event<EventProcessor>> {
             simpleGwtEventsBus.fireEvent(event.asEvent());
         } catch (Exception ex) {
             LOGGER.error("could not publish event", ex);
+            throw ex;
         }
     }
 }
