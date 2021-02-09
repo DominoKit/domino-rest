@@ -28,6 +28,7 @@ public class ServerRequest<R, S>
     private Map<String, String> headers = new HashMap<>();
     private Map<String, String> queryParameters = new HashMap<>();
     private Map<String, String> pathParameters = new HashMap<>();
+    private Map<String, String> metaParameters = new HashMap<>();
 
     private RequestMeta requestMeta;
     private R requestBean;
@@ -288,6 +289,36 @@ public class ServerRequest<R, S>
                     .build();
             this.setUrl(urlFormatter.formatUrl(root));
         }
+    }
+
+    /**
+     * These parameters will not be part of the generated code or will be by default part of the final rest request
+     * We can use those parameters inside of a request interceptor to apply some conditional logic
+     * @param key parameter key
+     * @param value parameter value
+     * @return the current request instance
+     */
+    public ServerRequest<R, S> setMetaParameter(String key, String value) {
+        this.metaParameters.put(key, value);
+        return this;
+    }
+
+    /**
+     *
+     * @param key
+     * @return the value of the meta parameter of the specified key
+     */
+    public String getMetaParameter(String key) {
+        return metaParameters.get(key);
+    }
+
+    /**
+     *
+     * @param key
+     * @return a copy of the request current meta parameters
+     */
+    public Map<String, String> getMetaParameters() {
+        return new HashMap<>(metaParameters);
     }
 
     /**
