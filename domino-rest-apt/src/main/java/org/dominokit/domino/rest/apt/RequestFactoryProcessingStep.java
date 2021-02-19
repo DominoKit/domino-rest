@@ -18,41 +18,44 @@ package org.dominokit.domino.rest.apt;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.AbstractProcessingStep;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.ExceptionUtil;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.StepBuilder;
-
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import java.util.Set;
+import org.dominokit.domino.rest.shared.request.service.annotations.RequestFactory;
 
+/** A step to generating factories for all {@link RequestFactory} listed in source path */
 public class RequestFactoryProcessingStep extends AbstractProcessingStep {
 
+  public RequestFactoryProcessingStep(ProcessingEnvironment processingEnv) {
+    super(processingEnv);
+  }
 
-    public RequestFactoryProcessingStep(ProcessingEnvironment processingEnv) {
-        super(processingEnv);
+  public static class Builder extends StepBuilder<RequestFactoryProcessingStep> {
+
+    public RequestFactoryProcessingStep build() {
+      return new RequestFactoryProcessingStep(processingEnv);
     }
+  }
 
-    public static class Builder extends StepBuilder<RequestFactoryProcessingStep> {
+  /**
+   * Process and generate factories for {@code elementsByAnnotation}
+   *
+   * @param elementsByAnnotation the annotated elements
+   */
+  public void process(Set<? extends Element> elementsByAnnotation) {
 
-        public RequestFactoryProcessingStep build() {
-            return new RequestFactoryProcessingStep(processingEnv);
-        }
+    for (Element element : elementsByAnnotation) {
+      try {
+        generateFactory(element);
+      } catch (Exception e) {
+        ExceptionUtil.messageStackTrace(messager, e);
+      }
     }
+  }
 
-
-    public void process(
-            Set<? extends Element> elementsByAnnotation) {
-
-        for (Element element : elementsByAnnotation) {
-            try {
-                generateFactory(element);
-            } catch (Exception e) {
-                ExceptionUtil.messageStackTrace(messager, e);
-            }
-        }
-
-    }
-
-    private void generateFactory(Element serviceElement) {
-        writeSource(new RequestFactorySourceWriter(serviceElement, processingEnv).asTypeBuilder(), elements.getPackageOf(serviceElement).getQualifiedName().toString());
-    }
-
+  private void generateFactory(Element serviceElement) {
+    writeSource(
+        new RequestFactorySourceWriter(serviceElement, processingEnv).asTypeBuilder(),
+        elements.getPackageOf(serviceElement).getQualifiedName().toString());
+  }
 }

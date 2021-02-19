@@ -40,56 +40,58 @@
 
 package javax.ws.rs.container;
 
-import javax.ws.rs.GwtIncompatible;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.GwtIncompatible;
 
+/**
+ * Used for emulating Context in domino-rest, arguments of this type will be ignored in domino-rest
+ * client generation
+ */
 public interface AsyncResponse {
 
-    @GwtIncompatible
-    public static final long NO_TIMEOUT = 0;
+  @GwtIncompatible long NO_TIMEOUT = 0;
 
-    @GwtIncompatible
-    public boolean resume(Object response);
+  @GwtIncompatible
+  boolean resume(Object response);
 
-    @GwtIncompatible
-    public boolean resume(Throwable response);
+  @GwtIncompatible
+  boolean resume(Throwable response);
 
-    @GwtIncompatible
-    public boolean cancel();
+  @GwtIncompatible
+  boolean cancel();
 
-    @GwtIncompatible
-    public boolean cancel(int retryAfter);
+  @GwtIncompatible
+  boolean cancel(int retryAfter);
 
-    @GwtIncompatible
-    public boolean cancel(Date retryAfter);
+  @GwtIncompatible
+  boolean cancel(Date retryAfter);
 
-    @GwtIncompatible
-    public boolean isSuspended();
+  @GwtIncompatible
+  boolean isSuspended();
 
-    @GwtIncompatible
-    public boolean isCancelled();
+  @GwtIncompatible
+  boolean isCancelled();
 
-    @GwtIncompatible
-    public boolean isDone();
+  @GwtIncompatible
+  boolean isDone();
 
-    @GwtIncompatible
-    public boolean setTimeout(long time, TimeUnit unit);
+  @GwtIncompatible
+  boolean setTimeout(long time, TimeUnit unit);
 
-    @GwtIncompatible
-    public void setTimeoutHandler(TimeoutHandler handler);
+  @GwtIncompatible
+  void setTimeoutHandler(TimeoutHandler handler);
 
-    @GwtIncompatible
-    public Collection<Class<?>> register(Class<?> callback);
+  @GwtIncompatible
+  Collection<Class<?>> register(Class<?> callback);
 
-    @GwtIncompatible
-    public Map<Class<?>, Collection<Class<?>>> register(Class<?> callback, Class<?>... callbacks);
+  @GwtIncompatible
+  Map<Class<?>, Collection<Class<?>>> register(Class<?> callback, Class<?>... callbacks);
 
-    @GwtIncompatible
-    public Collection<Class<?>> register(Object callback);
+  @GwtIncompatible
+  Collection<Class<?>> register(Object callback);
 
-
-    public Map<Class<?>, Collection<Class<?>>> register(Object callback, Object... callbacks);
+  Map<Class<?>, Collection<Class<?>>> register(Object callback, Object... callbacks);
 }

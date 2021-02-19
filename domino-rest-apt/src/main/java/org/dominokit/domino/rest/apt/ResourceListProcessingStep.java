@@ -18,49 +18,59 @@ package org.dominokit.domino.rest.apt;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.AbstractProcessingStep;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.ExceptionUtil;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.StepBuilder;
-import org.dominokit.domino.rest.shared.request.service.annotations.ResourceList;
-
+import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import java.util.List;
-import java.util.Set;
+import org.dominokit.domino.rest.shared.request.service.annotations.RequestFactory;
+import org.dominokit.domino.rest.shared.request.service.annotations.ResourceList;
 
+/**
+ * A processing step to generating factories for all {@link RequestFactory} listed in {@link
+ * ResourceList}
+ */
 public class ResourceListProcessingStep extends AbstractProcessingStep {
 
+  public ResourceListProcessingStep(ProcessingEnvironment processingEnv) {
+    super(processingEnv);
+  }
 
-    public ResourceListProcessingStep(ProcessingEnvironment processingEnv) {
-        super(processingEnv);
+  public static class Builder extends StepBuilder<ResourceListProcessingStep> {
+
+    public ResourceListProcessingStep build() {
+      return new ResourceListProcessingStep(processingEnv);
     }
+  }
 
-    public static class Builder extends StepBuilder<ResourceListProcessingStep> {
+  /**
+   * Process and generate factories for {@code elementsByAnnotation}
+   *
+   * @param elementsByAnnotation the annotated elements
+   */
+  public void process(Set<? extends Element> elementsByAnnotation) {
 
-        public ResourceListProcessingStep build() {
-            return new ResourceListProcessingStep(processingEnv);
-        }
+    for (Element element : elementsByAnnotation) {
+      try {
+        generateFactory(element);
+      } catch (Exception e) {
+        ExceptionUtil.messageStackTrace(messager, e);
+      }
     }
+  }
 
-    public void process(
-            Set<? extends Element> elementsByAnnotation) {
-
-        for (Element element : elementsByAnnotation) {
-            try {
-                generateFactory(element);
-            } catch (Exception e) {
-                ExceptionUtil.messageStackTrace(messager, e);
-            }
-        }
-
-    }
-
-    private void generateFactory(Element resourceListElement) {
-        ResourceList resourceList = resourceListElement.getAnnotation(ResourceList.class);
-        List<TypeMirror> resourceTypes = processorUtil.getClassArrayValueFromAnnotation(resourceListElement, ResourceList.class, "value");
-        resourceTypes.forEach(typeMirror -> {
-            Element element = types.asElement(typeMirror);
-            writeSource(new RequestFactorySourceWriter(element, resourceList.serviceRoot(), processingEnv).asTypeBuilder(), elements.getPackageOf(resourceListElement).getQualifiedName().toString());
+  private void generateFactory(Element resourceListElement) {
+    ResourceList resourceList = resourceListElement.getAnnotation(ResourceList.class);
+    List<TypeMirror> resourceTypes =
+        processorUtil.getClassArrayValueFromAnnotation(
+            resourceListElement, ResourceList.class, "value");
+    resourceTypes.forEach(
+        typeMirror -> {
+          Element element = types.asElement(typeMirror);
+          writeSource(
+              new RequestFactorySourceWriter(element, resourceList.serviceRoot(), processingEnv)
+                  .asTypeBuilder(),
+              elements.getPackageOf(resourceListElement).getQualifiedName().toString());
         });
-
-    }
-
+  }
 }

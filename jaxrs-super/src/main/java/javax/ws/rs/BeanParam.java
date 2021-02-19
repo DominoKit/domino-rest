@@ -47,17 +47,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The annotation that may be used to inject custom JAX-RS "parameter aggregator" value object
- * into a resource class field, property or resource method parameter.
- * <p>
- * The JAX-RS runtime will instantiate the object and inject all it's fields and properties annotated
- * with either one of the {@code @XxxParam} annotation ({@link PathParam &#64;PathParam},
+ * The annotation that may be used to inject custom JAX-RS "parameter aggregator" value object into
+ * a resource class field, property or resource method parameter.
+ *
+ * <p>The JAX-RS runtime will instantiate the object and inject all it's fields and properties
+ * annotated with either one of the {@code @XxxParam} annotation ({@link PathParam &#64;PathParam},
  * {@link FormParam &#64;FormParam} ...) or the {@link javax.ws.rs.core.Context &#64;Context}
- * annotation. For the POJO classes same instantiation and injection rules apply as in case of instantiation
- * and injection of request-scoped root resource classes.
- * </p>
- * <p>
- * For example:
+ * annotation. For the POJO classes same instantiation and injection rules apply as in case of
+ * instantiation and injection of request-scoped root resource classes.
+ *
+ * <p>For example:
+ *
  * <pre>
  * public class MyBean {
  *   &#64;FormParam("myData")
@@ -81,13 +81,11 @@ import java.lang.annotation.Target;
  *   ...
  * }
  * </pre>
- * </p>
- * <p>
- * Because injection occurs at object creation time, use of this annotation on resource
- * class fields and bean properties is only supported for the default per-request resource
- * class lifecycle. Resource classes using other lifecycles should only use this annotation
- * on resource method parameters.
- * </p>
+ *
+ * <p>Because injection occurs at object creation time, use of this annotation on resource class
+ * fields and bean properties is only supported for the default per-request resource class
+ * lifecycle. Resource classes using other lifecycles should only use this annotation on resource
+ * method parameters.
  *
  * @author Marek Potociar
  * @since 2.0
@@ -95,5 +93,4 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER, ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface BeanParam {
-}
+public @interface BeanParam {}

@@ -1,77 +1,94 @@
+/*
+ * Copyright © 2019 Dominokit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dominokit.domino.rest;
 
+import java.util.Date;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import org.dominokit.domino.rest.shared.request.service.annotations.DateFormat;
 import org.dominokit.domino.rest.shared.request.service.annotations.RequestBody;
 import org.dominokit.jacksonapt.annotation.JSONMapper;
 
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import java.util.Date;
-
 @JSONMapper
 @RequestBody
-public class SampleRequest{
+public class SampleRequest {
 
-    @PathParam("name")
-    private String name;
-    private String title;
-    @QueryParam("name2")
-    public String anotherName;
-    @HeaderParam("desc")
-    public String description;
+  @PathParam("name")
+  private String name;
 
-    @QueryParam("birth-date")
-    @DateFormat("dd-MM-yyyy")
-    private Date birthDate;
+  private String title;
 
-    private NestedRequestBean accountInfo;
+  @QueryParam("name2")
+  public String anotherName;
 
-    public String getName() {
-        return name;
-    }
+  @HeaderParam("desc")
+  public String description;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  @QueryParam("birth-date")
+  @DateFormat("dd-MM-yyyy")
+  private Date birthDate;
 
-    public String getTitle() {
-        return title;
-    }
+  private NestedRequestBean accountInfo;
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getAnotherName() {
-        return anotherName;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setAnotherName(String anotherName) {
-        this.anotherName = anotherName;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public String getAnotherName() {
+    return anotherName;
+  }
 
-    public NestedRequestBean getAccountInfo() {
-        return accountInfo;
-    }
+  public void setAnotherName(String anotherName) {
+    this.anotherName = anotherName;
+  }
 
-    public void setAccountInfo(NestedRequestBean accountInfo) {
-        this.accountInfo = accountInfo;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public Date getBirthDate() {
-        return birthDate;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
-    }
+  public NestedRequestBean getAccountInfo() {
+    return accountInfo;
+  }
+
+  public void setAccountInfo(NestedRequestBean accountInfo) {
+    this.accountInfo = accountInfo;
+  }
+
+  public Date getBirthDate() {
+    return birthDate;
+  }
+
+  public void setBirthDate(Date birthDate) {
+    this.birthDate = birthDate;
+  }
 }

@@ -1,18 +1,34 @@
-//package org.dominokit.domino.rest;
+/*
+ * Copyright © 2019 Dominokit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// package org.dominokit.domino.rest;
 //
-//import com.google.gwt.junit.DoNotRunWith;
-//import com.google.gwt.junit.Platform;
-//import com.google.gwt.junit.client.GWTTestCase;
-//import org.dominokit.domino.rest.shared.RestfulRequest;
+// import com.google.gwt.junit.DoNotRunWith;
+// import com.google.gwt.junit.Platform;
+// import com.google.gwt.junit.client.GWTTestCase;
+// import org.dominokit.domino.rest.shared.RestfulRequest;
 //
-//import java.util.Arrays;
-//import java.util.HashMap;
-//import java.util.Map;
-//import java.util.logging.Logger;
+// import java.util.Arrays;
+// import java.util.HashMap;
+// import java.util.Map;
+// import java.util.logging.Logger;
 //
-//public abstract class RestfulRequestTest extends GWTTestCase {
+// public abstract class RestfulRequestTest extends GWTTestCase {
 //
-//    protected static final Logger LOGGER = Logger.getLogger(RestfulRequestTest.class.getCanonicalName());
+//    protected static final Logger LOGGER =
+// Logger.getLogger(RestfulRequestTest.class.getCanonicalName());
 //    private static final String GET = "GET";
 //    public static final String REQUEST_QUERY_STRING = "request-query-string";
 //
@@ -62,12 +78,14 @@
 //    }
 //
 //    public void testGetUriWithParameters() {
-//        RestfulRequest restfulRequest = create(getUri() + "?key1=value1").addQueryParam("key2", "value2");
+//        RestfulRequest restfulRequest = create(getUri() + "?key1=value1").addQueryParam("key2",
+// "value2");
 //        assertEquals(getUri() + "?key1=value1&key2=value2", restfulRequest.getUri());
 //    }
 //
 //    public void testCreateWithUriThatHasParam_shouldParseParameters() {
-//        assertEquals("key1=value1&key2=value2", create(getUri() + "?key1=value1&key2=value2").getQuery());
+//        assertEquals("key1=value1&key2=value2", create(getUri() +
+// "?key1=value1&key2=value2").getQuery());
 //    }
 //
 //    public void testGetPath() {
@@ -79,7 +97,8 @@
 //    }
 //
 //    public void testCreateRequestWithUriAndQueryParam() {
-//        RestfulRequest baseRestfulRequest = create(getUri()).addQueryString("key1=value1&key2=value2");
+//        RestfulRequest baseRestfulRequest =
+// create(getUri()).addQueryString("key1=value1&key2=value2");
 //        assertEquals(getUri(), baseRestfulRequest.getPath());
 //        assertEquals("key1=value1&key2=value2", baseRestfulRequest.getQuery());
 //    }
@@ -114,7 +133,8 @@
 //    public void testSendJson() {
 //        RestfulRequest jsonRequest = RestfulRequest.post(getUri());
 //        jsonRequest.onSuccess(response -> {
-//            assertEquals("test content with body [" + expectedJson() + "]", response.getBodyAsString());
+//            assertEquals("test content with body [" + expectedJson() + "]",
+// response.getBodyAsString());
 //            assertEquals("application/json", response.getHeader("request-header-Content-Type"));
 //            finish();
 //        }).onError(throwable -> fail()).sendJson(json());
@@ -127,7 +147,8 @@
 //        RestfulRequest formRequest = RestfulRequest.post(getUri());
 //        formRequest.onSuccess(response -> {
 //            assertEquals("test content with body [key=value]", response.getBodyAsString());
-//            assertEquals("application/x-www-form-urlencoded", response.getHeader("request-header-Content-Type"));
+//            assertEquals("application/x-www-form-urlencoded",
+// response.getHeader("request-header-Content-Type"));
 //            finish();
 //        }).onError(throwable -> fail()).sendForm(formData);
 //        wait(200);
@@ -151,7 +172,8 @@
 //    }
 //
 //    public void testAddMultipleQueryParameter() {
-//        restfulRequest.addQueryParam("key1", "value1").addQueryParam("key2", "value2").onSuccess(response -> {
+//        restfulRequest.addQueryParam("key1", "value1").addQueryParam("key2",
+// "value2").onSuccess(response -> {
 //            assertEquals("key1=value1&key2=value2", response.getHeader(REQUEST_QUERY_STRING));
 //            finish();
 //        }).onError(throwable -> fail()).send();
@@ -159,7 +181,8 @@
 //    }
 //
 //    public void testAddQueryParameters() {
-//        restfulRequest.addQueryParams("key", Arrays.asList("value1", "value2")).onSuccess(response -> {
+//        restfulRequest.addQueryParams("key", Arrays.asList("value1", "value2")).onSuccess(response
+// -> {
 //            assertEquals("key=value1&key=value2", response.getHeader(REQUEST_QUERY_STRING));
 //            finish();
 //        }).onError(throwable -> fail()).send();
@@ -209,4 +232,4 @@
 //    protected abstract String json();
 //
 //    protected abstract String expectedJson();
-//}
+// }
