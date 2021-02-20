@@ -45,13 +45,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.concurrent.TimeUnit;
 
 /**
- * Used for emulating Context in domino-rest, arguments annotated with this annotation will be ignored in domino-rest client generation
+ * Used for emulating Context in domino-rest, arguments annotated with this annotation will be
+ * ignored in domino-rest client generation
  */
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Suspended {
-}
+public @interface Suspended {}

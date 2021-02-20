@@ -1,50 +1,165 @@
+/*
+ * Copyright © 2019 Dominokit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dominokit.domino.rest.shared.request;
 
 import java.util.Date;
 import java.util.List;
+import org.dominokit.domino.rest.shared.request.service.annotations.DateFormat;
 
+/** The global configurations for domino rest. */
 public interface RestConfig {
-    RestConfig setDefaultResourceRootPath(String rootPath);
+  /**
+   * Returns the default resource root for a specific path
+   *
+   * @param rootPath the path
+   * @return the default resource root for the path
+   */
+  RestConfig setDefaultResourceRootPath(String rootPath);
 
-    RequestRouter<ServerRequest> getServerRouter();
+  /** @return the router configured */
+  RequestRouter<ServerRequest> getServerRouter();
 
-    String getDefaultServiceRoot();
+  /** @return the default service root */
+  String getDefaultServiceRoot();
 
-    String getDefaultJsonDateFormat();
+  /** @return the default date format for JSON date fields */
+  String getDefaultJsonDateFormat();
 
-    List<DynamicServiceRoot> getServiceRoots();
+  /**
+   * @return A list of the dynamic service roots configured
+   * @see DynamicServiceRoot
+   */
+  List<DynamicServiceRoot> getServiceRoots();
 
-    RestConfig setDefaultServiceRoot(String defaultServiceRoot);
+  /**
+   * Sets the default service root
+   *
+   * @param defaultServiceRoot the default service root
+   * @return same instance to support builder pattern
+   */
+  RestConfig setDefaultServiceRoot(String defaultServiceRoot);
 
-    RestConfig setDefaultJsonDateFormat(String defaultJsonDateFormat);
+  /**
+   * Sets t default JSON date format
+   *
+   * <p>For example: yyyy-MM-dd
+   *
+   * @param defaultJsonDateFormat the format
+   * @return same instance to support builder pattern
+   */
+  RestConfig setDefaultJsonDateFormat(String defaultJsonDateFormat);
 
-    RestConfig addDynamicServiceRoot(DynamicServiceRoot dynamicServiceRoot);
+  /**
+   * Add new dynamic service root
+   *
+   * @param dynamicServiceRoot the service root to add
+   * @return same instance to support builder pattern
+   * @see DynamicServiceRoot
+   */
+  RestConfig addDynamicServiceRoot(DynamicServiceRoot dynamicServiceRoot);
 
-    RestConfig addRequestInterceptor(RequestInterceptor interceptor);
+  /**
+   * Adds new request interceptor
+   *
+   * @param interceptor the interceptor to add
+   * @return same instance to support builder pattern
+   * @see RequestInterceptor
+   */
+  RestConfig addRequestInterceptor(RequestInterceptor interceptor);
 
-    RestConfig removeRequestInterceptor(RequestInterceptor interceptor);
+  /**
+   * Removes request interceptor
+   *
+   * @param interceptor the interceptor to remove
+   * @return same instance to support builder pattern
+   * @see RequestInterceptor
+   */
+  RestConfig removeRequestInterceptor(RequestInterceptor interceptor);
 
-    List<RequestInterceptor> getRequestInterceptors();
+  /**
+   * @return all request interceptors configured
+   * @see RequestInterceptor
+   */
+  List<RequestInterceptor> getRequestInterceptors();
 
-    RestConfig addResponseInterceptor(ResponseInterceptor responseInterceptor);
+  /**
+   * Adds new response interceptor
+   *
+   * @param responseInterceptor the interceptor to add
+   * @return same instance to support builder pattern
+   * @see ResponseInterceptor
+   */
+  RestConfig addResponseInterceptor(ResponseInterceptor responseInterceptor);
 
-    RestConfig removeResponseInterceptor(ResponseInterceptor responseInterceptor);
+  /**
+   * Removes response interceptor
+   *
+   * @param responseInterceptor the interceptor to remove
+   * @return same instance to support builder pattern
+   * @see ResponseInterceptor
+   */
+  RestConfig removeResponseInterceptor(ResponseInterceptor responseInterceptor);
 
-    List<ResponseInterceptor> getResponseInterceptors();
+  /**
+   * @return all response interceptors configured
+   * @see ResponseInterceptor
+   */
+  List<ResponseInterceptor> getResponseInterceptors();
 
-    String getDefaultResourceRootPath();
+  /** @return the default resource root configured */
+  String getDefaultResourceRootPath();
 
-    RestConfig setDefaultFailHandler(Fail fail);
+  /**
+   * Configures a default fail handler that will be called for each failed request
+   *
+   * @param fail the fail handler
+   * @return same instance to support builder pattern
+   * @see Fail
+   */
+  RestConfig setDefaultFailHandler(Fail fail);
 
-    Fail getDefaultFailHandler();
+  /**
+   * @return the default fail handler configured
+   * @see Fail
+   */
+  Fail getDefaultFailHandler();
 
-    AsyncRunner asyncRunner();
+  /**
+   * @return the async runner configured
+   * @see AsyncRunner
+   */
+  AsyncRunner asyncRunner();
 
-    RestConfig setDateParamFormatter(DateParamFormatter formatter);
-    DateParamFormatter getDateParamFormatter();
+  /**
+   * Sets the date parameter formatter, this formatter will be called to format any parameter
+   * annotated with {@link DateFormat}
+   *
+   * @param formatter the date parameter formatter
+   * @return same instance to support builder pattern
+   * @see DateParamFormatter
+   * @see DateFormat
+   */
+  RestConfig setDateParamFormatter(DateParamFormatter formatter);
 
-    @FunctionalInterface
-    interface DateParamFormatter {
-        String format(Date date, String pattern);
-    }
+  /** @return the date parameter formatter configured */
+  DateParamFormatter getDateParamFormatter();
+
+  /** Formatter to format the date parameter based on a patter */
+  @FunctionalInterface
+  interface DateParamFormatter {
+    String format(Date date, String pattern);
+  }
 }

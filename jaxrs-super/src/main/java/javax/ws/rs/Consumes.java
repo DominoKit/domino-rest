@@ -48,13 +48,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines the media types that the methods of a resource class. If
- * not specified, a container will assume that any media type is acceptable.
- * Method level annotations override a class level annotation. A container
- * is responsible for ensuring that the method invoked is capable of consuming
- * the media type of the HTTP request entity body. If no such method is
- * available the container must respond with a HTTP "415 Unsupported Media Type"
- * as specified by RFC 2616.
+ * Defines the media types that the methods of a resource class. If not specified, a container will
+ * assume that any media type is acceptable. Method level annotations override a class level
+ * annotation. A container is responsible for ensuring that the method invoked is capable of
+ * consuming the media type of the HTTP request entity body. If no such method is available the
+ * container must respond with a HTTP "415 Unsupported Media Type" as specified by RFC 2616.
  *
  * @author Paul Sandoz
  * @author Marc Hadley
@@ -66,15 +64,17 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Consumes {
 
-    /**
-     * A list of media types. Each entry may specify a single type or consist
-     * of a comma separated list of types, with any leading or trailing white-spaces
-     * in a single type entry being ignored. For example:
-     * <pre>
-     *  {"image/jpeg, image/gif ", " image/png"}
-     * </pre>
-     * Use of the comma-separated form allows definition of a common string constant
-     * for use on multiple targets.
-     */
-    String[] value() default "*/*";
+  /**
+   * A list of media types. Each entry may specify a single type or consist of a comma separated
+   * list of types, with any leading or trailing white-spaces in a single type entry being ignored.
+   * For example:
+   *
+   * <pre>
+   *  {"image/jpeg, image/gif ", " image/png"}
+   * </pre>
+   *
+   * Use of the comma-separated form allows definition of a common string constant for use on
+   * multiple targets.
+   */
+  String[] value() default "*/*";
 }

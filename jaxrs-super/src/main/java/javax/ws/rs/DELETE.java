@@ -57,5 +57,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @HttpMethod(HttpMethod.DELETE)
 @Documented
-public @interface DELETE {
-}
+public @interface DELETE {}

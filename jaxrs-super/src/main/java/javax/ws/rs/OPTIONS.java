@@ -58,5 +58,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @HttpMethod(HttpMethod.OPTIONS)
 @Documented
-public @interface OPTIONS {
-}
+public @interface OPTIONS {}

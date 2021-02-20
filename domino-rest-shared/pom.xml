@@ -5,7 +5,7 @@
     <parent>
         <artifactId>domino-rest</artifactId>
         <groupId>org.dominokit</groupId>
-        <version>1.0-rc.4-SNAPSHOT</version>
+        <version>1.0.0-beta</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>org.gwtproject.regexp</groupId>
             <artifactId>gwt-regexp</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0-RC1</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -30,27 +30,25 @@
             <groupId>org.dominokit</groupId>
             <artifactId>jaxrs-super</artifactId>
             <version>${project.version}</version>
-<!--            <scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.dominokit.jackson</groupId>
             <artifactId>jackson-apt</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0-beta</version>
         </dependency>
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-aggregator-shared</artifactId>
-            <version>1.0-rc.4-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-history-shared</artifactId>
-            <version>1.0-rc.4-SNAPSHOT</version>
+            <version>1.0.0-RC1</version>
         </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>

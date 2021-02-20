@@ -47,10 +47,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used for emulating Context in domino-rest, arguments annotated with this annotation will be ignored in domino-rest client generation
+ * Used for emulating Context in domino-rest, arguments annotated with this annotation will be
+ * ignored in domino-rest client generation
  */
 @Target({ElementType.PARAMETER, ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Context {
-}
+public @interface Context {}
