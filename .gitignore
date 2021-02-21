@@ -47,8 +47,6 @@ src/main/webapp/gwt_bree/
 **/*.iws
 
 .idea/**/*.*
-**/*.iml
-**/*.iws
 **/*.log
 
 **/bin/
