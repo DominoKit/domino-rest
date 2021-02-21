@@ -5,7 +5,7 @@
 
     <groupId>org.dominokit</groupId>
     <artifactId>domino-rest</artifactId>
-    <version>1.0.0-beta</version>
+    <version>1.0.0-beta-2</version>
     <packaging>pom</packaging>
 
     <name>domino-rest</name>
@@ -61,10 +61,10 @@
 
     <modules>
         <module>domino-rest-shared</module>
-        <module>domino-rest-apt</module>
-        <module>jaxrs-super</module>
-        <module>domino-rest-gwt</module>
-        <module>domino-rest-server</module>
+        <module>domino-rest-processor</module>
+        <module>domino-rest-jaxrs</module>
+        <module>domino-rest-client</module>
+        <module>domino-rest-jvm</module>
     </modules>
 
     <properties>
@@ -85,7 +85,7 @@
         <maven.surfire.plugin>3.0.0-M1</maven.surfire.plugin>
         <maven.gwt.plugin>1.0.0</maven.gwt.plugin>
         <gwt.version>2.9.0</gwt.version>
-        <domino.logger.version>1.0.1</domino.logger.version>
+        <domino.logger.version>1.0.2</domino.logger.version>
     </properties>
 
     <dependencyManagement>
@@ -196,6 +196,7 @@
                         <exclude>**/pom.xml</exclude>
                         <exclude>**/.flattened-pom.xml</exclude>
                         <exclude>**/gwt-unitcache</exclude>
+                        <exclude>**/.mvn/*.*</exclude>
                     </excludes>
                     <properties>
                         <year>${project.inceptionYear}</year>
