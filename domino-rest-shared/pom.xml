@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-aggregator-shared</artifactId>
-            <version>1.0-alpha-gwt2.8.2-SNAPSHOT</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.dominokit</groupId>
