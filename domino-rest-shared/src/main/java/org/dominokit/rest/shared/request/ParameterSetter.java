@@ -20,12 +20,11 @@ import static java.util.Objects.isNull;
 import java.util.Date;
 import java.util.function.Supplier;
 
-/**
- * A utility class to set query parameters for a request
- */
+/** A utility class to set query parameters for a request */
 public class ParameterSetter {
   /**
    * General query parameters setter
+   *
    * @param request {@link ServerRequest} the target request for which we add the query parameter
    * @param name String name of the query parameter
    * @param valueSupplier {@link Supplier} for the query parameter value
@@ -41,7 +40,9 @@ public class ParameterSetter {
   }
 
   /**
-   * Date query parameter setter that formats the date using the {@link DominoRestContext#getConfig()#getDateParamFormatter}
+   * Date query parameter setter that formats the date using the {@link
+   * DominoRestContext#getConfig()#getDateParamFormatter}
+   *
    * @param request {@link ServerRequest} the target request for which we add the query parameter
    * @param name String name of the query parameter
    * @param valueSupplier a {@link Date} value {@link Supplier}
@@ -63,6 +64,7 @@ public class ParameterSetter {
 
   /**
    * Sets general path parameters
+   *
    * @param request {@link ServerRequest} the target request for which we add the path parameter
    * @param name String name of the path parameter
    * @param valueSupplier {@link Supplier} for the path parameter value
@@ -75,6 +77,7 @@ public class ParameterSetter {
 
   /**
    * Sets a date path parameter
+   *
    * @param request {@link ServerRequest} the target request for which we add the path parameter
    * @param name String name of the path parameter
    * @param valueSupplier a {@link Date} value {@link Supplier}

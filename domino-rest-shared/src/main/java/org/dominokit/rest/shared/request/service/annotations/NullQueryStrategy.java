@@ -30,6 +30,7 @@ import org.dominokit.rest.shared.request.NullQueryParamStrategy;
 public @interface NullQueryStrategy {
   /**
    * default is {@link NullQueryParamStrategy#EMPTY}
+   *
    * @return a {@link NullQueryParamStrategy}
    */
   NullQueryParamStrategy value() default NullQueryParamStrategy.EMPTY;

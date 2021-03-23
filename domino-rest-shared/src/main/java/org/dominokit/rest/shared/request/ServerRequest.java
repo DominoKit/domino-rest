@@ -632,8 +632,8 @@ public class ServerRequest<R, S> extends BaseRequest
   }
 
   /**
-   *
-   * @return the request {@link NullQueryParamStrategy} and if not set fallback to the Global strategy defined in
+   * @return the request {@link NullQueryParamStrategy} and if not set fallback to the Global
+   *     strategy defined in
    */
   public NullQueryParamStrategy getNullQueryParamStrategy() {
     if (isNull(nullQueryParamStrategy)) {
@@ -643,7 +643,9 @@ public class ServerRequest<R, S> extends BaseRequest
   }
 
   /**
-   * Overrides the {@link NullQueryParamStrategy} defined in {@link DominoRestContext#getConfig()#getNullQueryParamStrategy()} for this request
+   * Overrides the {@link NullQueryParamStrategy} defined in {@link
+   * DominoRestContext#getConfig()#getNullQueryParamStrategy()} for this request
+   *
    * @param strategy {@link NullQueryParamStrategy}
    * @return same instance
    */
@@ -654,17 +656,13 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /**
-   * A function that get called right before sending the request to the server
-   */
+  /** A function that get called right before sending the request to the server */
   @FunctionalInterface
   public interface BeforeSendHandler {
     void onBeforeSend();
   }
 
-  /**
-   * A config class to configure the credential flag for the request
-   */
+  /** A config class to configure the credential flag for the request */
   public static class WithCredentialsRequest {
     private final boolean withCredentials;
 

@@ -44,6 +44,7 @@ public enum NullQueryParamStrategy {
 
   /**
    * Sets a null query param value in the provided request
+   *
    * @param request {@link ServerRequest}
    * @param name String name of the query parameter
    */
