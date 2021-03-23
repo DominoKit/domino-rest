@@ -240,13 +240,15 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
               if (processorUtil.isAssignableFrom(parameter, Date.class)
                   && nonNull(parameter.getAnnotation(DateFormat.class))) {
                 request.addStatement(
-                    "instance.setQueryParameter($S, instance.formatDate(() -> $L, $S))",
+                    "$T.setQueryParameter(instance, $S, () -> $L, $S)",
+                    TypeName.get(ParameterSetter.class),
                     parameter.getAnnotation(QueryParam.class).value(),
                     parameter.getSimpleName(),
                     parameter.getAnnotation(DateFormat.class).value());
               } else {
                 request.addStatement(
-                    "instance.setQueryParameter($S, instance.emptyOrStringValue(() -> $L))",
+                    "$T.setQueryParameter(instance, $S, () -> $L)",
+                    TypeName.get(ParameterSetter.class),
                     parameter.getAnnotation(QueryParam.class).value(),
                     parameter.getSimpleName());
               }
@@ -259,13 +261,15 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
               if (processorUtil.isAssignableFrom(parameter, Date.class)
                   && nonNull(parameter.getAnnotation(DateFormat.class))) {
                 request.addStatement(
-                    "instance.setPathParameter($S, instance.formatDate(() -> $L, $S))",
+                    "$T.setPathParameter(instance, $S, () -> $L, $S)",
+                    TypeName.get(ParameterSetter.class),
                     parameter.getAnnotation(PathParam.class).value(),
                     parameter.getSimpleName(),
                     parameter.getAnnotation(DateFormat.class).value());
               } else {
                 request.addStatement(
-                    "instance.setPathParameter($S, instance.emptyOrStringValue(() -> $L))",
+                    "$T.setPathParameter(instance, $S, () -> $L)",
+                    TypeName.get(ParameterSetter.class),
                     parameter.getAnnotation(PathParam.class).value(),
                     parameter.getSimpleName());
               }
@@ -616,6 +620,14 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
           "setSuccessCodes(new Integer[]{$L})", getSuccessCodes(serviceMethod));
     }
 
+    Optional<NullQueryParamStrategy> nullQueryParamStrategy =
+        getNullQueryParamStrategy(requestBean, serviceMethod);
+
+    nullQueryParamStrategy.ifPresent(
+        strategy ->
+            constructorBuilder.addStatement(
+                "setNullQueryParamStrategy($T.$L)", NullQueryParamStrategy.class, strategy));
+
     if (!isVoidType(serviceMethod)) {
       Optional<CodeBlock> requestWriter = getRequestWriter(serviceMethod);
       requestWriter.ifPresent(constructorBuilder::addCode);
@@ -841,6 +853,17 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         .boxed()
         .map(String::valueOf)
         .collect(joining(","));
+  }
+
+  private Optional<NullQueryParamStrategy> getNullQueryParamStrategy(
+      TypeMirror requestBean, ServiceMethod serviceMethod) {
+    if (nonNull(serviceMethod.method.getAnnotation(NullQueryStrategy.class))) {
+      return Optional.of(serviceMethod.method.getAnnotation(NullQueryStrategy.class).value());
+    }
+    if (nonNull(requestBean.getAnnotation(NullQueryStrategy.class))) {
+      return Optional.of(requestBean.getAnnotation(NullQueryStrategy.class).value());
+    }
+    return Optional.empty();
   }
 
   private String getHttpMethod(ServiceMethod serviceMethod) {
