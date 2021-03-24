@@ -17,10 +17,7 @@ package org.dominokit.rest.shared.request;
 
 import static java.util.Objects.*;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -46,7 +43,7 @@ public class ServerRequest<R, S> extends BaseRequest
       new SenderSupplier<>(() -> new RequestSender<R, S>() {});
 
   private final Map<String, String> headers = new HashMap<>();
-  private final Map<String, String> queryParameters = new HashMap<>();
+  private final Map<String, List<String>> queryParameters = new HashMap<>();
   private final Map<String, String> pathParameters = new HashMap<>();
   private final Map<String, String> metaParameters = new HashMap<>();
 
@@ -224,16 +221,37 @@ public class ServerRequest<R, S> extends BaseRequest
   /** {@inheritDoc} */
   @Override
   public ServerRequest<R, S> setQueryParameter(String name, String value) {
-    queryParameters.put(name, value);
+    queryParameters.put(name, new ArrayList<>());
+    addQueryParameter(name, value);
+    return this;
+  }
+
+  @Override
+  public HasHeadersAndParameters<R, S> addQueryParameter(String name, String value) {
+    if (queryParameters.containsKey(name)) {
+      queryParameters.get(name).add(value);
+    } else {
+      setQueryParameter(name, value);
+    }
     return this;
   }
 
   /** {@inheritDoc} */
   @Override
-  public ServerRequest<R, S> setQueryParameters(Map<String, String> queryParameters) {
-    if (nonNull(queryParameters) && !queryParameters.isEmpty()) {
-      this.queryParameters.putAll(queryParameters);
-    }
+  public ServerRequest<R, S> setQueryParameters(Map<String, List<String>> parameters) {
+    parameters
+        .keySet()
+        .forEach(name -> parameters.get(name).forEach(value -> addQueryParameter(name, value)));
+    return this;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public HasHeadersAndParameters<R, S> addQueryParameters(Map<String, List<String>> parameters) {
+    parameters.forEach(
+        (key, values) -> {
+          values.forEach(value -> addQueryParameter(key, value));
+        });
     return this;
   }
 
@@ -273,7 +291,7 @@ public class ServerRequest<R, S> extends BaseRequest
   }
 
   /** @return new map containing all headers defined in the request */
-  public Map<String, String> queryParameters() {
+  public Map<String, List<String>> queryParameters() {
     return new HashMap<>(queryParameters);
   }
 
@@ -292,11 +310,7 @@ public class ServerRequest<R, S> extends BaseRequest
           (isNull(this.serviceRoot) || this.serviceRoot.isEmpty())
               ? ServiceRootMatcher.matchedServiceRoot(path)
               : (this.serviceRoot + path);
-      UrlFormatter urlFormatter =
-          new UrlFormatterBuilder()
-              .setPathParameters(pathParameters)
-              .setQueryParameters(queryParameters)
-              .build();
+      UrlFormatter urlFormatter = new UrlFormatter(pathParameters);
       this.setUrl(urlFormatter.formatUrl(root));
     }
   }
@@ -352,11 +366,11 @@ public class ServerRequest<R, S> extends BaseRequest
   }
 
   /** @return new map of all added call arguments. */
-  public Map<String, String> getRequestParameters() {
-    Map<String, String> result = new HashMap<>();
+  public Map<String, List<String>> getRequestParameters() {
+    Map<String, List<String>> result = new HashMap<>();
     result.putAll(queryParameters);
-    result.putAll(pathParameters);
-    result.putAll(headers);
+    pathParameters.forEach((key, value) -> result.put(key, Collections.singletonList(value)));
+    headers.forEach((key, value) -> result.put(key, Collections.singletonList(value)));
     return result;
   }
 
@@ -644,7 +658,7 @@ public class ServerRequest<R, S> extends BaseRequest
 
   /**
    * Overrides the {@link NullQueryParamStrategy} defined in {@link
-   * DominoRestContext#getConfig()#getNullQueryParamStrategy()} for this request
+   * RestConfig#getDateParamFormatter()} for this request
    *
    * @param strategy {@link NullQueryParamStrategy}
    * @return same instance

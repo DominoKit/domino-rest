@@ -26,7 +26,7 @@
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-jackson-processor</artifactId>
-            <version>1.0.0-beta-2</version>
+            <version>${domino.jackson.version}</version>
         </dependency>
     </dependencies>
     <build>

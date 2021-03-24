@@ -235,24 +235,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     serviceMethod.method.getParameters().stream()
         .filter(parameter -> nonNull(parameter.getAnnotation(QueryParam.class)))
-        .forEach(
-            parameter -> {
-              if (processorUtil.isAssignableFrom(parameter, Date.class)
-                  && nonNull(parameter.getAnnotation(DateFormat.class))) {
-                request.addStatement(
-                    "$T.setQueryParameter(instance, $S, () -> $L, $S)",
-                    TypeName.get(ParameterSetter.class),
-                    parameter.getAnnotation(QueryParam.class).value(),
-                    parameter.getSimpleName(),
-                    parameter.getAnnotation(DateFormat.class).value());
-              } else {
-                request.addStatement(
-                    "$T.setQueryParameter(instance, $S, () -> $L)",
-                    TypeName.get(ParameterSetter.class),
-                    parameter.getAnnotation(QueryParam.class).value(),
-                    parameter.getSimpleName());
-              }
-            });
+        .forEach(parameter -> addSetParameterStatement(request, parameter));
 
     serviceMethod.method.getParameters().stream()
         .filter(parameter -> nonNull(parameter.getAnnotation(PathParam.class)))
@@ -306,6 +289,42 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     request.addStatement("return instance");
 
     return request.build();
+  }
+
+  private void addSetParameterStatement(MethodSpec.Builder request, VariableElement parameter) {
+
+    if (processorUtil.isCollection(parameter.asType())) {
+      TypeMirror typeArgument = processorUtil.firstTypeArgument(parameter.asType());
+      if (processorUtil.isAssignableFrom(typeArgument, Date.class)
+          && nonNull(parameter.getAnnotation(DateFormat.class))) {
+        request.addStatement(
+            "$T.setDateCollectionQueryParameter(instance, $S, () -> $L, $S)",
+            TypeName.get(ParameterSetter.class),
+            parameter.getAnnotation(QueryParam.class).value(),
+            parameter.getSimpleName(),
+            parameter.getAnnotation(DateFormat.class).value());
+      } else {
+        request.addStatement(
+            "$T.setCollectionQueryParameter(instance, $S, () -> $L)",
+            TypeName.get(ParameterSetter.class),
+            parameter.getAnnotation(QueryParam.class).value(),
+            parameter.getSimpleName());
+      }
+    } else if (processorUtil.isAssignableFrom(parameter, Date.class)
+        && nonNull(parameter.getAnnotation(DateFormat.class))) {
+      request.addStatement(
+          "$T.setDateQueryParameter(instance, $S, () -> $L, $S)",
+          TypeName.get(ParameterSetter.class),
+          parameter.getAnnotation(QueryParam.class).value(),
+          parameter.getSimpleName(),
+          parameter.getAnnotation(DateFormat.class).value());
+    } else {
+      request.addStatement(
+          "$T.setQueryParameter(instance, $S, () -> $L)",
+          TypeName.get(ParameterSetter.class),
+          parameter.getAnnotation(QueryParam.class).value(),
+          parameter.getSimpleName());
+    }
   }
 
   private void getBeanParams(CodeBlock.Builder codeBlock, VariableElement parameter) {

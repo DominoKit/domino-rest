@@ -29,12 +29,12 @@
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-rest-jaxrs</artifactId>
-            <version>HEAD-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-jackson</artifactId>
-            <version>1.0.0-beta-2</version>
+            <version>${domino.jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dominokit</groupId>
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-history-shared</artifactId>
-            <version>1.0.0-RC1</version>
+            <version>${domino.history.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>

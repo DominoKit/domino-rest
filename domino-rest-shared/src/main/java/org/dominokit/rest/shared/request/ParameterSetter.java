@@ -17,6 +17,7 @@ package org.dominokit.rest.shared.request;
 
 import static java.util.Objects.isNull;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.function.Supplier;
 
@@ -35,30 +36,73 @@ public class ParameterSetter {
     if (isNull(valueSupplier) || isNull(valueSupplier.get())) {
       request.getNullQueryParamStrategy().setNullValue(request, name);
     } else {
-      request.setQueryParameter(name, String.valueOf(valueSupplier.get()));
+      request.addQueryParameter(name, String.valueOf(valueSupplier.get()));
+    }
+  }
+
+  /**
+   * General query parameters setter
+   *
+   * @param request {@link ServerRequest} the target request for which we add the query parameter
+   * @param name String name of the query parameter
+   * @param valueSupplier {@link Supplier} for the query parameter value
+   * @param <T> The generic type of the query parameter value
+   */
+  public static <T extends Collection<?>> void setCollectionQueryParameter(
+      ServerRequest<?, ?> request, String name, Supplier<T> valueSupplier) {
+    if (isNull(valueSupplier) || isNull(valueSupplier.get()) || valueSupplier.get().size() < 1) {
+      request.getNullQueryParamStrategy().setNullValue(request, name);
+    } else {
+      valueSupplier
+          .get()
+          .forEach(value -> ParameterSetter.setQueryParameter(request, name, () -> value));
     }
   }
 
   /**
    * Date query parameter setter that formats the date using the {@link
-   * DominoRestContext#getConfig()#getDateParamFormatter}
+   * RestConfig#getDateParamFormatter()}
    *
    * @param request {@link ServerRequest} the target request for which we add the query parameter
    * @param name String name of the query parameter
    * @param valueSupplier a {@link Date} value {@link Supplier}
    * @param pattern String date format pattern
    */
-  public static void setQueryParameter(
+  public static void setDateQueryParameter(
       ServerRequest<?, ?> request, String name, Supplier<Date> valueSupplier, String pattern) {
     if (isNull(valueSupplier) || isNull(valueSupplier.get())) {
       request.getNullQueryParamStrategy().setNullValue(request, name);
     } else {
-      request.setQueryParameter(
+      request.addQueryParameter(
           name,
           DominoRestContext.make()
               .getConfig()
               .getDateParamFormatter()
               .format(valueSupplier.get(), pattern));
+    }
+  }
+
+  /**
+   * Date query parameter setter that formats the date using the {@link
+   * RestConfig#getDateParamFormatter()}
+   *
+   * @param request {@link ServerRequest} the target request for which we add the query parameter
+   * @param name String name of the query parameter
+   * @param valueSupplier a {@link Date} collection value {@link Supplier}
+   * @param pattern String date format pattern
+   */
+  public static void setDateCollectionQueryParameter(
+      ServerRequest<?, ?> request,
+      String name,
+      Supplier<? extends Collection<Date>> valueSupplier,
+      String pattern) {
+    if (isNull(valueSupplier) || isNull(valueSupplier.get()) || valueSupplier.get().size() < 1) {
+      request.getNullQueryParamStrategy().setNullValue(request, name);
+    } else {
+      valueSupplier
+          .get()
+          .forEach(
+              value -> ParameterSetter.setDateQueryParameter(request, name, () -> value, pattern));
     }
   }
 

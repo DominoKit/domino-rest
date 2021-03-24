@@ -24,7 +24,7 @@ public enum NullQueryParamStrategy {
    *
    * <pre>param1=null</pre>
    */
-  NULL((request, name) -> request.setQueryParameter(name, "null")),
+  NULL((request, name) -> request.addQueryParameter(name, "null")),
   /**
    * set the parameter value as empty
    *
@@ -32,7 +32,7 @@ public enum NullQueryParamStrategy {
    *
    * <pre>param1=</pre>
    */
-  EMPTY((request, name) -> request.setQueryParameter(name, "")),
+  EMPTY((request, name) -> request.addQueryParameter(name, "")),
   /** Omit the parameter from the request query string */
   OMIT((request, name) -> {});
 

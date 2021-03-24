@@ -108,9 +108,9 @@ public class JsRestfulRequest extends BaseRestfulRequest {
 
   /** {@inheritDoc} */
   @Override
-  public RestfulRequest putParameters(Map<String, String> parameters) {
+  public RestfulRequest putParameters(Map<String, List<String>> parameters) {
     if (nonNull(parameters) && !parameters.isEmpty()) {
-      parameters.forEach(this::addQueryParam);
+      parameters.forEach((key, values) -> values.forEach(value -> addQueryParam(key, value)));
     }
     return this;
   }
