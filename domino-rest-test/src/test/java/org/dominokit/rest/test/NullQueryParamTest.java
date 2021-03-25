@@ -36,12 +36,12 @@ public class NullQueryParamTest extends BaseRestTest {
     DominoRestConfig.getInstance().setNullQueryParamStrategy(NullQueryParamStrategy.EMPTY);
     sendRequest(
         NullQueryParamTestServiceFactory.INSTANCE.requestWithParam(null),
-        request -> {
+        routingContext -> {
           testContext.verify(
               () -> {
-                Assertions.assertThat(request.getParam("param1")).isEmpty();
+                Assertions.assertThat(routingContext.request().getParam("param1")).isEmpty();
               });
-          request.response().end(Json.encode(0));
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }
@@ -52,12 +52,13 @@ public class NullQueryParamTest extends BaseRestTest {
     DominoRestConfig.getInstance().setNullQueryParamStrategy(NullQueryParamStrategy.NULL);
     sendRequest(
         NullQueryParamTestServiceFactory.INSTANCE.requestWithParam(null),
-        request -> {
+        routingContext -> {
           testContext.verify(
               () -> {
-                Assertions.assertThat(request.getParam("param1")).isEqualTo("null");
+                Assertions.assertThat(routingContext.request().getParam("param1"))
+                    .isEqualTo("null");
               });
-          request.response().end(Json.encode(0));
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }
@@ -68,12 +69,12 @@ public class NullQueryParamTest extends BaseRestTest {
     DominoRestConfig.getInstance().setNullQueryParamStrategy(NullQueryParamStrategy.OMIT);
     sendRequest(
         NullQueryParamTestServiceFactory.INSTANCE.requestWithParam(null),
-        request -> {
+        routingContext -> {
           testContext.verify(
               () -> {
-                Assertions.assertThat(request.getParam("param1")).isNull();
+                Assertions.assertThat(routingContext.request().getParam("param1")).isNull();
               });
-          request.response().end(Json.encode(0));
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }
@@ -84,12 +85,12 @@ public class NullQueryParamTest extends BaseRestTest {
     DominoRestConfig.getInstance().setNullQueryParamStrategy(NullQueryParamStrategy.EMPTY);
     sendRequest(
         NullQueryParamTestServiceFactory.INSTANCE.overrideStrategy(null),
-        request -> {
+        routingContext -> {
           testContext.verify(
               () -> {
-                Assertions.assertThat(request.getParam("param1")).isNull();
+                Assertions.assertThat(routingContext.request().getParam("param1")).isNull();
               });
-          request.response().end(Json.encode(0));
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }

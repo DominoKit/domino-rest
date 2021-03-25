@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 import dominojackson.shaded.com.squareup.javapoet.*;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.AbstractSourceBuilder;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.DominoTypeBuilder;
+import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -828,22 +829,40 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
   private String getContentType(ServiceMethod serviceMethod) {
     if (nonNull(serviceMethod.method.getAnnotation(Consumes.class))) {
-      return Arrays.stream(serviceMethod.method.getAnnotation(Consumes.class).value())
-          .map(s -> "\"" + s + "\"")
-          .collect(joining(","));
-    } else {
-      return "\"" + MediaType.APPLICATION_JSON + "\"";
+      return asContentTypeHeaderValue(serviceMethod.method.getAnnotation(Consumes.class).value());
+    } else if (nonNull(findAnnotationInEnclosingElements(serviceElement, Consumes.class))) {
+      return asAcceptsHeaderValue(
+          findAnnotationInEnclosingElements(serviceElement, Consumes.class).value());
     }
+
+    return "\"" + MediaType.APPLICATION_JSON + "\"";
+  }
+
+  private String asContentTypeHeaderValue(String[] contentTypes) {
+    return Arrays.stream(contentTypes).map(s -> "\"" + s + "\"").collect(joining(","));
   }
 
   private String getAcceptResponse(ServiceMethod serviceMethod) {
     if (nonNull(serviceMethod.method.getAnnotation(Produces.class))) {
-      return Arrays.stream(serviceMethod.method.getAnnotation(Produces.class).value())
-          .map(s -> "\"" + s + "\"")
-          .collect(joining(","));
-    } else {
-      return "\"" + MediaType.APPLICATION_JSON + "\"";
+      return asAcceptsHeaderValue(serviceMethod.method.getAnnotation(Produces.class).value());
+    } else if (nonNull(findAnnotationInEnclosingElements(serviceElement, Produces.class))) {
+      return asAcceptsHeaderValue(
+          findAnnotationInEnclosingElements(serviceElement, Produces.class).value());
     }
+    return "\"" + MediaType.APPLICATION_JSON + "\"";
+  }
+
+  private String asAcceptsHeaderValue(String[] accepts) {
+    return Arrays.stream(accepts).map(s -> "\"" + s + "\"").collect(joining(","));
+  }
+
+  public <A extends Annotation> A findAnnotationInEnclosingElements(
+      Element element, Class<A> annotation) {
+    A result = element.getAnnotation(annotation);
+    if (Objects.nonNull(result) || element.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+      return result;
+    }
+    return findAnnotationInEnclosingElements(element.getEnclosingElement(), annotation);
   }
 
   private String getPath(ServiceMethod serviceMethod) {

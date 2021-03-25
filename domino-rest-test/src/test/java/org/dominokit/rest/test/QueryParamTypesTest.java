@@ -38,10 +38,10 @@ public class QueryParamTypesTest extends BaseRestTest {
   void differentParams(Vertx vertx, VertxTestContext testContext) {
     sendRequest(
         QueryParameterTestServiceFactory.INSTANCE.differentParams("value1", "value2"),
-        request -> {
-          assertThat(request.getParam("param1")).isEqualTo("value1");
-          assertThat(request.getParam("param2")).isEqualTo("value2");
-          request.response().end(Json.encode(0));
+        routingContext -> {
+          assertThat(routingContext.request().getParam("param1")).isEqualTo("value1");
+          assertThat(routingContext.request().getParam("param2")).isEqualTo("value2");
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }
@@ -52,13 +52,15 @@ public class QueryParamTypesTest extends BaseRestTest {
     sendRequest(
         QueryParameterTestServiceFactory.INSTANCE.multiSameParamParams(
             "value1-1", "value1-2", "value2"),
-        request -> {
+        routingContext -> {
           testContext.verify(
               () -> {
-                assertThat(request.params().getAll("param1")).containsOnly("value1-1", "value1-2");
-                assertThat(request.params().getAll("param2")).containsOnly("value2");
+                assertThat(routingContext.request().params().getAll("param1"))
+                    .containsOnly("value1-1", "value1-2");
+                assertThat(routingContext.request().params().getAll("param2"))
+                    .containsOnly("value2");
               });
-          request.response().end(Json.encode(0));
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }
@@ -69,16 +71,17 @@ public class QueryParamTypesTest extends BaseRestTest {
     sendRequest(
         QueryParameterTestServiceFactory.INSTANCE.multiSameDateParamParams(
             new Date(), new Date(), "value2"),
-        request -> {
+        routingContext -> {
           testContext.verify(
               () -> {
-                assertThat(request.params().getAll("param1"))
+                assertThat(routingContext.request().params().getAll("param1"))
                     .containsOnly(
                         new SimpleDateFormat("dd-MM-yy").format(new Date()),
                         new SimpleDateFormat("dd-M-yy").format(new Date()));
-                assertThat(request.params().getAll("param2")).containsOnly("value2");
+                assertThat(routingContext.request().params().getAll("param2"))
+                    .containsOnly("value2");
               });
-          request.response().end(Json.encode(0));
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }
@@ -89,14 +92,15 @@ public class QueryParamTypesTest extends BaseRestTest {
     sendRequest(
         QueryParameterTestServiceFactory.INSTANCE.paramsList(
             Arrays.asList("value1-1", "value1-2", "value1-3"), "value2"),
-        request -> {
+        routingContext -> {
           testContext.verify(
               () -> {
-                assertThat(request.params().getAll("param1"))
+                assertThat(routingContext.request().params().getAll("param1"))
                     .containsOnly("value1-1", "value1-2", "value1-3");
-                assertThat(request.params().getAll("param2")).containsOnly("value2");
+                assertThat(routingContext.request().params().getAll("param2"))
+                    .containsOnly("value2");
               });
-          request.response().end(Json.encode(0));
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }
@@ -107,17 +111,18 @@ public class QueryParamTypesTest extends BaseRestTest {
     sendRequest(
         QueryParameterTestServiceFactory.INSTANCE.paramsListWithPathParam(
             "path1Value", Arrays.asList("value1-1", "value1-2", "value1-3"), "value2"),
-        request -> {
+        routingContext -> {
           testContext.verify(
               () -> {
-                assertThat(request.absoluteURI())
+                assertThat(routingContext.request().absoluteURI())
                     .endsWith(
                         "test/path1Value?param1=value1-1&param1=value1-2&param1=value1-3&param2=value2");
-                assertThat(request.params().getAll("param1"))
+                assertThat(routingContext.request().params().getAll("param1"))
                     .containsOnly("value1-1", "value1-2", "value1-3");
-                assertThat(request.params().getAll("param2")).containsOnly("value2");
+                assertThat(routingContext.request().params().getAll("param2"))
+                    .containsOnly("value2");
               });
-          request.response().end(Json.encode(0));
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }
@@ -128,13 +133,15 @@ public class QueryParamTypesTest extends BaseRestTest {
     sendRequest(
         QueryParameterTestServiceFactory.INSTANCE.enumParamsList(
             Arrays.asList(SampleEnum.A, SampleEnum.B, SampleEnum.C), "value2"),
-        request -> {
+        routingContext -> {
           testContext.verify(
               () -> {
-                assertThat(request.params().getAll("param1")).containsOnly("A", "B", "C");
-                assertThat(request.params().getAll("param2")).containsOnly("value2");
+                assertThat(routingContext.request().params().getAll("param1"))
+                    .containsOnly("A", "B", "C");
+                assertThat(routingContext.request().params().getAll("param2"))
+                    .containsOnly("value2");
               });
-          request.response().end(Json.encode(0));
+          routingContext.request().response().end(Json.encode(0));
           testContext.completeNow();
         });
   }

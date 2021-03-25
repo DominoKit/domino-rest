@@ -17,7 +17,9 @@ package org.dominokit.rest.test;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.junit5.VertxTestContext;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -32,20 +34,26 @@ public abstract class BaseRestTest {
   private static final Logger LOGGER =
       Logger.getLogger(QueryParamTypesTest.class.getCanonicalName());
   protected static int port = 0;
-  protected static Consumer<HttpServerRequest> requestHandler = request -> request.response().end();
+  protected static Consumer<RoutingContext> requestHandler = request -> request.response().end();
   protected static DominoRestConfig config = DominoRestConfig.initDefaults();
   protected static HttpServer httpServer;
+  private static Router router;
 
   @BeforeAll
   @DisplayName("Starting server")
   static void startServer(Vertx vertx, VertxTestContext testContext) {
+    router = Router.router(vertx);
+    router.route().handler(BodyHandler.create());
+    router
+        .route()
+        .handler(
+            event -> {
+              LOGGER.info("Received Request :[" + event.request().absoluteURI() + "]");
+              requestHandler.accept(event);
+            });
     vertx
         .createHttpServer()
-        .requestHandler(
-            req -> {
-              LOGGER.info("Received Request :[" + req.absoluteURI() + "]");
-              requestHandler.accept(req);
-            })
+        .requestHandler(router)
         .listen(
             0,
             httpServerAsyncResult -> {
@@ -57,7 +65,7 @@ public abstract class BaseRestTest {
             });
   }
 
-  protected void sendRequest(ServerRequest<?, ?> request, Consumer<HttpServerRequest> handler) {
+  protected void sendRequest(ServerRequest<?, ?> request, Consumer<RoutingContext> handler) {
     requestHandler = handler;
     request.onSuccess(response -> {}).onComplete(() -> {}).onFailed(failedResponse -> {}).send();
   }
