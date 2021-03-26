@@ -89,8 +89,9 @@
         <maven.gwt.plugin>1.0.0</maven.gwt.plugin>
         <gwt.version>2.9.0</gwt.version>
         <domino.logger.version>1.0.2</domino.logger.version>
-        <domino.jackson.version>1.0.0-RC1</domino.jackson.version>
+        <domino.jackson.version>1.0.0-RC2</domino.jackson.version>
         <domino.history.version>1.0.0-RC2</domino.history.version>
+        <domino.aggregator.version>1.0.2</domino.aggregator.version>
     </properties>
 
     <dependencyManagement>

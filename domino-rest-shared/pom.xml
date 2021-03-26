@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-aggregator-shared</artifactId>
-            <version>1.0.0</version>
+            <version>${domino.aggregator.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dominokit</groupId>
