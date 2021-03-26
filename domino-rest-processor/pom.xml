@@ -4,7 +4,7 @@
     <parent>
         <artifactId>domino-rest</artifactId>
         <groupId>org.dominokit</groupId>
-        <version>1.0.0-beta-2</version>
+        <version>1.0.0-RC1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-jackson-processor</artifactId>
-            <version>1.0.0-beta-2</version>
+            <version>${domino.jackson.version}</version>
         </dependency>
     </dependencies>
     <build>

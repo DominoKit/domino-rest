@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared;
 
+import java.util.List;
 import java.util.Map;
 import org.dominokit.rest.RestfulRequestFactory;
 import org.dominokit.rest.RestfullRequestContext;
@@ -186,7 +187,7 @@ public interface RestfulRequest {
    * @param parameters the parameters
    * @return same instance to support builder pattern
    */
-  RestfulRequest putParameters(Map<String, String> parameters);
+  RestfulRequest putParameters(Map<String, List<String>> parameters);
 
   /** @return the request headers */
   Map<String, String> getHeaders();

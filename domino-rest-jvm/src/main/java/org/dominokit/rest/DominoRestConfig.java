@@ -66,6 +66,8 @@ public class DominoRestConfig implements RestConfig {
   private static DateParamFormatter dateParamFormatter =
       (date, pattern) -> new SimpleDateFormat(pattern).format(date);
 
+  private static NullQueryParamStrategy nullQueryParamStrategy = NullQueryParamStrategy.EMPTY;
+
   /**
    * Gets and initialize the instance with the default configurations
    *
@@ -236,5 +238,20 @@ public class DominoRestConfig implements RestConfig {
   @Override
   public DateParamFormatter getDateParamFormatter() {
     return DominoRestConfig.dateParamFormatter;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public NullQueryParamStrategy getNullQueryParamStrategy() {
+    return nullQueryParamStrategy;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public DominoRestConfig setNullQueryParamStrategy(NullQueryParamStrategy nullQueryParamStrategy) {
+    if (nonNull(nullQueryParamStrategy)) {
+      DominoRestConfig.nullQueryParamStrategy = nullQueryParamStrategy;
+    }
+    return this;
   }
 }

@@ -21,18 +21,15 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.dominokit.domino.history.StateHistoryToken;
 import org.dominokit.rest.shared.request.exception.PathParameterMissingException;
-import org.dominokit.rest.shared.request.exception.QueryParameterMissingException;
 import org.gwtproject.regexp.shared.MatchResult;
 import org.gwtproject.regexp.shared.RegExp;
 
 /** Formats the url by adding the query parameters and normalizing path parameters */
 public class UrlFormatter {
 
-  private final Map<String, String> queryParameters;
   private final Map<String, String> pathParameters;
 
-  public UrlFormatter(Map<String, String> queryParameters, Map<String, String> pathParameters) {
-    this.queryParameters = queryParameters;
+  public UrlFormatter(Map<String, String> pathParameters) {
     this.pathParameters = pathParameters;
   }
 
@@ -63,15 +60,6 @@ public class UrlFormatter {
 
   private void replaceUrlParamsWithArguments(StateHistoryToken tempToken) {
     replacePaths(tempToken);
-    replaceQueryParams(tempToken);
-  }
-
-  private void replaceQueryParams(StateHistoryToken tempToken) {
-    tempToken.queryParameters().entrySet().stream()
-        .filter(entry -> isExpressionToken(entry.getValue()))
-        .forEach(
-            entry ->
-                tempToken.replaceParameter(entry.getKey(), entry.getKey(), getQueryValue(entry)));
   }
 
   private void replacePaths(StateHistoryToken tempToken) {
@@ -104,19 +92,6 @@ public class UrlFormatter {
     }
     String pathName = replaceExpressionMarkers(path);
     return pathParameters.get(pathName);
-  }
-
-  private boolean hasQueryParameter(Map.Entry<String, String> entry) {
-    String queryName = replaceExpressionMarkers(entry.getValue());
-    return queryParameters.containsKey(queryName);
-  }
-
-  private String getQueryValue(Map.Entry<String, String> entry) {
-    if (!hasQueryParameter(entry)) {
-      throw new QueryParameterMissingException(entry.getKey());
-    }
-    String queryName = replaceExpressionMarkers(entry.getValue());
-    return queryParameters.get(queryName);
   }
 
   private boolean isExpressionToken(String tokenPath) {

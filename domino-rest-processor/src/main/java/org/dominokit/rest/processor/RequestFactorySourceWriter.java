@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 import dominojackson.shaded.com.squareup.javapoet.*;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.AbstractSourceBuilder;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.DominoTypeBuilder;
+import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -235,22 +236,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     serviceMethod.method.getParameters().stream()
         .filter(parameter -> nonNull(parameter.getAnnotation(QueryParam.class)))
-        .forEach(
-            parameter -> {
-              if (processorUtil.isAssignableFrom(parameter, Date.class)
-                  && nonNull(parameter.getAnnotation(DateFormat.class))) {
-                request.addStatement(
-                    "instance.setQueryParameter($S, instance.formatDate(() -> $L, $S))",
-                    parameter.getAnnotation(QueryParam.class).value(),
-                    parameter.getSimpleName(),
-                    parameter.getAnnotation(DateFormat.class).value());
-              } else {
-                request.addStatement(
-                    "instance.setQueryParameter($S, instance.emptyOrStringValue(() -> $L))",
-                    parameter.getAnnotation(QueryParam.class).value(),
-                    parameter.getSimpleName());
-              }
-            });
+        .forEach(parameter -> addSetParameterStatement(request, parameter));
 
     serviceMethod.method.getParameters().stream()
         .filter(parameter -> nonNull(parameter.getAnnotation(PathParam.class)))
@@ -259,13 +245,15 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
               if (processorUtil.isAssignableFrom(parameter, Date.class)
                   && nonNull(parameter.getAnnotation(DateFormat.class))) {
                 request.addStatement(
-                    "instance.setPathParameter($S, instance.formatDate(() -> $L, $S))",
+                    "$T.setPathParameter(instance, $S, () -> $L, $S)",
+                    TypeName.get(ParameterSetter.class),
                     parameter.getAnnotation(PathParam.class).value(),
                     parameter.getSimpleName(),
                     parameter.getAnnotation(DateFormat.class).value());
               } else {
                 request.addStatement(
-                    "instance.setPathParameter($S, instance.emptyOrStringValue(() -> $L))",
+                    "$T.setPathParameter(instance, $S, () -> $L)",
+                    TypeName.get(ParameterSetter.class),
                     parameter.getAnnotation(PathParam.class).value(),
                     parameter.getSimpleName());
               }
@@ -302,6 +290,42 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     request.addStatement("return instance");
 
     return request.build();
+  }
+
+  private void addSetParameterStatement(MethodSpec.Builder request, VariableElement parameter) {
+
+    if (processorUtil.isCollection(parameter.asType())) {
+      TypeMirror typeArgument = processorUtil.firstTypeArgument(parameter.asType());
+      if (processorUtil.isAssignableFrom(typeArgument, Date.class)
+          && nonNull(parameter.getAnnotation(DateFormat.class))) {
+        request.addStatement(
+            "$T.setDateCollectionQueryParameter(instance, $S, () -> $L, $S)",
+            TypeName.get(ParameterSetter.class),
+            parameter.getAnnotation(QueryParam.class).value(),
+            parameter.getSimpleName(),
+            parameter.getAnnotation(DateFormat.class).value());
+      } else {
+        request.addStatement(
+            "$T.setCollectionQueryParameter(instance, $S, () -> $L)",
+            TypeName.get(ParameterSetter.class),
+            parameter.getAnnotation(QueryParam.class).value(),
+            parameter.getSimpleName());
+      }
+    } else if (processorUtil.isAssignableFrom(parameter, Date.class)
+        && nonNull(parameter.getAnnotation(DateFormat.class))) {
+      request.addStatement(
+          "$T.setDateQueryParameter(instance, $S, () -> $L, $S)",
+          TypeName.get(ParameterSetter.class),
+          parameter.getAnnotation(QueryParam.class).value(),
+          parameter.getSimpleName(),
+          parameter.getAnnotation(DateFormat.class).value());
+    } else {
+      request.addStatement(
+          "$T.setQueryParameter(instance, $S, () -> $L)",
+          TypeName.get(ParameterSetter.class),
+          parameter.getAnnotation(QueryParam.class).value(),
+          parameter.getSimpleName());
+    }
   }
 
   private void getBeanParams(CodeBlock.Builder codeBlock, VariableElement parameter) {
@@ -616,6 +640,14 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
           "setSuccessCodes(new Integer[]{$L})", getSuccessCodes(serviceMethod));
     }
 
+    Optional<NullQueryParamStrategy> nullQueryParamStrategy =
+        getNullQueryParamStrategy(requestBean, serviceMethod);
+
+    nullQueryParamStrategy.ifPresent(
+        strategy ->
+            constructorBuilder.addStatement(
+                "setNullQueryParamStrategy($T.$L)", NullQueryParamStrategy.class, strategy));
+
     if (!isVoidType(serviceMethod)) {
       Optional<CodeBlock> requestWriter = getRequestWriter(serviceMethod);
       requestWriter.ifPresent(constructorBuilder::addCode);
@@ -797,22 +829,40 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
   private String getContentType(ServiceMethod serviceMethod) {
     if (nonNull(serviceMethod.method.getAnnotation(Consumes.class))) {
-      return Arrays.stream(serviceMethod.method.getAnnotation(Consumes.class).value())
-          .map(s -> "\"" + s + "\"")
-          .collect(joining(","));
-    } else {
-      return "\"" + MediaType.APPLICATION_JSON + "\"";
+      return asContentTypeHeaderValue(serviceMethod.method.getAnnotation(Consumes.class).value());
+    } else if (nonNull(findAnnotationInEnclosingElements(serviceElement, Consumes.class))) {
+      return asAcceptsHeaderValue(
+          findAnnotationInEnclosingElements(serviceElement, Consumes.class).value());
     }
+
+    return "\"" + MediaType.APPLICATION_JSON + "\"";
+  }
+
+  private String asContentTypeHeaderValue(String[] contentTypes) {
+    return Arrays.stream(contentTypes).map(s -> "\"" + s + "\"").collect(joining(","));
   }
 
   private String getAcceptResponse(ServiceMethod serviceMethod) {
     if (nonNull(serviceMethod.method.getAnnotation(Produces.class))) {
-      return Arrays.stream(serviceMethod.method.getAnnotation(Produces.class).value())
-          .map(s -> "\"" + s + "\"")
-          .collect(joining(","));
-    } else {
-      return "\"" + MediaType.APPLICATION_JSON + "\"";
+      return asAcceptsHeaderValue(serviceMethod.method.getAnnotation(Produces.class).value());
+    } else if (nonNull(findAnnotationInEnclosingElements(serviceElement, Produces.class))) {
+      return asAcceptsHeaderValue(
+          findAnnotationInEnclosingElements(serviceElement, Produces.class).value());
     }
+    return "\"" + MediaType.APPLICATION_JSON + "\"";
+  }
+
+  private String asAcceptsHeaderValue(String[] accepts) {
+    return Arrays.stream(accepts).map(s -> "\"" + s + "\"").collect(joining(","));
+  }
+
+  public <A extends Annotation> A findAnnotationInEnclosingElements(
+      Element element, Class<A> annotation) {
+    A result = element.getAnnotation(annotation);
+    if (Objects.nonNull(result) || element.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+      return result;
+    }
+    return findAnnotationInEnclosingElements(element.getEnclosingElement(), annotation);
   }
 
   private String getPath(ServiceMethod serviceMethod) {
@@ -841,6 +891,17 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         .boxed()
         .map(String::valueOf)
         .collect(joining(","));
+  }
+
+  private Optional<NullQueryParamStrategy> getNullQueryParamStrategy(
+      TypeMirror requestBean, ServiceMethod serviceMethod) {
+    if (nonNull(serviceMethod.method.getAnnotation(NullQueryStrategy.class))) {
+      return Optional.of(serviceMethod.method.getAnnotation(NullQueryStrategy.class).value());
+    }
+    if (nonNull(requestBean.getAnnotation(NullQueryStrategy.class))) {
+      return Optional.of(requestBean.getAnnotation(NullQueryStrategy.class).value());
+    }
+    return Optional.empty();
   }
 
   private String getHttpMethod(ServiceMethod serviceMethod) {

@@ -157,6 +157,23 @@ public interface RestConfig {
   /** @return the date parameter formatter configured */
   DateParamFormatter getDateParamFormatter();
 
+  /**
+   * Default strategy is {@link NullQueryParamStrategy#EMPTY}
+   *
+   * @return the {@link NullQueryParamStrategy}
+   */
+  default NullQueryParamStrategy getNullQueryParamStrategy() {
+    return NullQueryParamStrategy.EMPTY;
+  }
+
+  /**
+   * Sets the global strategy to handle query parameters with nul value
+   *
+   * @param strategy {@link NullQueryParamStrategy}
+   * @return same instance
+   */
+  RestConfig setNullQueryParamStrategy(NullQueryParamStrategy strategy);
+
   /** Formatter to format the date parameter based on a patter */
   @FunctionalInterface
   interface DateParamFormatter {

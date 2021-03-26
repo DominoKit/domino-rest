@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared.request;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,7 +44,7 @@ public interface HasHeadersAndParameters<R, S> {
   HasHeadersAndParameters<R, S> setHeaders(Map<String, String> headers);
 
   /**
-   * Sets query parameter name and value
+   * Sets query parameter name and value, and overrides existing value
    *
    * @param name the name of the parameter
    * @param value the value of the parameter
@@ -52,12 +53,29 @@ public interface HasHeadersAndParameters<R, S> {
   HasHeadersAndParameters<R, S> setQueryParameter(String name, String value);
 
   /**
-   * Sets a list of query parameters names and values
+   * Sets a list of query parameters names and values, and overrides existing values
    *
    * @param queryParameters the parameters
    * @return same instance to support builder pattern
    */
-  HasHeadersAndParameters<R, S> setQueryParameters(Map<String, String> queryParameters);
+  HasHeadersAndParameters<R, S> setQueryParameters(Map<String, List<String>> queryParameters);
+
+  /**
+   * adds a new value to an exiting query parameter
+   *
+   * @param name the name of the parameter
+   * @param value the value of the parameter
+   * @return same instance to support builder pattern
+   */
+  HasHeadersAndParameters<R, S> addQueryParameter(String name, String value);
+
+  /**
+   * adds a new values to an exiting query parameters
+   *
+   * @param queryParameters the parameters
+   * @return same instance to support builder pattern
+   */
+  HasHeadersAndParameters<R, S> addQueryParameters(Map<String, List<String>> queryParameters);
 
   /**
    * Sets a list of path parameters names and values

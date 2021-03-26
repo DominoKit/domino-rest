@@ -28,6 +28,7 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
@@ -88,9 +89,9 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
 
   /** {@inheritDoc} */
   @Override
-  public RestfulRequest putParameters(Map<String, String> parameters) {
+  public RestfulRequest putParameters(Map<String, List<String>> parameters) {
     if (nonNull(parameters) && !parameters.isEmpty()) {
-      parameters.forEach(this::addQueryParam);
+      parameters.forEach((key, values) -> values.forEach(value -> addQueryParam(key, value)));
     }
     return this;
   }

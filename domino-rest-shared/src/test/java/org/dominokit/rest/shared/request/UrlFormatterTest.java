@@ -27,7 +27,6 @@ public class UrlFormatterTest {
 
   private UrlFormatter urlFormatter;
 
-  private final Map<String, String> queryParameters = new HashMap<>();
   private final Map<String, String> pathParameters = new HashMap<>();
 
   @Test
@@ -79,10 +78,6 @@ public class UrlFormatterTest {
   }
 
   private void buildFormatter() {
-    urlFormatter =
-        new UrlFormatterBuilder()
-            .setPathParameters(pathParameters)
-            .setQueryParameters(queryParameters)
-            .build();
+    urlFormatter = new UrlFormatter(pathParameters);
   }
 }
