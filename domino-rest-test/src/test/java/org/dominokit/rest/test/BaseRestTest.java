@@ -51,6 +51,13 @@ public abstract class BaseRestTest {
               LOGGER.info("Received Request :[" + event.request().absoluteURI() + "]");
               requestHandler.accept(event);
             });
+    router
+        .post("/upload")
+        .handler(
+            event -> {
+              LOGGER.info("Received Request :[" + event.request().absoluteURI() + "]");
+              requestHandler.accept(event);
+            });
     vertx
         .createHttpServer()
         .requestHandler(router)

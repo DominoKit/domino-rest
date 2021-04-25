@@ -16,12 +16,12 @@
 package org.dominokit.rest.js;
 
 import elemental2.core.ArrayBuffer;
+import elemental2.dom.XMLHttpRequest;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jsinterop.base.Js;
 import org.dominokit.rest.shared.Response;
-import org.gwtproject.xhr.client.XMLHttpRequest;
 
 /** JS implementation for the {@link Response} */
 public class JsResponse implements Response {
@@ -52,19 +52,19 @@ public class JsResponse implements Response {
   /** {@inheritDoc} */
   @Override
   public int getStatusCode() {
-    return request.getStatus();
+    return request.status;
   }
 
   /** {@inheritDoc} */
   @Override
   public String getStatusText() {
-    return request.getStatusText();
+    return request.statusText;
   }
 
   /** {@inheritDoc} */
   @Override
   public String getBodyAsString() {
-    return request.getResponseText();
+    return request.responseText;
   }
 
   /**
@@ -74,6 +74,6 @@ public class JsResponse implements Response {
    * @return the content of the response as array buffer
    */
   public ArrayBuffer getResponseArrayBuffer() {
-    return Js.cast(request.getResponseArrayBuffer());
+    return Js.cast(request.mozResponseArrayBuffer);
   }
 }

@@ -47,6 +47,7 @@ import org.dominokit.jackson.processor.ObjectMapperProcessor;
 import org.dominokit.jackson.processor.Type;
 import org.dominokit.jackson.processor.deserialization.FieldDeserializersChainBuilder;
 import org.dominokit.jackson.processor.serialization.FieldSerializerChainBuilder;
+import org.dominokit.rest.shared.MultipartForm;
 import org.dominokit.rest.shared.request.*;
 import org.dominokit.rest.shared.request.service.annotations.*;
 import org.dominokit.rest.shared.request.service.annotations.Request;
@@ -228,7 +229,37 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     Optional<String> requestBodyParamName = getRequestBeanType(serviceMethod).getParamName();
 
-    if (requestBodyParamName.isPresent()) {
+    if (consumesMultipartForm(serviceMethod)) {
+      request.addStatement("MultipartForm multipartForm = new MultipartForm()");
+      getMethodParameters(serviceMethod)
+          .forEach(
+              variableElement -> {
+                if (variableElement.getAnnotation(Multipart.class) != null) {
+                  // get from object
+                  Element multipartElement = types.asElement(variableElement.asType());
+                  multipartElement.getEnclosedElements().stream()
+                      .filter(element -> element.getKind() == ElementKind.FIELD)
+                      .filter(element -> element.getAnnotation(FormParam.class) != null)
+                      .forEach(
+                          field -> {
+                            addMultipart(
+                                serviceMethod,
+                                request,
+                                (VariableElement) field,
+                                variableElement.getSimpleName().toString()
+                                    + "."
+                                    + fieldOrGetter(multipartElement, field));
+                          });
+                } else {
+                  addMultipart(
+                      serviceMethod,
+                      request,
+                      variableElement,
+                      variableElement.getSimpleName().toString());
+                }
+              });
+      request.addStatement(initializeStatement + "(multipartForm)");
+    } else if (requestBodyParamName.isPresent()) {
       request.addStatement(initializeStatement + "(" + requestBodyParamName.get() + ")");
     } else {
       request.addStatement(initializeStatement + "()");
@@ -290,6 +321,54 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     request.addStatement("return instance");
 
     return request.build();
+  }
+
+  private void addMultipart(
+      ServiceMethod serviceMethod,
+      MethodSpec.Builder request,
+      VariableElement variableElement,
+      String paramName) {
+    FormParam annotation = variableElement.getAnnotation(FormParam.class);
+    if (isRequestBody(variableElement)) {
+      Optional<CodeBlock> requestWriter =
+          getRequestWriter(serviceMethod.method, variableElement.asType(), serviceMethod);
+      requestWriter.ifPresent(
+          codeBlock ->
+              request.addStatement(
+                  "multipartForm.append($S, () -> $L.write($L), $S)",
+                  annotation.value(),
+                  codeBlock,
+                  paramName,
+                  MediaType.APPLICATION_JSON));
+    } else if (Type.isPrimitiveArray(variableElement.asType())
+        && Type.arrayComponentType(variableElement.asType()).getKind() == TypeKind.BYTE) {
+      request.addStatement(
+          "multipartForm.append($S, $L, $S)",
+          annotation.value(),
+          paramName,
+          MediaType.APPLICATION_OCTET_STREAM);
+    } else {
+      if (processorUtil.isStringType(variableElement.asType())) {
+        request.addStatement(
+            "multipartForm.append($S, () -> $L, $S)",
+            annotation.value(),
+            paramName,
+            MediaType.TEXT_PLAIN);
+      } else if (processorUtil.isPrimitive(variableElement.asType())) {
+        request.addStatement(
+            "multipartForm.append($S, () -> $T.valueOf($L), $S)",
+            annotation.value(),
+            String.class,
+            paramName,
+            MediaType.TEXT_PLAIN);
+      } else {
+        request.addStatement(
+            "multipartForm.append($S, () -> $L.toString(), $S)",
+            annotation.value(),
+            paramName,
+            MediaType.TEXT_PLAIN);
+      }
+    }
   }
 
   private void addSetParameterStatement(MethodSpec.Builder request, VariableElement parameter) {
@@ -519,6 +598,11 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
   }
 
   private RequestBodyParam getRequestBeanType(ServiceMethod serviceMethod) {
+    if (consumesMultipartForm(serviceMethod)) {
+      return new RequestBodyParam(
+          null,
+          getMappingType(elements.getTypeElement(MultipartForm.class.getCanonicalName()).asType()));
+    }
     List<? extends VariableElement> parameters = serviceMethod.method.getParameters();
 
     if (!isBodyHttpMethod(serviceMethod)) {
@@ -619,10 +703,14 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     constructorBuilder
         .addStatement("setHttpMethod($S)", getHttpMethod(serviceMethod))
-        .addStatement("setContentType(new String[]{$L})", getContentType(serviceMethod))
         .addStatement("setAccept(new String[]{$L})", getAcceptResponse(serviceMethod))
         .addStatement("setPath($S)", getPath(serviceMethod))
         .addStatement("setServiceRoot($S)", getServiceRoot(serviceMethod.method));
+
+    if (!consumesMultipartForm(serviceMethod)) {
+      constructorBuilder.addStatement(
+          "setContentType(new String[]{$L})", getContentType(serviceMethod));
+    }
 
     Retries retries = serviceMethod.method.getAnnotation(Retries.class);
     if (nonNull(retries)) {
@@ -648,8 +736,10 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
             constructorBuilder.addStatement(
                 "setNullQueryParamStrategy($T.$L)", NullQueryParamStrategy.class, strategy));
 
-    if (!isVoidType(serviceMethod)) {
-      Optional<CodeBlock> requestWriter = getRequestWriter(serviceMethod);
+    if (consumesMultipartForm(serviceMethod)) {
+      constructorBuilder.addStatement("setMultipartForm(true)");
+    } else if (!isVoidType(serviceMethod)) {
+      Optional<CodeBlock> requestWriter = getFactoryRequestWriterBlock(serviceMethod);
       requestWriter.ifPresent(constructorBuilder::addCode);
     }
 
@@ -661,20 +751,17 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     return constructorBuilder.build();
   }
 
-  private Optional<CodeBlock> getRequestWriter(ServiceMethod serviceMethod) {
+  private Optional<CodeBlock> getRequestWriter(
+      ExecutableElement method, TypeMirror requestBeanType, ServiceMethod serviceMethod) {
     CodeBlock.Builder builder = CodeBlock.builder();
 
-    Writer annotation = serviceMethod.method.getAnnotation(Writer.class);
+    Writer annotation = method.getAnnotation(Writer.class);
     if (nonNull(annotation)) {
       Optional<TypeMirror> value =
-          processorUtil.getClassValueFromAnnotation(serviceMethod.method, Writer.class, "value");
-      value.ifPresent(
-          writerType ->
-              builder.addStatement(
-                  "setRequestWriter(bean -> new $T().write(bean))", TypeName.get(writerType)));
+          processorUtil.getClassValueFromAnnotation(method, Writer.class, "value");
+      value.ifPresent(writerType -> builder.add("new $T()", TypeName.get(writerType)));
       return Optional.of(builder.build());
-    } else if (consumesJson(serviceMethod)) {
-      TypeMirror requestBeanType = getRequestBeanType(serviceMethod).type;
+    } else if (consumesJson(serviceMethod) || consumesMultipartForm(serviceMethod)) {
       boolean serializerGenerated = !shouldGenerateSerializer(requestBeanType);
 
       CodeBlock instance =
@@ -697,14 +784,26 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                       .addCode(";")
                       .build());
 
-      builder.addStatement("setRequestWriter(bean -> $L.write(bean))", writerType.build());
+      builder.add("$L", writerType.build());
       return Optional.of(builder.build());
     } else if (consumesText(serviceMethod)) {
-      builder.addStatement("setRequestWriter(bean -> new $T().write(bean))", StringWriter.class);
+      builder.add("new $T()", StringWriter.class);
       return Optional.of(builder.build());
     }
 
     return Optional.empty();
+  }
+
+  private Optional<CodeBlock> getFactoryRequestWriterBlock(ServiceMethod serviceMethod) {
+    Optional<CodeBlock> requestWriter =
+        getRequestWriter(
+            serviceMethod.method, getRequestBeanType(serviceMethod).type, serviceMethod);
+    if (!requestWriter.isPresent()) {
+      return Optional.empty();
+    }
+    CodeBlock.Builder builder = CodeBlock.builder();
+    builder.add("setRequestWriter(bean -> ").add(requestWriter.get()).add(".write(bean));");
+    return Optional.of(builder.build());
   }
 
   private boolean consumesText(ServiceMethod serviceMethod) {
@@ -716,6 +815,11 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     String contentType = getContentType(serviceMethod);
     return contentType.contains(MediaType.APPLICATION_JSON)
         || contentType.contains(MediaType.APPLICATION_JSON_PATCH_JSON);
+  }
+
+  private boolean consumesMultipartForm(ServiceMethod serviceMethod) {
+    String contentType = getContentType(serviceMethod);
+    return contentType.contains(MediaType.MULTIPART_FORM_DATA);
   }
 
   private boolean shouldGenerateSerializer(TypeMirror requestBeanType) {
@@ -985,7 +1089,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
 
     public Optional<String> getParamName() {
-      if (!_void) {
+      if (!_void && nonNull(param)) {
         return Optional.of(param.getSimpleName().toString());
       }
       return Optional.empty();

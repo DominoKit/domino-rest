@@ -218,6 +218,13 @@ public interface RestfulRequest {
   void sendJson(String json);
 
   /**
+   * Sends the request with content type {@code multipart/form-data}
+   *
+   * @param multipartForm the body of the request
+   */
+  void sendMultipartForm(MultipartForm multipartForm);
+
+  /**
    * Sends the request with the default content type
    *
    * @param data the body of the request

@@ -18,24 +18,31 @@ package org.dominokit.rest.js;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
+import elemental2.core.ArrayBuffer;
+import elemental2.core.TypedArray;
+import elemental2.core.Uint8Array;
+import elemental2.dom.Blob;
+import elemental2.dom.BlobPropertyBag;
+import elemental2.dom.FormData;
+import elemental2.dom.XMLHttpRequest;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.dominokit.rest.shared.BaseRestfulRequest;
+import org.dominokit.rest.shared.MultipartForm;
 import org.dominokit.rest.shared.RestfulRequest;
 import org.dominokit.rest.shared.request.RequestTimeoutException;
 import org.gwtproject.timer.client.Timer;
-import org.gwtproject.xhr.client.XMLHttpRequest;
 
 /** JS implementation for {@link RestfulRequest} that uses {@link XMLHttpRequest} */
 public class JsRestfulRequest extends BaseRestfulRequest {
 
   public static final String CONTENT_TYPE = "Content-Type";
   public static final String APPLICATION_PDF = "application/pdf";
-  private XMLHttpRequest request;
-  private Map<String, List<String>> params = new LinkedHashMap<>();
-  private Map<String, String> headers = new LinkedHashMap<>();
+  private final XMLHttpRequest request;
+  private final Map<String, List<String>> params = new LinkedHashMap<>();
+  private final Map<String, String> headers = new LinkedHashMap<>();
   private final Timer timer =
       new Timer() {
         @Override
@@ -46,7 +53,7 @@ public class JsRestfulRequest extends BaseRestfulRequest {
 
   public JsRestfulRequest(String uri, String method) {
     super(uri, method);
-    request = XMLHttpRequest.create();
+    request = new XMLHttpRequest();
     parseUri(uri);
   }
 
@@ -90,7 +97,7 @@ public class JsRestfulRequest extends BaseRestfulRequest {
   public RestfulRequest putHeader(String key, String value) {
     if (CONTENT_TYPE.equalsIgnoreCase(key)) {
       if (APPLICATION_PDF.equalsIgnoreCase(value)) {
-        request.setResponseType(XMLHttpRequest.ResponseType.ArrayBuffer);
+        request.responseType = "arraybuffer";
       }
     }
     headers.put(key, value);
@@ -140,6 +147,31 @@ public class JsRestfulRequest extends BaseRestfulRequest {
 
   /** {@inheritDoc} */
   @Override
+  public void sendMultipartForm(MultipartForm multipartForm) {
+    initRequest();
+    FormData data = new FormData();
+    for (MultipartForm.TextMultipart textMultipart : multipartForm.getTextMultiParts()) {
+      data.append(textMultipart.name(), textMultipart.value());
+    }
+    for (MultipartForm.FileMultipart fileMultipart : multipartForm.getFileMultiParts()) {
+      ArrayBuffer arrayBuffer = new ArrayBuffer(fileMultipart.value().length);
+      Uint8Array buffer = new Uint8Array(arrayBuffer);
+      buffer.set(TypedArray.SetArrayUnionType.of(fileMultipart.value()));
+      BlobPropertyBag options = BlobPropertyBag.create();
+      options.setType(fileMultipart.contentType());
+      Blob blob =
+          new Blob(
+              new Blob.ConstructorBlobPartsArrayUnionType[] {
+                Blob.ConstructorBlobPartsArrayUnionType.of(buffer)
+              },
+              options);
+      data.append(fileMultipart.name(), blob);
+    }
+    request.send(data);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public void send(String data) {
     initRequest();
     request.send(data);
@@ -155,20 +187,20 @@ public class JsRestfulRequest extends BaseRestfulRequest {
   /** {@inheritDoc} */
   @Override
   public void abort() {
-    request.clearOnReadyStateChange();
+    request.onreadystatechange = p0 -> null;
     request.abort();
   }
 
   /** {@inheritDoc} */
   @Override
   public void setWithCredentials(boolean withCredentials) {
-    request.setWithCredentials(withCredentials);
+    request.withCredentials = withCredentials;
   }
 
   /** {@inheritDoc} */
   @Override
   public RestfulRequest setResponseType(String responseType) {
-    request.setResponseType(responseType);
+    request.responseType = responseType;
     return this;
   }
 
@@ -180,14 +212,15 @@ public class JsRestfulRequest extends BaseRestfulRequest {
     String url = getUri();
     request.open(getMethod(), url);
     setHeaders();
-    request.setOnReadyStateChange(
+    request.onreadystatechange =
         xhr -> {
-          if (xhr.getReadyState() == XMLHttpRequest.DONE) {
-            xhr.clearOnReadyStateChange();
+          if (request.readyState == XMLHttpRequest.DONE) {
+            request.onreadystatechange = p0 -> null;
             timer.cancel();
-            successHandler.onResponseReceived(new JsResponse(xhr));
+            successHandler.onResponseReceived(new JsResponse(request));
           }
-        });
+          return null;
+        };
     if (getTimeout() > 0) {
       timer.schedule(getTimeout());
     }
@@ -195,7 +228,7 @@ public class JsRestfulRequest extends BaseRestfulRequest {
 
   private void fireOnTimeout() {
     timer.cancel();
-    request.clearOnReadyStateChange();
+    request.onreadystatechange = p0 -> null;
     request.abort();
     errorHandler.onError(new RequestTimeoutException());
   }
