@@ -30,6 +30,7 @@ import org.assertj.core.api.Assertions;
 import org.dominokit.rest.model.MultipartTestServiceFactory;
 import org.dominokit.rest.model.SampleMultipartRequest;
 import org.dominokit.rest.model.SampleObject;
+import org.dominokit.rest.shared.request.ByteArrayProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -40,7 +41,8 @@ public class MultipartTest extends BaseRestTest {
   void multipart_request_with_form_data_as_arguments(Vertx vertx, VertxTestContext testContext) {
     sendRequest(
         MultipartTestServiceFactory.INSTANCE.textMultipart(
-            "sample id", "test file content".getBytes(StandardCharsets.UTF_8)),
+            "sample id",
+            ByteArrayProvider.of("test file content".getBytes(StandardCharsets.UTF_8))),
         routingContext -> {
           testContext.verify(
               () -> {
@@ -67,7 +69,8 @@ public class MultipartTest extends BaseRestTest {
     sampleObject.setName("sample name");
     sendRequest(
         MultipartTestServiceFactory.INSTANCE.objectMultipart(
-            sampleObject, "test file content".getBytes(StandardCharsets.UTF_8)),
+            sampleObject,
+            ByteArrayProvider.of("test file content".getBytes(StandardCharsets.UTF_8))),
         routingContext -> {
           testContext.verify(
               () -> {

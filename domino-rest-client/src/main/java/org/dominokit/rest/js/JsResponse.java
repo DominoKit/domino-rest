@@ -74,6 +74,6 @@ public class JsResponse implements Response {
    * @return the content of the response as array buffer
    */
   public ArrayBuffer getResponseArrayBuffer() {
-    return Js.cast(request.mozResponseArrayBuffer);
+    return Js.cast(request.response);
   }
 }

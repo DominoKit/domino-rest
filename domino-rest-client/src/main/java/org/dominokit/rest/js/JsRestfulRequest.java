@@ -151,7 +151,19 @@ public class JsRestfulRequest extends BaseRestfulRequest {
     initRequest();
     FormData data = new FormData();
     for (MultipartForm.TextMultipart textMultipart : multipartForm.getTextMultiParts()) {
-      data.append(textMultipart.name(), textMultipart.value());
+      BlobPropertyBag blobPropertyBag = BlobPropertyBag.create();
+      blobPropertyBag.setType(textMultipart.contentType());
+      Blob blob =
+          new Blob(
+              new Blob.ConstructorBlobPartsArrayUnionType[] {
+                Blob.ConstructorBlobPartsArrayUnionType.of(textMultipart.value())
+              },
+              blobPropertyBag);
+      if (textMultipart.fileName().isPresent()) {
+        data.append(textMultipart.name(), blob, textMultipart.fileName().get());
+      } else {
+        data.append(textMultipart.name(), blob);
+      }
     }
     for (MultipartForm.FileMultipart fileMultipart : multipartForm.getFileMultiParts()) {
       ArrayBuffer arrayBuffer = new ArrayBuffer(fileMultipart.value().length);
@@ -165,7 +177,11 @@ public class JsRestfulRequest extends BaseRestfulRequest {
                 Blob.ConstructorBlobPartsArrayUnionType.of(buffer)
               },
               options);
-      data.append(fileMultipart.name(), blob);
+      if (fileMultipart.fileName().isPresent()) {
+        data.append(fileMultipart.name(), blob, fileMultipart.fileName().get());
+      } else {
+        data.append(fileMultipart.name(), blob);
+      }
     }
     request.send(data);
   }

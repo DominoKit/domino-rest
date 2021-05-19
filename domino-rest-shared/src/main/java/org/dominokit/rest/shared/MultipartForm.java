@@ -17,6 +17,7 @@ package org.dominokit.rest.shared;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /** A class which contains the parts for a multiform form data request */
@@ -39,6 +40,21 @@ public class MultipartForm {
   }
 
   /**
+   * Adds a new text part
+   *
+   * @param name the name of the part
+   * @param valueSupplier the supplier for the text value
+   * @param contentType the content type of the body
+   * @param fileName the part file name
+   * @return same instance
+   */
+  public MultipartForm append(
+      String name, Supplier<String> valueSupplier, String contentType, String fileName) {
+    textMultiParts.add(new TextMultipart(name, valueSupplier, contentType, fileName));
+    return this;
+  }
+
+  /**
    * Adds a new binary part
    *
    * @param name the name of the part
@@ -48,6 +64,20 @@ public class MultipartForm {
    */
   public MultipartForm append(String name, byte[] value, String contentType) {
     fileMultiParts.add(new FileMultipart(name, value, contentType));
+    return this;
+  }
+
+  /**
+   * Adds a new binary part
+   *
+   * @param name the name of the part
+   * @param value the byte array value
+   * @param contentType the content type of the body
+   * @param fileName the part file name
+   * @return same instance
+   */
+  public MultipartForm append(String name, byte[] value, String contentType, String fileName) {
+    fileMultiParts.add(new FileMultipart(name, value, contentType, fileName));
     return this;
   }
 
@@ -67,11 +97,20 @@ public class MultipartForm {
     private final String name;
     private final byte[] file;
     private final String contentType;
+    private final String fileName;
 
     private FileMultipart(String name, byte[] file, String contentType) {
       this.name = name;
       this.file = file;
       this.contentType = contentType;
+      this.fileName = null;
+    }
+
+    private FileMultipart(String name, byte[] file, String contentType, String fileName) {
+      this.name = name;
+      this.file = file;
+      this.contentType = contentType;
+      this.fileName = fileName;
     }
 
     public String name() {
@@ -85,6 +124,10 @@ public class MultipartForm {
     public String contentType() {
       return contentType;
     }
+
+    public Optional<String> fileName() {
+      return Optional.ofNullable(fileName);
+    }
   }
 
   /** A context for holding a text part */
@@ -93,11 +136,21 @@ public class MultipartForm {
     private final String name;
     private final Supplier<String> valueSupplier;
     private final String contentType;
+    private final String fileName;
 
     private TextMultipart(String name, Supplier<String> valueSupplier, String contentType) {
       this.name = name;
       this.valueSupplier = valueSupplier;
       this.contentType = contentType;
+      this.fileName = null;
+    }
+
+    private TextMultipart(
+        String name, Supplier<String> valueSupplier, String contentType, String fileName) {
+      this.name = name;
+      this.valueSupplier = valueSupplier;
+      this.contentType = contentType;
+      this.fileName = fileName;
     }
 
     public String name() {
@@ -110,6 +163,10 @@ public class MultipartForm {
 
     public String contentType() {
       return contentType;
+    }
+
+    public Optional<String> fileName() {
+      return Optional.ofNullable(fileName);
     }
   }
 }
