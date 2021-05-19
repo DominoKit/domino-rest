@@ -18,7 +18,7 @@ package org.dominokit.rest.processor;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.AbstractProcessingStep;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.ExceptionUtil;
 import dominojackson.shaded.org.dominokit.domino.apt.commons.StepBuilder;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -61,9 +61,11 @@ public class ResourceListProcessingStep extends AbstractProcessingStep {
 
   private void generateFactory(Element resourceListElement) {
     ResourceList resourceList = resourceListElement.getAnnotation(ResourceList.class);
-    List<TypeMirror> resourceTypes =
-        processorUtil.getClassArrayValueFromAnnotation(
-            resourceListElement, ResourceList.class, "value");
+    Set<TypeMirror> resourceTypes =
+        new HashSet<>(
+            processorUtil.getClassArrayValueFromAnnotation(
+                resourceListElement, ResourceList.class, "value"));
+
     resourceTypes.forEach(
         typeMirror -> {
           Element element = types.asElement(typeMirror);

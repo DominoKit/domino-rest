@@ -66,6 +66,7 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 
 **/.vertx/
+**/file-uploads/
 .vertx/**/*.*
 **/war/*
 **/pom.xml.versionsBackup

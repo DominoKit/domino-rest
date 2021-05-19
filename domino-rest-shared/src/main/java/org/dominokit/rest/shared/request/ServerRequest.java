@@ -99,6 +99,7 @@ public class ServerRequest<R, S> extends BaseRequest
       };
   private String responseType;
   private NullQueryParamStrategy nullQueryParamStrategy;
+  private boolean multipartForm = false;
 
   protected ServerRequest() {}
 
@@ -668,6 +669,16 @@ public class ServerRequest<R, S> extends BaseRequest
       this.nullQueryParamStrategy = strategy;
     }
     return this;
+  }
+
+  /** @return true if the request is a multipart form data, false otherwise */
+  public boolean isMultipartForm() {
+    return multipartForm;
+  }
+
+  /** @param multipartForm true to mark the request as a multipart form data */
+  public void setMultipartForm(boolean multipartForm) {
+    this.multipartForm = multipartForm;
   }
 
   /** A function that get called right before sending the request to the server */

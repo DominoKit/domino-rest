@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.dominokit.domino.api.shared.extension.ContextAggregator;
+import org.dominokit.rest.shared.MultipartForm;
 import org.dominokit.rest.shared.Response;
 import org.dominokit.rest.shared.RestfulRequest;
 
@@ -158,7 +159,11 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
   private void doSendRequest(ServerRequest<R, S> request, RestfulRequest restfulRequest) {
     if (SEND_BODY_METHODS.contains(request.getHttpMethod().toUpperCase())
         && !request.isVoidRequest()) {
-      restfulRequest.send(request.getRequestWriter().write(request.requestBean()));
+      if (request.isMultipartForm()) {
+        restfulRequest.sendMultipartForm((MultipartForm) request.requestBean());
+      } else {
+        restfulRequest.send(request.getRequestWriter().write(request.requestBean()));
+      }
     } else {
       restfulRequest.send();
     }

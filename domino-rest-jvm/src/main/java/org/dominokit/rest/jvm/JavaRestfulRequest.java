@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import org.dominokit.rest.VertxInstanceProvider;
 import org.dominokit.rest.shared.BaseRestfulRequest;
 import org.dominokit.rest.shared.GwtIncompatible;
+import org.dominokit.rest.shared.MultipartForm;
 import org.dominokit.rest.shared.RestfulRequest;
 
 /** Java implementation for {@link RestfulRequest} that uses Vert.x {@link WebClient} */
@@ -121,6 +122,25 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
   public void sendJson(String json) {
     putHeader("Content-Type", "application/json");
     send(json);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void sendMultipartForm(MultipartForm multipartForm) {
+    putHeader("Content-Type", "multipart/form-data");
+    io.vertx.ext.web.multipart.MultipartForm parts =
+        io.vertx.ext.web.multipart.MultipartForm.create();
+    for (MultipartForm.TextMultipart textMultipart : multipartForm.getTextMultiParts()) {
+      parts.attribute(textMultipart.name(), textMultipart.value());
+    }
+    for (MultipartForm.FileMultipart fileMultipart : multipartForm.getFileMultiParts()) {
+      parts.binaryFileUpload(
+          fileMultipart.name(),
+          fileMultipart.name(),
+          Buffer.buffer(fileMultipart.value()),
+          fileMultipart.contentType());
+    }
+    request.sendMultipartForm(parts, this::handleResponse);
   }
 
   /** {@inheritDoc} */

@@ -5,32 +5,18 @@
     <parent>
         <artifactId>domino-rest</artifactId>
         <groupId>org.dominokit</groupId>
-        <version>1.0.0-RC3</version>
+        <version>1.0.0-RC4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>domino-rest-test</artifactId>
-    <packaging>gwt-lib</packaging>
+    <packaging>jar</packaging>
 
     <name>domino-rest-test</name>
     <properties>
-        <junit-jupiter.version>5.6.2</junit-jupiter.version>
+        <junit-jupiter.version>5.7.0</junit-jupiter.version>
     </properties>
 
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.reactivestreams</groupId>
-            <artifactId>reactive-streams</artifactId>
-            <version>1.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.6.2</version>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.dominokit</groupId>
@@ -46,18 +32,12 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
-            <version>3.8.5</version>
+            <version>3.9.6</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-junit5</artifactId>
-            <version>3.8.5</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit-jupiter.version}</version>
+            <version>3.9.6</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -71,6 +51,12 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>1.7.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
