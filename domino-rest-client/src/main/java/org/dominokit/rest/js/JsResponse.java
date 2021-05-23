@@ -76,4 +76,9 @@ public class JsResponse implements Response {
   public ArrayBuffer getResponseArrayBuffer() {
     return Js.cast(request.response);
   }
+
+  /** @return the {@code XMLHttpRequest} associated with this response. */
+  public XMLHttpRequest getRequest() {
+    return request;
+  }
 }
