@@ -236,26 +236,15 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
               variableElement -> {
                 if (variableElement.getAnnotation(Multipart.class) != null) {
                   // get from object
-                  Element multipartElement = types.asElement(variableElement.asType());
-                  multipartElement.getEnclosedElements().stream()
-                      .filter(element -> element.getKind() == ElementKind.FIELD)
-                      .filter(element -> element.getAnnotation(FormParam.class) != null)
-                      .forEach(
-                          field -> {
-                            addMultipart(
-                                serviceMethod,
-                                request,
-                                (VariableElement) field,
-                                variableElement.getSimpleName().toString()
-                                    + "."
-                                    + fieldOrGetter(multipartElement, field));
-                          });
+                  getFromModel(serviceMethod, request, variableElement);
                 } else {
-                  addMultipart(
-                      serviceMethod,
-                      request,
-                      variableElement,
-                      variableElement.getSimpleName().toString());
+                  if (!isParamField(variableElement)) {
+                    addMultipart(
+                        serviceMethod,
+                        request,
+                        variableElement,
+                        variableElement.getSimpleName().toString());
+                  }
                 }
               });
       request.addStatement(initializeStatement + "(multipartForm)");
@@ -323,6 +312,24 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     return request.build();
   }
 
+  private void getFromModel(
+      ServiceMethod serviceMethod, MethodSpec.Builder request, VariableElement variableElement) {
+    Element multipartElement = types.asElement(variableElement.asType());
+    multipartElement.getEnclosedElements().stream()
+        .filter(element -> element.getKind() == ElementKind.FIELD)
+        .filter(element -> element.getAnnotation(FormParam.class) != null)
+        .forEach(
+            field -> {
+              addMultipart(
+                  serviceMethod,
+                  request,
+                  (VariableElement) field,
+                  variableElement.getSimpleName().toString()
+                      + "."
+                      + fieldOrGetter(multipartElement, field));
+            });
+  }
+
   private TypeName getParameterType(VariableElement parameter) {
     if (Type.isPrimitiveArray(parameter.asType())
         && Type.arrayComponentType(parameter.asType()).getKind() == TypeKind.BYTE) {
@@ -339,110 +346,112 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     FormParam annotation = variableElement.getAnnotation(FormParam.class);
     Optional<FileName> fileName =
         Optional.ofNullable(variableElement.getAnnotation(FileName.class));
-    if (isRequestBody(variableElement)) {
-      Optional<CodeBlock> requestWriter =
-          getRequestWriter(serviceMethod.method, variableElement.asType(), serviceMethod);
-      requestWriter.ifPresent(
-          codeBlock -> {
-            if (fileName.isPresent()) {
-              request.addStatement(
-                  "multipartForm.append($S, () -> $L.write($L), $S, $S)",
-                  annotation.value(),
-                  codeBlock,
-                  paramName,
-                  MediaType.APPLICATION_JSON,
-                  fileName.get().value());
-            } else {
-              request.addStatement(
-                  "multipartForm.append($S, () -> $L.write($L), $S)",
-                  annotation.value(),
-                  codeBlock,
-                  paramName,
-                  MediaType.APPLICATION_JSON);
-            }
-          });
-    } else if (Type.isPrimitiveArray(variableElement.asType())
-        && Type.arrayComponentType(variableElement.asType()).getKind() == TypeKind.BYTE) {
-      if (variableElement.getKind() == ElementKind.FIELD) {
-        if (fileName.isPresent()) {
-          request.addStatement(
-              "multipartForm.append($S, $L, $S, $S)",
-              annotation.value(),
-              paramName,
-              MediaType.APPLICATION_OCTET_STREAM,
-              fileName.get().value());
+    if (nonNull(annotation)) {
+      if (isRequestBody(variableElement)) {
+        Optional<CodeBlock> requestWriter =
+            getRequestWriter(serviceMethod.method, variableElement.asType(), serviceMethod);
+        requestWriter.ifPresent(
+            codeBlock -> {
+              if (fileName.isPresent()) {
+                request.addStatement(
+                    "multipartForm.append($S, () -> $L.write($L), $S, $S)",
+                    annotation.value(),
+                    codeBlock,
+                    paramName,
+                    MediaType.APPLICATION_JSON,
+                    fileName.get().value());
+              } else {
+                request.addStatement(
+                    "multipartForm.append($S, () -> $L.write($L), $S)",
+                    annotation.value(),
+                    codeBlock,
+                    paramName,
+                    MediaType.APPLICATION_JSON);
+              }
+            });
+      } else if (Type.isPrimitiveArray(variableElement.asType())
+          && Type.arrayComponentType(variableElement.asType()).getKind() == TypeKind.BYTE) {
+        if (variableElement.getKind() == ElementKind.FIELD) {
+          if (fileName.isPresent()) {
+            request.addStatement(
+                "multipartForm.append($S, $L, $S, $S)",
+                annotation.value(),
+                paramName,
+                MediaType.APPLICATION_OCTET_STREAM,
+                fileName.get().value());
+          } else {
+            request.addStatement(
+                "multipartForm.append($S, $L, $S)",
+                annotation.value(),
+                paramName,
+                MediaType.APPLICATION_OCTET_STREAM);
+          }
         } else {
-          request.addStatement(
-              "multipartForm.append($S, $L, $S)",
-              annotation.value(),
-              paramName,
-              MediaType.APPLICATION_OCTET_STREAM);
+          if (fileName.isPresent()) {
+            request.addStatement(
+                "multipartForm.append($S, $L.getData(), $S, $S)",
+                annotation.value(),
+                paramName,
+                MediaType.APPLICATION_OCTET_STREAM,
+                fileName.get().value());
+          } else {
+            request.addStatement(
+                "multipartForm.append($S, $L.getData(), $S, $L.getFileName())",
+                annotation.value(),
+                paramName,
+                MediaType.APPLICATION_OCTET_STREAM,
+                paramName);
+          }
         }
-      } else {
-        if (fileName.isPresent()) {
-          request.addStatement(
-              "multipartForm.append($S, $L.getData(), $S, $S)",
-              annotation.value(),
-              paramName,
-              MediaType.APPLICATION_OCTET_STREAM,
-              fileName.get().value());
-        } else {
-          request.addStatement(
-              "multipartForm.append($S, $L.getData(), $S, $L.getFileName())",
-              annotation.value(),
-              paramName,
-              MediaType.APPLICATION_OCTET_STREAM,
-              paramName);
-        }
-      }
 
-    } else {
-      if (processorUtil.isStringType(variableElement.asType())) {
-        if (fileName.isPresent()) {
-          request.addStatement(
-              "multipartForm.append($S, () -> $L, $S, $S)",
-              annotation.value(),
-              paramName,
-              MediaType.TEXT_PLAIN,
-              fileName.get().value());
-        } else {
-          request.addStatement(
-              "multipartForm.append($S, () -> $L, $S)",
-              annotation.value(),
-              paramName,
-              MediaType.TEXT_PLAIN);
-        }
-      } else if (processorUtil.isPrimitive(variableElement.asType())) {
-        if (fileName.isPresent()) {
-          request.addStatement(
-              "multipartForm.append($S, () -> $T.valueOf($L), $S, $S)",
-              annotation.value(),
-              String.class,
-              paramName,
-              MediaType.TEXT_PLAIN,
-              fileName.get().value());
-        } else {
-          request.addStatement(
-              "multipartForm.append($S, () -> $T.valueOf($L), $S)",
-              annotation.value(),
-              String.class,
-              paramName,
-              MediaType.TEXT_PLAIN);
-        }
       } else {
-        if (fileName.isPresent()) {
-          request.addStatement(
-              "multipartForm.append($S, () -> $L.toString(), $S, $S)",
-              annotation.value(),
-              paramName,
-              MediaType.TEXT_PLAIN,
-              fileName.get().value());
+        if (processorUtil.isStringType(variableElement.asType())) {
+          if (fileName.isPresent()) {
+            request.addStatement(
+                "multipartForm.append($S, () -> $L, $S, $S)",
+                annotation.value(),
+                paramName,
+                MediaType.TEXT_PLAIN,
+                fileName.get().value());
+          } else {
+            request.addStatement(
+                "multipartForm.append($S, () -> $L, $S)",
+                annotation.value(),
+                paramName,
+                MediaType.TEXT_PLAIN);
+          }
+        } else if (processorUtil.isPrimitive(variableElement.asType())) {
+          if (fileName.isPresent()) {
+            request.addStatement(
+                "multipartForm.append($S, () -> $T.valueOf($L), $S, $S)",
+                annotation.value(),
+                String.class,
+                paramName,
+                MediaType.TEXT_PLAIN,
+                fileName.get().value());
+          } else {
+            request.addStatement(
+                "multipartForm.append($S, () -> $T.valueOf($L), $S)",
+                annotation.value(),
+                String.class,
+                paramName,
+                MediaType.TEXT_PLAIN);
+          }
         } else {
-          request.addStatement(
-              "multipartForm.append($S, () -> $L.toString(), $S)",
-              annotation.value(),
-              paramName,
-              MediaType.TEXT_PLAIN);
+          if (fileName.isPresent()) {
+            request.addStatement(
+                "multipartForm.append($S, () -> $L.toString(), $S, $S)",
+                annotation.value(),
+                paramName,
+                MediaType.TEXT_PLAIN,
+                fileName.get().value());
+          } else {
+            request.addStatement(
+                "multipartForm.append($S, () -> $L.toString(), $S)",
+                annotation.value(),
+                paramName,
+                MediaType.TEXT_PLAIN);
+          }
         }
       }
     }
