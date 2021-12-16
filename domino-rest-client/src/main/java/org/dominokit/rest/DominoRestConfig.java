@@ -41,7 +41,7 @@ public class DominoRestConfig implements RestConfig {
   private static String defaultResourceRootPath = "service";
   private static String defaultJsonDateFormat = null;
 
-  private static final RequestRouter<ServerRequest> serverRouter =
+  private static RequestRouter<ServerRequest> serverRouter =
       new ServerRouter(
           new DefaultRequestAsyncSender(new ServerEventFactory(), new RequestSender<>()));
   private static List<DynamicServiceRoot> dynamicServiceRoots = new ArrayList<>();
@@ -187,6 +187,15 @@ public class DominoRestConfig implements RestConfig {
       this.defaultResourceRootPath = rootPath;
     }
     return this;
+  }
+
+  /**
+   * Sets the server router
+   *
+   * @param serverRouter the new router
+   */
+  public void setServerRouter(RequestRouter<ServerRequest> serverRouter) {
+    DominoRestConfig.serverRouter = serverRouter;
   }
 
   /** {@inheritDoc} */
