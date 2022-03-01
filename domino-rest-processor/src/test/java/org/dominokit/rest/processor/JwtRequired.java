@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@ResourceList({NoFactoryAnnotationSampleService.class, NoFactoryAnnotationSampleService.IntX.class})
-@MetaDataAnnotations({JwtRequired.class})
 package org.dominokit.rest.processor;
 
-import org.dominokit.rest.shared.request.service.annotations.MetaDataAnnotations;
-import org.dominokit.rest.shared.request.service.annotations.ResourceList;
+public @interface JwtRequired {}
