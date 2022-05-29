@@ -145,7 +145,7 @@ public class ServerRequest<R, S> extends BaseRequest
     requestContext.getConfig().getServerRouter().routeRequest(this);
   }
 
-  void setHttpRequest(RestfulRequest httpRequest) {
+  public void setHttpRequest(RestfulRequest httpRequest) {
     this.httpRequest = httpRequest;
   }
 
