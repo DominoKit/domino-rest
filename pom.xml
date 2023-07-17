@@ -5,7 +5,7 @@
 
     <groupId>org.dominokit</groupId>
     <artifactId>domino-rest</artifactId>
-    <version>1.0.0-RC8</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>domino-rest</name>
@@ -70,7 +70,7 @@
 
     <properties>
         <snapshot.version>HEAD-SNAPSHOT</snapshot.version>
-        <next.release.version>1.0.0-RC8</next.release.version>
+        <next.release.version>1.0.0</next.release.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -89,8 +89,8 @@
         <maven.gwt.plugin>1.0.0</maven.gwt.plugin>
         <gwt.version>2.9.0</gwt.version>
         <domino.logger.version>1.0.2</domino.logger.version>
-        <domino.jackson.version>1.0.0-RC4</domino.jackson.version>
-        <domino.history.version>1.0.0-RC5</domino.history.version>
+        <domino.jackson.version>1.0.0</domino.jackson.version>
+        <domino.history.version>1.0.0</domino.history.version>
         <domino.aggregator.version>1.0.2</domino.aggregator.version>
     </properties>
 

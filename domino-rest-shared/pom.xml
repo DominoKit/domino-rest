@@ -5,7 +5,7 @@
     <parent>
         <artifactId>domino-rest</artifactId>
         <groupId>org.dominokit</groupId>
-        <version>1.0.0-RC8</version>
+        <version>1.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,6 +30,7 @@
             <groupId>org.dominokit</groupId>
             <artifactId>domino-rest-jaxrs</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.dominokit</groupId>
