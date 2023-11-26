@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.dominokit.rest.shared.request.service.annotations.MetaDataAnnotations;
 import org.dominokit.rest.shared.request.service.annotations.RequestFactory;
 import org.dominokit.rest.shared.request.service.annotations.ResourceList;
 
@@ -65,12 +66,17 @@ public class ResourceListProcessingStep extends AbstractProcessingStep {
         new HashSet<>(
             processorUtil.getClassArrayValueFromAnnotation(
                 resourceListElement, ResourceList.class, "value"));
+    Set<TypeMirror> metadataAnnotationTypes =
+        new HashSet<>(
+            processorUtil.getClassArrayValueFromAnnotation(
+                resourceListElement, MetaDataAnnotations.class, "value"));
 
     resourceTypes.forEach(
         typeMirror -> {
           Element element = types.asElement(typeMirror);
           writeSource(
-              new RequestFactorySourceWriter(element, resourceList.serviceRoot(), processingEnv)
+              new RequestFactorySourceWriter(
+                      element, resourceList.serviceRoot(), metadataAnnotationTypes, processingEnv)
                   .asTypeBuilder(),
               elements.getPackageOf(resourceListElement).getQualifiedName().toString());
         });
