@@ -15,23 +15,26 @@
     <name>domino-rest-shared</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.gwtproject.regexp</groupId>
-            <artifactId>gwt-regexp</artifactId>
-            <version>1.0.0-RC1</version>
-        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>${jax.rs.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-rest-jaxrs</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-jackson</artifactId>

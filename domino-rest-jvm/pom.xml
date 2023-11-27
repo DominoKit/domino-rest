@@ -32,12 +32,11 @@
             <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
         <dependency>
-            <groupId>org.dominokit</groupId>
-            <artifactId>domino-rest-jaxrs</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>${jax.rs.version}</version>
         </dependency>
     </dependencies>
 

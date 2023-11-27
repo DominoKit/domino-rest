@@ -52,7 +52,7 @@ public class ServerRequest<R, S> extends BaseRequest
   private RestfulRequest httpRequest;
 
   private String url;
-  private String httpMethod = HttpMethod.GET;
+  private String httpMethod;
   private String path = "";
   private String serviceRoot = "";
   private Integer[] successCodes = new Integer[] {200, 201, 202, 203, 204};
@@ -101,11 +101,14 @@ public class ServerRequest<R, S> extends BaseRequest
   private NullQueryParamStrategy nullQueryParamStrategy;
   private boolean multipartForm = false;
 
-  protected ServerRequest() {}
+  protected ServerRequest() {
+    this.httpMethod = HttpMethod.GET;
+  }
 
   protected ServerRequest(RequestMeta requestMeta, R requestBean) {
     this.requestMeta = requestMeta;
     this.requestBean = requestBean;
+    this.httpMethod = HttpMethod.GET;
   }
 
   /** prepare the request and execute it. */

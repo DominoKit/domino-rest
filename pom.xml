@@ -63,22 +63,22 @@
         <module>domino-rest-shared</module>
         <module>domino-rest-test</module>
         <module>domino-rest-processor</module>
-        <module>domino-rest-jaxrs</module>
         <module>domino-rest-client</module>
         <module>domino-rest-jvm</module>
+        <module>domino-rest-jaxrs</module>
     </modules>
 
     <properties>
         <snapshot.version>HEAD-SNAPSHOT</snapshot.version>
         <next.release.version>1.0.1</next.release.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <maven.compiler.plugin>3.8.1</maven.compiler.plugin>
+        <maven.compiler.plugin>3.11.0</maven.compiler.plugin>
         <maven.source.plugin>3.0.1</maven.source.plugin>
-        <maven.javadoc.plugin>2.10.4</maven.javadoc.plugin>
+        <maven.javadoc.plugin>3.6.2</maven.javadoc.plugin>
         <maven.gpg.plugin>1.6</maven.gpg.plugin>
         <maven.nexus.staging.plugin>1.6.8</maven.nexus.staging.plugin>
         <maven.deploy.plugin>3.0.0-M1</maven.deploy.plugin>
@@ -86,18 +86,22 @@
         <maven.install.plugin>3.0.0-M1</maven.install.plugin>
         <maven.license.plugin>3.0</maven.license.plugin>
         <maven.surfire.plugin>3.0.0-M5</maven.surfire.plugin>
-        <maven.gwt.plugin>1.0.0</maven.gwt.plugin>
-        <gwt.version>2.9.0</gwt.version>
-        <domino.logger.version>1.0.2</domino.logger.version>
-        <domino.jackson.version>1.0.0</domino.jackson.version>
-        <domino.history.version>1.0.0</domino.history.version>
+        <maven.gwt.plugin>1.1.0</maven.gwt.plugin>
+
+        <gwt.version>2.10.0</gwt.version>
+        <domino.logger.version>1.0.3</domino.logger.version>
+        <domino.jackson.version>1.0.3</domino.jackson.version>
+        <domino.history.version>1.0.2</domino.history.version>
         <domino.aggregator.version>1.0.2</domino.aggregator.version>
+        <jax.rs.version>2.1.1</jax.rs.version>
+        <jackson.databind.version>2.16.0</jackson.databind.version>
+        <elemental2.version>1.2.1</elemental2.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.google.gwt</groupId>
+                <groupId>org.gwtproject</groupId>
                 <artifactId>gwt</artifactId>
                 <version>${gwt.version}</version>
                 <type>pom</type>
@@ -125,6 +129,47 @@
                 <artifactId>javax.annotation-api</artifactId>
                 <version>1.3.2</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.elemental2</groupId>
+                <artifactId>elemental2-core</artifactId>
+                <version>${elemental2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.elemental2</groupId>
+                <artifactId>elemental2-dom</artifactId>
+                <version>${elemental2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.elemental2</groupId>
+                <artifactId>elemental2-promise</artifactId>
+                <version>${elemental2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.databind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.databind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.databind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.auto</groupId>
+                <artifactId>auto-common</artifactId>
+                <version>1.2.2</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>32.1.3-jre</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -135,8 +180,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.plugin}</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <release>${maven.compiler.source}</release>
                 </configuration>
             </plugin>
             <plugin>

@@ -15,23 +15,4 @@
     <url>https://github.com/DominoKit/domino-rest</url>
     <description>domino rest jax-rs super sources</description>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-            </resource>
-        </resources>
-        <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${maven.javadoc.plugin}</version>
-                    <configuration>
-                        <sourceFileIncludes>
-                            <include>**/GwtIncompatible.java</include>
-                        </sourceFileIncludes>
-                    </configuration>
-                </plugin>
-        </plugins>
-    </build>
 </project>
