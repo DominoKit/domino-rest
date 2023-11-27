@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.dominokit.jackson.JacksonContextProvider;
 import org.dominokit.rest.jvm.DefaultServiceRoot;
 import org.dominokit.rest.jvm.OnServerRequestEventFactory;
@@ -253,5 +255,19 @@ public class DominoRestConfig implements RestConfig {
       DominoRestConfig.nullQueryParamStrategy = nullQueryParamStrategy;
     }
     return this;
+  }
+
+  @Override
+  public UrlTokenRegexMatcher getUrlTokenRegexMatcher() {
+    return url -> {
+      if (url.contains("http:") || url.contains("https:")) {
+        Pattern pattern = Pattern.compile("^((.*:)//([a-z0-9\\-.]+)(|:[0-9]+)/)(.*)$");
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.find()) {
+          return matcher.group(matcher.groupCount());
+        }
+      }
+      return url;
+    };
   }
 }

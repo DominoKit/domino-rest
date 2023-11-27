@@ -25,6 +25,8 @@ import org.dominokit.rest.js.DefaultServiceRoot;
 import org.dominokit.rest.js.ServerEventFactory;
 import org.dominokit.rest.shared.request.*;
 import org.gwtproject.i18n.shared.DateTimeFormat;
+import org.gwtproject.regexp.shared.MatchResult;
+import org.gwtproject.regexp.shared.RegExp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -252,5 +254,20 @@ public class DominoRestConfig implements RestConfig {
       DominoRestConfig.nullQueryParamStrategy = strategy;
     }
     return this;
+  }
+
+  @Override
+  public UrlTokenRegexMatcher getUrlTokenRegexMatcher() {
+    return url -> {
+      if (url.contains("http:") || url.contains("https:")) {
+        RegExp regExp = RegExp.compile("^((.*:)//([a-z0-9\\-.]+)(|:[0-9]+)/)(.*)$");
+        MatchResult matcher = regExp.exec(url);
+        boolean matchFound = matcher != null; // equivalent to regExp.test(inputStr);
+        if (matchFound) {
+          return matcher.getGroup(matcher.getGroupCount() - 1);
+        }
+      }
+      return url;
+    };
   }
 }

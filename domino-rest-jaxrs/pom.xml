@@ -16,11 +16,6 @@
     <description>domino rest jax-rs super sources</description>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-            </resource>
-        </resources>
         <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

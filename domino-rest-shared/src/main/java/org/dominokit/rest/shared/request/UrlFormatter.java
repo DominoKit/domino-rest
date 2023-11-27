@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.dominokit.domino.history.StateHistoryToken;
 import org.dominokit.rest.shared.request.exception.PathParameterMissingException;
-import org.gwtproject.regexp.shared.MatchResult;
-import org.gwtproject.regexp.shared.RegExp;
 
 /** Formats the url by adding the query parameters and normalizing path parameters */
 public class UrlFormatter {
@@ -70,15 +68,7 @@ public class UrlFormatter {
   }
 
   private String asTokenString(String url) {
-    if (url.contains("http:") || url.contains("https:")) {
-      RegExp regExp = RegExp.compile("^((.*:)//([a-z0-9\\-.]+)(|:[0-9]+)/)(.*)$");
-      MatchResult matcher = regExp.exec(url);
-      boolean matchFound = matcher != null; // equivalent to regExp.test(inputStr);
-      if (matchFound) {
-        return matcher.getGroup(matcher.getGroupCount() - 1);
-      }
-    }
-    return url;
+    return DominoRestContext.make().getConfig().getUrlTokenRegexMatcher().asTokenString(url);
   }
 
   private boolean hasPathParameter(String path) {
