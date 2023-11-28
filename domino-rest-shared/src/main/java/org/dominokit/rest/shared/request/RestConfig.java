@@ -174,6 +174,8 @@ public interface RestConfig {
    */
   RestConfig setNullQueryParamStrategy(NullQueryParamStrategy strategy);
 
+  UrlTokenRegexMatcher getUrlTokenRegexMatcher();
+
   /** Formatter to format the date parameter based on a patter */
   @FunctionalInterface
   interface DateParamFormatter {
