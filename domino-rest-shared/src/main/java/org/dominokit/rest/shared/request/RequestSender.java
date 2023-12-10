@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared.request;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import java.util.Arrays;
@@ -119,11 +120,25 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
     if (Arrays.stream(request.getSuccessCodes())
         .anyMatch(code -> code.equals(response.getStatusCode()))) {
       callSuccessGlobalHandlers(request, response);
-      callBack.onSuccess(request.getResponseReader().read(response));
+      callBack.onSuccess(readResponse(request, response));
     } else {
       FailedResponseBean failedResponse = new FailedResponseBean(request, response);
       callFailedResponseHandlers(request, failedResponse);
       callBack.onFailure(failedResponse);
+    }
+  }
+
+  private <R, S> S readResponse(ServerRequest<R, S> request, Response response) {
+    int statusCode = response.getStatusCode();
+    switch (statusCode) {
+      case 204:
+        {
+          if (isNull(response.getBodyAsString()) || response.getBodyAsString().isEmpty()) {
+            return null;
+          }
+        }
+      default:
+        return request.getResponseReader().read(response);
     }
   }
 
