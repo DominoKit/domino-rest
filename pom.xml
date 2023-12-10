@@ -90,7 +90,7 @@
 
         <gwt.version>2.10.0</gwt.version>
         <domino.logger.version>1.0.3</domino.logger.version>
-        <domino.jackson.version>1.0.3</domino.jackson.version>
+        <domino.jackson.version>1.0.4</domino.jackson.version>
         <domino.history.version>1.0.2</domino.history.version>
         <domino.aggregator.version>1.0.2</domino.aggregator.version>
         <jax.rs.version>2.1.1</jax.rs.version>
