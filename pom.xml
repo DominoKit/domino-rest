@@ -5,7 +5,7 @@
 
     <groupId>org.dominokit</groupId>
     <artifactId>domino-rest</artifactId>
-    <version>HEAD-SNAPSHOT</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>domino-rest</name>
@@ -69,7 +69,7 @@
     </modules>
 
     <properties>
-        <snapshot.version>HEAD-SNAPSHOT</snapshot.version>
+        <snapshot.version>1.0.3-SNAPSHOT</snapshot.version>
         <next.release.version>1.0.3</next.release.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -291,9 +291,9 @@
 
                     <!-- Configure branches -->
                     <gitFlowConfig>
-                        <productionBranch>master</productionBranch>
+                        <productionBranch>1.x.x</productionBranch>
                         <!-- default is develop, but we use development -->
-                        <developmentBranch>development</developmentBranch>
+                        <developmentBranch>1.x.x-development</developmentBranch>
                     </gitFlowConfig>
                 </configuration>
             </plugin>
