@@ -15,10 +15,10 @@
  */
 package org.dominokit.rest.processor;
 
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import java.util.Date;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import org.dominokit.jackson.annotation.JSONMapper;
 import org.dominokit.rest.shared.request.service.annotations.DateFormat;
 import org.dominokit.rest.shared.request.service.annotations.RequestBody;

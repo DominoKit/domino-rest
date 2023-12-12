@@ -15,7 +15,7 @@
  */
 package org.dominokit.rest.processor;
 
-import javax.ws.rs.PathParam;
+import jakarta.ws.rs.PathParam;
 
 public interface ChildService {
   String getById(@PathParam("id") int id);

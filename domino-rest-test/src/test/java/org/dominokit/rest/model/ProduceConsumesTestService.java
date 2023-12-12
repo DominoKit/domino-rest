@@ -15,8 +15,8 @@
  */
 package org.dominokit.rest.model;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import org.dominokit.rest.shared.request.service.annotations.RequestFactory;
 
 @RequestFactory

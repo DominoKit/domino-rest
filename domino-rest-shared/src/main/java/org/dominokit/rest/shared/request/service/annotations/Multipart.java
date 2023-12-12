@@ -21,8 +21,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation to mark a class which contains a list of {@link javax.ws.rs.FormParam} to be read
- * in a multipart request
+ * This annotation to mark a class which contains a list of {@link jakarta.ws.rs.FormParam} to be
+ * read in a multipart request
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.TYPE})

@@ -15,13 +15,13 @@
  */
 package org.dominokit.rest.model;
 
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import org.dominokit.rest.shared.request.service.annotations.DateFormat;
 import org.dominokit.rest.shared.request.service.annotations.RequestFactory;
 

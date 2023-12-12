@@ -45,8 +45,8 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * @see RequestFactory
- * @see javax.ws.rs.GET
- * @see javax.ws.rs.Path
+ * @see jakarta.ws.rs.GET
+ * @see jakarta.ws.rs.Path
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

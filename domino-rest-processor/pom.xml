@@ -23,10 +23,9 @@
             <artifactId>domino-jackson-processor</artifactId>
             <version>${domino.jackson.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${jax.rs.version}</version>
         </dependency>
         <dependency>

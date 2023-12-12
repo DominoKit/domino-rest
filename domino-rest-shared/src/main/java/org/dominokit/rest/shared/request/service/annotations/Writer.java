@@ -50,9 +50,9 @@ import org.dominokit.rest.shared.request.RequestWriter;
  * </pre>
  *
  * @see RequestWriter
- * @see javax.ws.rs.Consumes
- * @see javax.ws.rs.PUT
- * @see javax.ws.rs.Path
+ * @see jakarta.ws.rs.Consumes
+ * @see jakarta.ws.rs.PUT
+ * @see jakarta.ws.rs.Path
  * @see RequestFactory
  */
 @Retention(RetentionPolicy.RUNTIME)

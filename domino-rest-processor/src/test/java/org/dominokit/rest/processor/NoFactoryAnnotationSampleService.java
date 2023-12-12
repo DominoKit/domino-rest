@@ -15,10 +15,10 @@
  */
 package org.dominokit.rest.processor;
 
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.List;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 import org.dominokit.rest.shared.request.service.annotations.Classifier;
 import org.dominokit.rest.shared.request.service.annotations.RequestBody;
 import org.dominokit.rest.shared.request.service.annotations.Retries;
