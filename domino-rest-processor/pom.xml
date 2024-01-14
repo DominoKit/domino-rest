@@ -70,8 +70,28 @@
                                     <exclude>com.google.code.findbugs:jsr305</exclude>
                                     <exclude>com.google.j2objc:j2objc-annotations</exclude>
                                     <exclude>com.google.errorprone:error_prone_annotations</exclude>
+                                    <exclude>com.fasterxml.jackson.core:*</exclude>
+                                    <exclude>jakarta.ws.rs:*</exclude>
                                 </excludes>
                             </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.apache</pattern>
+                                    <shadedPattern>dominorest.shaded.com.apache</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.checkerframework</pattern>
+                                    <shadedPattern>dominorest.shaded.com.checkerframework</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google</pattern>
+                                    <shadedPattern>dominorest.shaded.com.google</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.squareup</pattern>
+                                    <shadedPattern>dominorest.shaded.com.squareup</shadedPattern>
+                                </relocation>
+                            </relocations>
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
