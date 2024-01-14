@@ -27,8 +27,8 @@ import org.dominokit.rest.shared.request.RestConfig;
  * <p>This annotation will be used to generate an implementation for accessing defined endpoints
  * according to the methods defined in this type. Each method is an endpoint with a specification
  * such as Http Method, URL, Request body if applicable and many more. The definition of an endpoint
- * is done using jax-rs annotations such as {@link javax.ws.rs.GET}, {@link javax.ws.rs.Path} ...
- * etc.
+ * is done using jax-rs annotations such as {@link jakarta.ws.rs.GET}, {@link jakarta.ws.rs.Path}
+ * ... etc.
  *
  * <p>Domino rest loads the default service root from {@link RestConfig#getDefaultServiceRoot()}.
  * However, you can specifically define a base url for a specific client using {@link
@@ -40,20 +40,20 @@ import org.dominokit.rest.shared.request.RestConfig;
  * &#64;RequestFactory(serviceRoot = "http://otherhost:9090")
  * public interface MoviesService {
  *
- *     &#64;javax.ws.rs.Path("library/movies/:movieName")
- *     &#64;javax.ws.rs.GET
- *     Movie getMovieByName(&#64;javax.ws.rs.PathParam("movieName") String movieName);
+ *     &#64;jakarta.ws.rs.Path("library/movies/:movieName")
+ *     &#64;jakarta.ws.rs.GET
+ *     Movie getMovieByName(&#64;jakarta.ws.rs.PathParam("movieName") String movieName);
  *
- *     &#64;javax.ws.rs.Path("library/movies")
- *     &#64;javax.ws.rs.GET
+ *     &#64;jakarta.ws.rs.Path("library/movies")
+ *     &#64;jakarta.ws.rs.GET
  *     List&#60;Movie&#62; listMovies();
  * }
  * </pre>
  *
  * @see RestConfig
- * @see javax.ws.rs.Path
- * @see javax.ws.rs.GET
- * @see javax.ws.rs.PathParam
+ * @see jakarta.ws.rs.Path
+ * @see jakarta.ws.rs.GET
+ * @see jakarta.ws.rs.PathParam
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

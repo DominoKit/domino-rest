@@ -4,7 +4,7 @@
     <parent>
         <artifactId>domino-rest</artifactId>
         <groupId>org.dominokit</groupId>
-        <version>1.0.2</version>
+        <version>2.0.0-RC1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,10 +23,9 @@
             <artifactId>domino-jackson-processor</artifactId>
             <version>${domino.jackson.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${jax.rs.version}</version>
         </dependency>
         <dependency>
@@ -71,8 +70,28 @@
                                     <exclude>com.google.code.findbugs:jsr305</exclude>
                                     <exclude>com.google.j2objc:j2objc-annotations</exclude>
                                     <exclude>com.google.errorprone:error_prone_annotations</exclude>
+                                    <exclude>com.fasterxml.jackson.core:*</exclude>
+                                    <exclude>jakarta.ws.rs:*</exclude>
                                 </excludes>
                             </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.apache</pattern>
+                                    <shadedPattern>dominorest.shaded.com.apache</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.checkerframework</pattern>
+                                    <shadedPattern>dominorest.shaded.com.checkerframework</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google</pattern>
+                                    <shadedPattern>dominorest.shaded.com.google</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.squareup</pattern>
+                                    <shadedPattern>dominorest.shaded.com.squareup</shadedPattern>
+                                </relocation>
+                            </relocations>
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>

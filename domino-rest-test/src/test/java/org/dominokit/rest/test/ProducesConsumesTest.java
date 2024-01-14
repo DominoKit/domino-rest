@@ -21,7 +21,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import org.dominokit.rest.model.ChildProduceConsumesTestServiceFactory;
 import org.dominokit.rest.model.ChildProduceConsumesTestService_NestedFactory;
 import org.dominokit.rest.model.ProduceConsumesTestServiceFactory;

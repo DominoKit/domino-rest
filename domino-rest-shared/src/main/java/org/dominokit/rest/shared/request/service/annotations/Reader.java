@@ -51,9 +51,9 @@ import org.dominokit.rest.shared.request.ResponseReader;
  * </pre>
  *
  * @see ResponseReader
- * @see javax.ws.rs.Produces
- * @see javax.ws.rs.GET
- * @see javax.ws.rs.Path
+ * @see jakarta.ws.rs.Produces
+ * @see jakarta.ws.rs.GET
+ * @see jakarta.ws.rs.Path
  * @see RequestFactory
  */
 @Retention(RetentionPolicy.RUNTIME)

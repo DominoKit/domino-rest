@@ -17,11 +17,11 @@ package org.dominokit.rest.shared.request;
 
 import static java.util.Objects.*;
 
+import jakarta.ws.rs.HttpMethod;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
-import javax.ws.rs.HttpMethod;
 import org.dominokit.rest.shared.RestfulRequest;
 
 /**

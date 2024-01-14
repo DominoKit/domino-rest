@@ -15,12 +15,12 @@
  */
 package org.dominokit.rest.processor;
 
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.Suspended;
-import javax.ws.rs.core.Context;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.Suspended;
+import jakarta.ws.rs.core.Context;
 import org.dominokit.rest.shared.request.service.annotations.RequestBody;
 import org.dominokit.rest.shared.request.service.annotations.RequestFactory;
 

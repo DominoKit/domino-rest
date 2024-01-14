@@ -15,7 +15,7 @@
  */
 package org.dominokit.rest.model;
 
-import javax.ws.rs.FormParam;
+import jakarta.ws.rs.FormParam;
 
 public class SampleMultipartRequest {
 
