@@ -56,6 +56,7 @@ import org.dominokit.rest.shared.request.service.annotations.Request;
 public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
   private final Element serviceElement;
+  private final Set<TypeMirror> metadataAnnotationTypes;
   private final String requestsServiceRoot;
   private Map<String, Integer> methodCount;
 
@@ -64,6 +65,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     super(processingEnvironment);
     this.serviceElement = serviceElement;
     this.requestsServiceRoot = serviceElement.getAnnotation(RequestFactory.class).serviceRoot();
+    this.metadataAnnotationTypes = new HashSet<>();
 
     ObjectMapperProcessor.elementUtils = elements;
     ObjectMapperProcessor.typeUtils = types;
@@ -72,10 +74,14 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
   }
 
   public RequestFactorySourceWriter(
-      Element serviceElement, String serviceRoot, ProcessingEnvironment processingEnvironment) {
+      Element serviceElement,
+      String serviceRoot,
+      Set<TypeMirror> metadataAnnotationTypes,
+      ProcessingEnvironment processingEnvironment) {
     super(processingEnvironment);
     this.serviceElement = serviceElement;
     this.requestsServiceRoot = serviceRoot;
+    this.metadataAnnotationTypes = metadataAnnotationTypes;
 
     ObjectMapperProcessor.elementUtils = elements;
     ObjectMapperProcessor.typeUtils = types;
@@ -792,6 +798,8 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         .addStatement("setAccept(new String[]{$L})", getAcceptResponse(serviceMethod))
         .addStatement("setPath($S)", getPath(serviceMethod))
         .addStatement("setServiceRoot($S)", getServiceRoot(serviceMethod.method));
+    Optional<String> metaDataAnnotations = getMetaDataAnnotations(serviceMethod.method);
+    metaDataAnnotations.ifPresent(annotation -> constructorBuilder.addStatement("setMetaParameter($S, $S)", annotation, "true"));
 
     if (!consumesMultipartForm(serviceMethod)) {
       constructorBuilder.addStatement(
@@ -1092,6 +1100,20 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
       return Optional.of(requestBean.getAnnotation(NullQueryStrategy.class).value());
     }
     return Optional.empty();
+  }
+
+  private Optional<String> getMetaDataAnnotations(ExecutableElement method) {
+    Optional<String> metadata = Optional.empty();
+    for (AnnotationMirror annotatedOnMethod : method.getAnnotationMirrors()) {
+      for (TypeMirror metadataAnnotation : this.metadataAnnotationTypes) {
+        if (annotatedOnMethod.toString().equals("@" + metadataAnnotation.toString())) {
+          metadata =
+              Optional.of(
+                  annotatedOnMethod.getAnnotationType().asElement().getSimpleName().toString());
+        }
+      }
+    }
+    return metadata;
   }
 
   private String getHttpMethod(ServiceMethod serviceMethod) {

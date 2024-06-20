@@ -27,6 +27,7 @@ import org.dominokit.rest.shared.request.service.annotations.Retries;
 public interface NoFactoryAnnotationSampleService {
 
   @GET
+  @JwtRequired
   @Path("someService/{id}")
   SampleResponse getById(@PathParam("id") @RequestBody int id, int count);
 
