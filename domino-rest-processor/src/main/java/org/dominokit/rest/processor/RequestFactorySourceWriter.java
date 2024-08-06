@@ -48,6 +48,7 @@ import org.dominokit.jackson.processor.Type;
 import org.dominokit.jackson.processor.deserialization.FieldDeserializersChainBuilder;
 import org.dominokit.jackson.processor.serialization.FieldSerializerChainBuilder;
 import org.dominokit.rest.shared.MultipartForm;
+import org.dominokit.rest.shared.Response;
 import org.dominokit.rest.shared.request.*;
 import org.dominokit.rest.shared.request.service.annotations.*;
 import org.dominokit.rest.shared.request.service.annotations.Request;
@@ -668,6 +669,10 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
       return elements.getTypeElement(Void.class.getCanonicalName()).asType();
     }
 
+    if (processorUtil.isAssignableFrom(returnType, jakarta.ws.rs.core.Response.class)) {
+      return elements.getTypeElement(Response.class.getCanonicalName()).asType();
+    }
+
     if (Type.isArray(returnType)) {
       return returnType;
     }
@@ -959,6 +964,12 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                   "setResponseReader(response -> new $T().read(response))",
                   TypeName.get(readerType)));
       return Optional.of(builder.build());
+    } else if (isGenericResponse(serviceMethod)) {
+
+      builder.addStatement(
+          "setResponseReader(response -> new $T().read(response))",
+          TypeName.get(GeneralResponseReader.class));
+      return Optional.of(builder.build());
     } else if (producesJson(serviceMethod)) {
 
       TypeMirror responseBeanType = getResponseBeanType(serviceMethod);
@@ -995,6 +1006,10 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
 
     return Optional.empty();
+  }
+
+  private boolean isGenericResponse(ServiceMethod serviceMethod) {
+    return processorUtil.isAssignableFrom(getResponseBeanType(serviceMethod), Response.class);
   }
 
   private boolean producesJson(ServiceMethod serviceMethod) {

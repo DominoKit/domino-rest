@@ -33,6 +33,7 @@
             <groupId>org.dominokit</groupId>
             <artifactId>domino-rest-jaxrs</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

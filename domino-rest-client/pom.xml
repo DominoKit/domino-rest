@@ -84,7 +84,6 @@
             <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${jax.rs.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.dominokit</groupId>
             <artifactId>domino-rest-jaxrs</artifactId>
