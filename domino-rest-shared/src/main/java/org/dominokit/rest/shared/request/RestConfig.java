@@ -17,6 +17,7 @@ package org.dominokit.rest.shared.request;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import org.dominokit.rest.shared.request.service.annotations.DateFormat;
 
 /** The global configurations for domino rest. */
@@ -175,6 +176,28 @@ public interface RestConfig {
   RestConfig setNullQueryParamStrategy(NullQueryParamStrategy strategy);
 
   UrlTokenRegexMatcher getUrlTokenRegexMatcher();
+
+  Map<String, String> getGlobalPathParameters();
+
+  Map<String, String> getGlobalHeaderParameters();
+
+  Map<String, List<String>> getGlobalQueryParameters();
+
+  RestConfig setGlobalPathParameter(String name, String value);
+
+  RestConfig setGlobalPathParameters(Map<String, String> pathParameters);
+
+  RestConfig setGlobalHeaderParameter(String name, String value);
+
+  RestConfig setGlobalHeaderParameters(Map<String, String> headerParameters);
+
+  RestConfig setGlobalQueryParameter(String name, String value);
+
+  RestConfig addGlobalQueryParameter(String name, String value);
+
+  RestConfig setGlobalQueryParameters(Map<String, List<String>> parameters);
+
+  RestConfig addGlobalQueryParameters(Map<String, List<String>> parameters);
 
   /** Formatter to format the date parameter based on a patter */
   @FunctionalInterface
