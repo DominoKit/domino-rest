@@ -95,8 +95,8 @@ public class RestRequestBuilder<R, S>
             new RequestMeta(RestRequestBuilder.class, key, requestClass, responseClass),
             requestBean);
     request.setHttpMethod(this.method);
-    request.setAccept(new String[] {this.consumes});
-    request.setContentType(new String[] {this.produce});
+    request.setAccept(new String[] {this.produce});
+    request.setContentType(new String[] {this.consumes});
     request.setPath(this.path);
     request.setServiceRoot(isNull(this.serviceRoot) ? "" : this.serviceRoot);
     Optional.ofNullable(this.responseReader).ifPresent(request::setResponseReader);

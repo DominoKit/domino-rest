@@ -19,7 +19,6 @@ import static java.util.Objects.isNull;
 
 import java.util.ArrayList;
 import java.util.Map;
-import org.dominokit.domino.history.StateHistoryToken;
 import org.dominokit.rest.shared.request.exception.PathParameterMissingException;
 
 /** Formats the url by adding the query parameters and normalizing path parameters */
@@ -45,7 +44,7 @@ public class UrlFormatter {
     String postfix = asTokenString(targetUrl);
     String prefix = targetUrl.replace(postfix, "");
 
-    StateHistoryToken tempToken = new StateHistoryToken(postfix);
+    ServicePath tempToken = new ServicePath(postfix);
 
     replaceUrlParamsWithArguments(tempToken);
 
@@ -56,11 +55,11 @@ public class UrlFormatter {
     return (url.contains("{") && url.contains("}")) || url.contains(":");
   }
 
-  private void replaceUrlParamsWithArguments(StateHistoryToken tempToken) {
+  private void replaceUrlParamsWithArguments(ServicePath tempToken) {
     replacePaths(tempToken);
   }
 
-  private void replacePaths(StateHistoryToken tempToken) {
+  private void replacePaths(ServicePath tempToken) {
     new ArrayList<>(tempToken.paths())
         .stream()
             .filter(this::isExpressionToken)

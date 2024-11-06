@@ -20,7 +20,9 @@ import static java.util.Objects.nonNull;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -69,6 +71,10 @@ public class DominoRestConfig implements RestConfig {
       (date, pattern) -> new SimpleDateFormat(pattern).format(date);
 
   private static NullQueryParamStrategy nullQueryParamStrategy = NullQueryParamStrategy.EMPTY;
+
+  private static final Map<String, String> globalPathParams = new HashMap<>();
+  private static final Map<String, String> globalHeaderParams = new HashMap<>();
+  private static final Map<String, List<String>> globalQueryParams = new HashMap<>();
 
   /**
    * Gets and initialize the instance with the default configurations
@@ -269,5 +275,79 @@ public class DominoRestConfig implements RestConfig {
       }
       return url;
     };
+  }
+
+  @Override
+  public Map<String, String> getGlobalPathParameters() {
+    return globalPathParams;
+  }
+
+  @Override
+  public Map<String, String> getGlobalHeaderParameters() {
+    return globalHeaderParams;
+  }
+
+  @Override
+  public Map<String, List<String>> getGlobalQueryParameters() {
+    return globalQueryParams;
+  }
+
+  @Override
+  public RestConfig setGlobalPathParameter(String name, String value) {
+    getGlobalPathParameters().put(name, value);
+    return this;
+  }
+
+  @Override
+  public RestConfig setGlobalPathParameters(Map<String, String> pathParameters) {
+    getGlobalPathParameters().putAll(pathParameters);
+    return this;
+  }
+
+  @Override
+  public RestConfig setGlobalHeaderParameter(String name, String value) {
+    getGlobalHeaderParameters().put(name, value);
+    return this;
+  }
+
+  @Override
+  public RestConfig setGlobalHeaderParameters(Map<String, String> headerParameters) {
+    getGlobalHeaderParameters().putAll(headerParameters);
+    return this;
+  }
+
+  @Override
+  public RestConfig setGlobalQueryParameter(String name, String value) {
+    getGlobalQueryParameters().put(name, new ArrayList<>());
+    addGlobalQueryParameter(name, value);
+    return this;
+  }
+
+  @Override
+  public RestConfig addGlobalQueryParameter(String name, String value) {
+    if (getGlobalQueryParameters().containsKey(name)) {
+      getGlobalQueryParameters().get(name).add(value);
+    } else {
+      setGlobalQueryParameter(name, value);
+    }
+    return this;
+  }
+
+  @Override
+  public RestConfig setGlobalQueryParameters(Map<String, List<String>> parameters) {
+    parameters
+        .keySet()
+        .forEach(
+            name -> parameters.get(name).forEach(value -> addGlobalQueryParameter(name, value)));
+    return this;
+  }
+
+  @Override
+  public RestConfig addGlobalQueryParameters(Map<String, List<String>> parameters) {
+    parameters.forEach(
+        (key, values) -> {
+          values.forEach(value -> addGlobalQueryParameter(key, value));
+        });
+    return this;
   }
 }

@@ -47,11 +47,6 @@
             <version>${domino.aggregator.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dominokit</groupId>
-            <artifactId>domino-history-shared</artifactId>
-            <version>${domino.history.version}</version>
-        </dependency>
-        <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
         </dependency>

@@ -314,7 +314,10 @@ public class ServerRequest<R, S> extends BaseRequest
           (isNull(this.serviceRoot) || this.serviceRoot.isEmpty())
               ? ServiceRootMatcher.matchedServiceRoot(path)
               : (this.serviceRoot + path);
-      UrlFormatter urlFormatter = new UrlFormatter(pathParameters);
+      Map<String, String> combinedParams = new HashMap<>();
+      combinedParams.putAll(DominoRestContext.make().getConfig().getGlobalPathParameters());
+      combinedParams.putAll(pathParameters);
+      UrlFormatter urlFormatter = new UrlFormatter(combinedParams);
       this.setUrl(urlFormatter.formatUrl(root));
     }
   }
