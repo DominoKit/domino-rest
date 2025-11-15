@@ -17,8 +17,10 @@ package org.dominokit.rest.jvm;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.dominokit.rest.shared.GwtIncompatible;
 import org.dominokit.rest.shared.Response;
 
@@ -34,15 +36,26 @@ public class JavaResponse implements Response {
 
   /** {@inheritDoc} */
   @Override
-  public String getHeader(String header) {
-    return response.getHeader(header);
+  public List<String> getHeader(String header) {
+    return Collections.singletonList(response.getHeader(header));
   }
 
   /** {@inheritDoc} */
   @Override
-  public Map<String, String> getHeaders() {
-    return response.headers().entries().stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  public Map<String, List<String>> getHeaders() {
+    Map<String, List<String>> map = new HashMap<>();
+    response.headers().entries().stream()
+        .filter(
+            stringStringEntry ->
+                map.put(
+                        stringStringEntry.getKey(),
+                        Collections.singletonList(stringStringEntry.getValue()))
+                    != null)
+        .forEach(
+            stringStringEntry -> {
+              throw new IllegalStateException("Duplicate key");
+            });
+    return map;
   }
 
   /** {@inheritDoc} */
@@ -61,5 +74,10 @@ public class JavaResponse implements Response {
   @Override
   public String getBodyAsString() {
     return response.bodyAsString();
+  }
+
+  @Override
+  public byte[] getBodyAsBytes() {
+    return new byte[0];
   }
 }

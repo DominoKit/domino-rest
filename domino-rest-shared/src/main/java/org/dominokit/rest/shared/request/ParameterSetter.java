@@ -31,12 +31,33 @@ public class ParameterSetter {
    * @param valueSupplier {@link Supplier} for the query parameter value
    * @param <T> The generic type of the query parameter value
    */
-  public static <T> void setQueryParameter(
-      ServerRequest<?, ?> request, String name, Supplier<T> valueSupplier) {
+  public static <T> void setParameter(
+      ServerRequest<?, ?> request, String name, Supplier<T> valueSupplier, String type) {
     if (isNull(valueSupplier) || isNull(valueSupplier.get())) {
-      request.getNullQueryParamStrategy().setNullValue(request, name);
+      request.getNullParamStrategy().setNullValue(request, name, type);
     } else {
-      request.addQueryParameter(name, String.valueOf(valueSupplier.get()));
+      setParam(request, name, valueSupplier, type);
+    }
+  }
+
+  private static <T> void setParam(ServerRequest<?, ?> request, String name, T value, String type) {
+    setParam(request, name, () -> value, type);
+  }
+
+  private static <T> void setParam(
+      ServerRequest<?, ?> request, String name, Supplier<T> valueSupplier, String type) {
+    switch (type.toLowerCase()) {
+      case "query":
+        request.addQueryParameter(name, String.valueOf(valueSupplier.get()));
+        break;
+      case "path":
+        request.setPathParameter(name, String.valueOf(valueSupplier.get()));
+        break;
+      case "matrix":
+        request.addMatrixParameter(name, String.valueOf(valueSupplier.get()));
+        break;
+      default:
+        request.addQueryParameter(name, String.valueOf(valueSupplier.get()));
     }
   }
 
@@ -48,14 +69,12 @@ public class ParameterSetter {
    * @param valueSupplier {@link Supplier} for the query parameter value
    * @param <T> The generic type of the query parameter value
    */
-  public static <T extends Collection<?>> void setCollectionQueryParameter(
-      ServerRequest<?, ?> request, String name, Supplier<T> valueSupplier) {
-    if (isNull(valueSupplier) || isNull(valueSupplier.get()) || valueSupplier.get().size() < 1) {
-      request.getNullQueryParamStrategy().setNullValue(request, name);
+  public static <T extends Collection<?>> void setCollectionParameter(
+      ServerRequest<?, ?> request, String name, Supplier<T> valueSupplier, String type) {
+    if (isNull(valueSupplier) || isNull(valueSupplier.get()) || valueSupplier.get().isEmpty()) {
+      request.getNullParamStrategy().setNullValue(request, name, type);
     } else {
-      valueSupplier
-          .get()
-          .forEach(value -> ParameterSetter.setQueryParameter(request, name, () -> value));
+      valueSupplier.get().forEach(value -> setParam(request, name, () -> value, type));
     }
   }
 
@@ -68,17 +87,23 @@ public class ParameterSetter {
    * @param valueSupplier a {@link Date} value {@link Supplier}
    * @param pattern String date format pattern
    */
-  public static void setDateQueryParameter(
-      ServerRequest<?, ?> request, String name, Supplier<Date> valueSupplier, String pattern) {
+  public static void setDateParameter(
+      ServerRequest<?, ?> request,
+      String name,
+      Supplier<Date> valueSupplier,
+      String pattern,
+      String type) {
     if (isNull(valueSupplier) || isNull(valueSupplier.get())) {
-      request.getNullQueryParamStrategy().setNullValue(request, name);
+      request.getNullParamStrategy().setNullValue(request, name, type);
     } else {
-      request.addQueryParameter(
+      setParam(
+          request,
           name,
           DominoRestContext.make()
               .getConfig()
               .getDateParamFormatter()
-              .format(valueSupplier.get(), pattern));
+              .format(valueSupplier.get(), pattern),
+          type);
     }
   }
 
@@ -91,18 +116,19 @@ public class ParameterSetter {
    * @param valueSupplier a {@link Date} collection value {@link Supplier}
    * @param pattern String date format pattern
    */
-  public static void setDateCollectionQueryParameter(
+  public static void setDateCollectionParameter(
       ServerRequest<?, ?> request,
       String name,
       Supplier<? extends Collection<Date>> valueSupplier,
-      String pattern) {
+      String pattern,
+      String type) {
     if (isNull(valueSupplier) || isNull(valueSupplier.get()) || valueSupplier.get().size() < 1) {
-      request.getNullQueryParamStrategy().setNullValue(request, name);
+      request.getNullParamStrategy().setNullValue(request, name, type);
     } else {
       valueSupplier
           .get()
           .forEach(
-              value -> ParameterSetter.setDateQueryParameter(request, name, () -> value, pattern));
+              value -> ParameterSetter.setDateParameter(request, name, () -> value, pattern, type));
     }
   }
 

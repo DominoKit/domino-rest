@@ -17,8 +17,6 @@ package org.dominokit.rest.shared;
 
 import static java.util.Objects.isNull;
 
-import java.util.Arrays;
-
 /**
  * A base implementation for the {@link RestfulRequest}
  *
@@ -44,34 +42,8 @@ public abstract class BaseRestfulRequest implements RestfulRequest {
 
   /** {@inheritDoc} */
   @Override
-  public BaseRestfulRequest addQueryString(String queryString) {
-    String[] params = queryString.split("&");
-    Arrays.stream(params).map(param -> param.split("=")).forEach(this::addQueryPair);
-    return this;
-  }
-
-  private void addQueryPair(String[] paramNameValuePair) {
-    addQueryParam(paramNameValuePair[0], paramNameValuePair[1]);
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public String getUri() {
-    String queryParams = paramsAsString();
-    return getPath() + (queryParams.isEmpty() ? queryParams : "?" + queryParams);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public BaseRestfulRequest addQueryParams(String key, Iterable<String> values) {
-    for (String value : values) addQueryParam(key, value);
-    return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public String getQuery() {
-    return paramsAsString();
+    return uri;
   }
 
   /** {@inheritDoc} */
@@ -115,6 +87,4 @@ public abstract class BaseRestfulRequest implements RestfulRequest {
     this.errorHandler = errorHandler;
     return this;
   }
-
-  protected abstract String paramsAsString();
 }

@@ -55,7 +55,6 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
   /** {@inheritDoc} */
   @Override
   public void send(ServerRequest<R, S> request, ServerRequestCallBack callBack) {
-    request.normalizeUrl();
     List<RequestInterceptor> interceptors =
         DominoRestContext.make().getConfig().getRequestInterceptors();
 
@@ -74,17 +73,21 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
 
   private void onAfterInterception(ServerRequest<R, S> request, ServerRequestCallBack callBack) {
     final int[] retriesCounter = new int[] {0};
+    request.normalizeUrl();
     RestfulRequest restfulRequest =
         RestfulRequest.request(request.getUrl(), request.getHttpMethod().toUpperCase());
     request.setHttpRequest(restfulRequest);
     if (!request.isAborted()) {
       restfulRequest
           .putHeaders(request.headers())
-          .putParameters(request.queryParameters())
-          .onSuccess(response -> handleResponse(request, callBack, response))
+          .onSuccess(
+              response -> {
+                handleResponse(request, callBack, response);
+              })
           .onError(
-              throwable ->
-                  handleError(request, callBack, retriesCounter, restfulRequest, throwable));
+              throwable -> {
+                handleError(request, callBack, retriesCounter, restfulRequest, throwable);
+              });
 
       if (nonNull(request.getResponseType())) {
         restfulRequest.setResponseType(request.getResponseType());

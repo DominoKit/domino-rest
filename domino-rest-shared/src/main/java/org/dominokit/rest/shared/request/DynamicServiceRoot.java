@@ -19,19 +19,19 @@ public class DynamicServiceRoot implements HasPathMatcher {
 
   private final PathMatcher pathMatcher;
   private HasServiceRoot hasServiceRoot;
-  private PathFormatter pathFormatter = (root, serviceRoot) -> root + serviceRoot;
+  private PathFormatter pathFormatter = (root, request) -> root + request.getPath();
 
   private DynamicServiceRoot(PathMatcher pathMatcher) {
     this.pathMatcher = pathMatcher;
   }
 
-  public boolean isMatchingPath(String serviceRoot) {
+  public boolean isMatchingPath(ImmutableServerRequest<?, ?> serviceRoot) {
     return pathMatcher.isMatch(serviceRoot);
   }
 
-  public String onMatchingPath(String path) {
+  public String onMatchingPath(ImmutableServerRequest<?, ?> request) {
     String root = hasServiceRoot.onMatch();
-    return pathFormatter.format(root, path);
+    return pathFormatter.format(root, request);
   }
 
   public static DynamicServiceRoot pathMatcher(PathMatcher pathMatcher) {

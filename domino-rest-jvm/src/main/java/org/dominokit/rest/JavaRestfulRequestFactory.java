@@ -15,7 +15,7 @@
  */
 package org.dominokit.rest;
 
-import org.dominokit.rest.jvm.JavaRestfulRequest;
+import org.dominokit.rest.jvm.JavaStandardRestfulRequest;
 import org.dominokit.rest.shared.RestfulRequest;
 
 /**
@@ -32,7 +32,7 @@ class JavaRestfulRequestFactory implements RestfulRequestFactory {
   /** {@inheritDoc} */
   @Override
   public RestfulRequest request(String uri, String method) {
-    return new JavaRestfulRequest(uri, method);
+    return new JavaStandardRestfulRequest(uri, method);
   }
 
   /** {@inheritDoc} */

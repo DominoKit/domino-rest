@@ -17,7 +17,6 @@ package org.dominokit.rest.jvm;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.joining;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.MultiMap;
@@ -28,7 +27,6 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
@@ -52,28 +50,6 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
 
   /** {@inheritDoc} */
   @Override
-  protected String paramsAsString() {
-    return request.queryParams().entries().stream()
-        .map(e -> e.getKey() + "=" + e.getValue())
-        .collect(joining("&"));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public JavaRestfulRequest addQueryParam(String key, String value) {
-    request.addQueryParam(key, value);
-    return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public JavaRestfulRequest setQueryParam(String key, String value) {
-    request.setQueryParam(key, value);
-    return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public JavaRestfulRequest putHeader(String key, String value) {
     request.putHeader(key, value);
     return this;
@@ -84,15 +60,6 @@ public class JavaRestfulRequest extends BaseRestfulRequest {
   public RestfulRequest putHeaders(Map<String, String> headers) {
     if (nonNull(headers)) {
       headers.forEach(this::putHeader);
-    }
-    return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public RestfulRequest putParameters(Map<String, List<String>> parameters) {
-    if (nonNull(parameters) && !parameters.isEmpty()) {
-      parameters.forEach((key, values) -> values.forEach(value -> addQueryParam(key, value)));
     }
     return this;
   }

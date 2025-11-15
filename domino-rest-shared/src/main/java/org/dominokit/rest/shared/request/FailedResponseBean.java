@@ -17,6 +17,7 @@ package org.dominokit.rest.shared.request;
 
 import static java.util.Objects.isNull;
 
+import java.util.List;
 import java.util.Map;
 import org.dominokit.rest.shared.Response;
 
@@ -32,7 +33,7 @@ public class FailedResponseBean implements ResponseBean {
   private int statusCode;
   private String statusText;
   private String body;
-  private Map<String, String> headers;
+  private Map<String, List<String>> headers;
   private Throwable throwable;
 
   public FailedResponseBean() {}
@@ -69,7 +70,7 @@ public class FailedResponseBean implements ResponseBean {
     return body;
   }
 
-  public Map<String, String> getHeaders() {
+  public Map<String, List<String>> getHeaders() {
     return headers;
   }
 
@@ -89,7 +90,7 @@ public class FailedResponseBean implements ResponseBean {
     this.body = body;
   }
 
-  protected void setHeaders(Map<String, String> headers) {
+  protected void setHeaders(Map<String, List<String>> headers) {
     this.headers = headers;
   }
 

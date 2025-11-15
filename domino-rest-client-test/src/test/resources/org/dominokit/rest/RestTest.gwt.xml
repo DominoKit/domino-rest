@@ -1,0 +1,5 @@
+<module>
+    <inherits name="org.dominokit.rest.Rest"/>
+    <inherits name="org.gwtproject.regexp.RegExp"/>
+    <source path=""/>
+</module>
