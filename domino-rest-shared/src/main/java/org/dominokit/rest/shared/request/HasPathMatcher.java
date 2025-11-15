@@ -58,10 +58,10 @@ public interface HasPathMatcher {
      * Formats the path
      *
      * @param root the root path
-     * @param serviceRoot the service root associated with the path
+     * @param request the request
      * @return the new formatted path
      */
-    String format(String root, String serviceRoot);
+    String format(String root, ImmutableServerRequest<?, ?> request);
   }
 
   /** Matcher which checks if a path matches the condition */
@@ -71,6 +71,6 @@ public interface HasPathMatcher {
      * @param path the path to check
      * @return true if the path matches the condition, false otherwise
      */
-    boolean isMatch(String path);
+    boolean isMatch(ImmutableServerRequest<?, ?> path);
   }
 }

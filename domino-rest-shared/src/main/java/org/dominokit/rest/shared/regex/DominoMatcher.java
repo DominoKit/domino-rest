@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dominokit.rest;
+package org.dominokit.rest.shared.regex;
 
-import io.vertx.core.Vertx;
+public interface DominoMatcher {
+  /** Find next match from current position. */
+  boolean find();
 
-/**
- * Domino rest uses Vert.x as the implementation for the backend. this interface provides the
- * configuration needed to use Vert.x
- */
-public interface VertxInstanceProvider {
-  /** @return Vert.x instance */
-  Vertx getInstance();
+  boolean isMatch();
 
-  /** @return the host */
-  String getHost();
+  /** Group value 0..groupCount(). */
+  String group(int index);
 
-  /** @return the port */
-  int getPort();
+  /** Number of groups including the entire match at index 0. */
+  int groupCount();
 
-  /** @return the protocol */
-  String getProtocol();
+  int start(); // start index of current match
+
+  int end(); // end index (exclusive)
+
+  void reset(); // reset to search again from beginning
 }

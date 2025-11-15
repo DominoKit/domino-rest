@@ -29,24 +29,24 @@ public class ServiceRootMatcher {
           .serviceRoot(() -> DominoRestContext.make().getConfig().getDefaultServiceRoot());
 
   /**
-   * @param path the path
+   * @param request the request
    * @return the service root for a specific path
    */
-  public static String matchedServiceRoot(String path) {
+  public static String matchedServiceRoot(ImmutableServerRequest<?, ?> request) {
     final List<DynamicServiceRoot> serviceRoots =
         DominoRestContext.make().getConfig().getServiceRoots();
     return serviceRoots.stream()
-        .filter(r -> r.isMatchingPath(path))
+        .filter(r -> r.isMatchingPath(request))
         .findFirst()
         .orElse(defaultRoot)
-        .onMatchingPath(path);
+        .onMatchingPath(request);
   }
 
   /**
    * @param path the path
    * @return true if the path has a dynamic service root configured, false otherwise
    */
-  public static boolean hasServiceRoot(String path) {
+  public static boolean hasServiceRoot(ImmutableServerRequest<?, ?> path) {
     final List<DynamicServiceRoot> serviceRoots =
         DominoRestContext.make().getConfig().getServiceRoots();
     return serviceRoots.stream().anyMatch(r -> r.isMatchingPath(path));

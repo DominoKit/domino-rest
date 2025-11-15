@@ -15,7 +15,6 @@
  */
 package org.dominokit.rest.shared;
 
-import java.util.List;
 import java.util.Map;
 import org.dominokit.rest.RestfulRequestFactory;
 import org.dominokit.rest.RestfullRequestContext;
@@ -117,46 +116,8 @@ public interface RestfulRequest {
     return factory().patch(uri);
   }
 
-  /**
-   * Adds query string to the request uri
-   *
-   * @param queryString the query
-   * @return same instance to support builder pattern
-   */
-  RestfulRequest addQueryString(String queryString);
-
   /** @return the uri of the request */
   String getUri();
-
-  /**
-   * Adds query parameter
-   *
-   * @param key the key
-   * @param value the value
-   * @return same instance to support builder pattern
-   */
-  RestfulRequest addQueryParam(String key, String value);
-
-  /**
-   * Adds query parameter with collection of values
-   *
-   * @param key the key
-   * @param values the values
-   * @return same instance to support builder pattern
-   */
-  RestfulRequest addQueryParams(String key, Iterable<String> values);
-
-  /**
-   * Adds or replace a query parameter
-   *
-   * @param key the key
-   * @param value the value
-   * @return same instance to support builder pattern
-   */
-  RestfulRequest setQueryParam(String key, String value);
-
-  /** @return the query of the request */
-  String getQuery();
 
   /** @return the path of the request */
   String getPath();
@@ -180,14 +141,6 @@ public interface RestfulRequest {
    * @return same instance to support builder pattern
    */
   RestfulRequest putHeaders(Map<String, String> headers);
-
-  /**
-   * Adds a collection of requests parameters
-   *
-   * @param parameters the parameters
-   * @return same instance to support builder pattern
-   */
-  RestfulRequest putParameters(Map<String, List<String>> parameters);
 
   /** @return the request headers */
   Map<String, String> getHeaders();

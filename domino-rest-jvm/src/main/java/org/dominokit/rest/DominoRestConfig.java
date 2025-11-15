@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.dominokit.jackson.JacksonContextProvider;
 import org.dominokit.rest.jvm.DefaultServiceRoot;
+import org.dominokit.rest.jvm.JvmRegexEngine;
 import org.dominokit.rest.jvm.OnServerRequestEventFactory;
+import org.dominokit.rest.shared.regex.RegexEngine;
 import org.dominokit.rest.shared.request.*;
 
 /**
@@ -75,6 +75,8 @@ public class DominoRestConfig implements RestConfig {
   private static final Map<String, String> globalPathParams = new HashMap<>();
   private static final Map<String, String> globalHeaderParams = new HashMap<>();
   private static final Map<String, List<String>> globalQueryParams = new HashMap<>();
+  private JvmRegexEngine jvmRegexEngine = new JvmRegexEngine();
+  private RegexValidationMode regexValidationMode = RegexValidationMode.IGNORE;
 
   /**
    * Gets and initialize the instance with the default configurations
@@ -264,17 +266,8 @@ public class DominoRestConfig implements RestConfig {
   }
 
   @Override
-  public UrlTokenRegexMatcher getUrlTokenRegexMatcher() {
-    return url -> {
-      if (url.contains("http:") || url.contains("https:")) {
-        Pattern pattern = Pattern.compile("^((.*:)//([a-z0-9\\-.]+)(|:[0-9]+)/)(.*)$");
-        Matcher matcher = pattern.matcher(url);
-        if (matcher.find()) {
-          return matcher.group(matcher.groupCount());
-        }
-      }
-      return url;
-    };
+  public RegexEngine getRegexEngine() {
+    return jvmRegexEngine;
   }
 
   @Override
@@ -349,5 +342,20 @@ public class DominoRestConfig implements RestConfig {
           values.forEach(value -> addGlobalQueryParameter(key, value));
         });
     return this;
+  }
+
+  @Override
+  public RestConfig setRegexValidationMode(RegexValidationMode regexValidationMode) {
+    if (isNull(regexValidationMode)) {
+      this.regexValidationMode = RegexValidationMode.IGNORE;
+      return this;
+    }
+    this.regexValidationMode = regexValidationMode;
+    return this;
+  }
+
+  @Override
+  public RegexValidationMode getRegexValidationMode() {
+    return this.regexValidationMode;
   }
 }

@@ -260,6 +260,10 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         .forEach(parameter -> addSetParameterStatement(request, parameter));
 
     serviceMethod.method.getParameters().stream()
+        .filter(parameter -> nonNull(parameter.getAnnotation(MatrixParam.class)))
+        .forEach(parameter -> addSetMatrixParameterStatement(request, parameter));
+
+    serviceMethod.method.getParameters().stream()
         .filter(parameter -> nonNull(parameter.getAnnotation(PathParam.class)))
         .forEach(
             parameter -> {
@@ -459,38 +463,62 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
   }
 
   private void addSetParameterStatement(MethodSpec.Builder request, VariableElement parameter) {
+    addSetParameterStatement(
+        request, parameter, parameter.getAnnotation(QueryParam.class).value(), "Query");
+  }
+
+  private void addSetMatrixParameterStatement(
+      MethodSpec.Builder request, VariableElement parameter) {
+    addSetParameterStatement(
+        request, parameter, parameter.getAnnotation(MatrixParam.class).value(), "Matrix");
+  }
+
+  /**
+   * Shared implementation for Query / Matrix parameters.
+   *
+   * @param request the method builder
+   * @param parameter the parameter element
+   * @param paramName the name used in @QueryParam/@MatrixParam
+   * @param type "Query" or "Matrix"
+   */
+  private void addSetParameterStatement(
+      MethodSpec.Builder request, VariableElement parameter, String paramName, String type) {
+
+    DateFormat dateFormat = parameter.getAnnotation(DateFormat.class);
 
     if (processorUtil.isCollection(parameter.asType())) {
       TypeMirror typeArgument = processorUtil.firstTypeArgument(parameter.asType());
-      if (processorUtil.isAssignableFrom(typeArgument, Date.class)
-          && nonNull(parameter.getAnnotation(DateFormat.class))) {
+      if (processorUtil.isAssignableFrom(typeArgument, Date.class) && nonNull(dateFormat)) {
         request.addStatement(
-            "$T.setDateCollectionQueryParameter(instance, $S, () -> $L, $S)",
+            "$T.setDateCollectionParameter(instance, $S, () -> $L, $S, $S)",
             TypeName.get(ParameterSetter.class),
-            parameter.getAnnotation(QueryParam.class).value(),
+            paramName,
             parameter.getSimpleName(),
-            parameter.getAnnotation(DateFormat.class).value());
+            dateFormat.value(),
+            type);
       } else {
         request.addStatement(
-            "$T.setCollectionQueryParameter(instance, $S, () -> $L)",
+            "$T.setCollectionParameter(instance, $S, () -> $L, $S)",
             TypeName.get(ParameterSetter.class),
-            parameter.getAnnotation(QueryParam.class).value(),
-            parameter.getSimpleName());
+            paramName,
+            parameter.getSimpleName(),
+            type);
       }
-    } else if (processorUtil.isAssignableFrom(parameter, Date.class)
-        && nonNull(parameter.getAnnotation(DateFormat.class))) {
+    } else if (processorUtil.isAssignableFrom(parameter, Date.class) && nonNull(dateFormat)) {
       request.addStatement(
-          "$T.setDateQueryParameter(instance, $S, () -> $L, $S)",
+          "$T.setDateParameter(instance, $S, () -> $L, $S, $S)",
           TypeName.get(ParameterSetter.class),
-          parameter.getAnnotation(QueryParam.class).value(),
+          paramName,
           parameter.getSimpleName(),
-          parameter.getAnnotation(DateFormat.class).value());
+          dateFormat.value(),
+          type);
     } else {
       request.addStatement(
-          "$T.setQueryParameter(instance, $S, () -> $L)",
+          "$T.setParameter(instance, $S, () -> $L, $S)",
           TypeName.get(ParameterSetter.class),
-          parameter.getAnnotation(QueryParam.class).value(),
-          parameter.getSimpleName());
+          paramName,
+          parameter.getSimpleName(),
+          type);
     }
   }
 
@@ -1020,7 +1048,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
   private boolean producesText(ServiceMethod serviceMethod) {
     String acceptResponse = getAcceptResponse(serviceMethod);
-    return acceptResponse.contains(MediaType.TEXT_PLAIN);
+    return acceptResponse.contains(MediaType.TEXT_PLAIN)
+        || acceptResponse.contains(MediaType.TEXT_HTML)
+        || acceptResponse.contains(MediaType.TEXT_XML);
   }
 
   private boolean isVoidType(ServiceMethod serviceMethod) {
