@@ -36,6 +36,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
 import org.dominokit.jackson.AbstractObjectReader;
 import org.dominokit.jackson.AbstractObjectWriter;
 import org.dominokit.jackson.JsonDeserializer;
@@ -312,9 +313,27 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
               request.addCode(builder.build());
             });
 
+    serviceMethod.method.getAnnotationMirrors().stream()
+        .map(MetaParamUtil::fromAnnotationMirror)
+        .forEach(
+            metaParam -> {
+              processorUtil
+                  .getMessager()
+                  .printMessage(Diagnostic.Kind.NOTE, "Adding meta param: " + metaParam);
+              addMetParamStatement(request, metaParam);
+            });
+
     request.addStatement("return instance");
 
     return request.build();
+  }
+
+  private void addMetParamStatement(MethodSpec.Builder request, MetaParam metaParam) {
+    CodeBlock.Builder builder = CodeBlock.builder();
+    builder.add("instance.setMetaParameter(");
+    builder.add(MetaParamUtil.toCodeBlock(metaParam, CodeBlock.builder()));
+    builder.add(")");
+    request.addStatement(builder.build());
   }
 
   private void getFromModel(

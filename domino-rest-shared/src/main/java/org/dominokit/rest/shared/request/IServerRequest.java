@@ -61,10 +61,10 @@ public interface IServerRequest<R, S> {
    * @param key the key of the meta parameter
    * @return the value of the meta parameter of the specified key
    */
-  String getMetaParameter(String key);
+  MetaParam getMetaParameter(String key);
 
   /** @return a copy of the request current meta parameters */
-  Map<String, String> getMetaParameters();
+  Map<String, MetaParam> getMetaParameters();
 
   /**
    * @return all request parameters including query, path, headers, matrix, and fragment parameters

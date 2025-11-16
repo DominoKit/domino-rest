@@ -132,7 +132,7 @@ public class ImmutableServerRequest<R, S> implements IServerRequest<R, S> {
 
   /** {@inheritDoc} */
   @Override
-  public String getMetaParameter(String key) {
+  public MetaParam getMetaParameter(String key) {
     return delegate.getMetaParameter(key);
   }
 
@@ -142,7 +142,7 @@ public class ImmutableServerRequest<R, S> implements IServerRequest<R, S> {
    * @return an unmodifiable map of meta parameters
    */
   @Override
-  public Map<String, String> getMetaParameters() {
+  public Map<String, MetaParam> getMetaParameters() {
     return Collections.unmodifiableMap(delegate.getMetaParameters());
   }
 

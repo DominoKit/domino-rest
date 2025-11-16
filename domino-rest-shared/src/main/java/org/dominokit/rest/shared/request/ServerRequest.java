@@ -50,7 +50,7 @@ public class ServerRequest<R, S> extends BaseRequest
   private final Map<String, List<String>> matrixParameters = new HashMap<>();
   // NEW: fragment parameters (used for {name} or {name:regex} inside the fragment part)
   private final Map<String, String> fragmentParameters = new HashMap<>();
-  private final Map<String, String> metaParameters = new HashMap<>();
+  private final Map<String, MetaParam> metaParameters = new HashMap<>();
 
   private RequestMeta requestMeta;
   private R requestBean;
@@ -466,12 +466,11 @@ public class ServerRequest<R, S> extends BaseRequest
    * rest request We can use those parameters inside of a request interceptor to apply some
    * conditional logic
    *
-   * @param key parameter key
-   * @param value parameter value
+   * @param metaParam parameter value
    * @return the current request instance
    */
-  public ServerRequest<R, S> setMetaParameter(String key, String value) {
-    this.metaParameters.put(key, value);
+  public ServerRequest<R, S> setMetaParameter(MetaParam metaParam) {
+    this.metaParameters.put(metaParam.getName(), metaParam);
     return this;
   }
 
@@ -479,12 +478,12 @@ public class ServerRequest<R, S> extends BaseRequest
    * @param key the key of the meta parameter
    * @return the value of the meta parameter of the specified key
    */
-  public String getMetaParameter(String key) {
+  public MetaParam getMetaParameter(String key) {
     return metaParameters.get(key);
   }
 
   /** @return a copy of the request current meta parameters */
-  public Map<String, String> getMetaParameters() {
+  public Map<String, MetaParam> getMetaParameters() {
     return new HashMap<>(metaParameters);
   }
 
