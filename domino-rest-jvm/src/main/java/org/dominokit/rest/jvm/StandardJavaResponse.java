@@ -15,15 +15,19 @@
  */
 package org.dominokit.rest.jvm;
 
+import static java.util.Objects.nonNull;
+
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.dominokit.rest.shared.Response;
 
 /** Simple adapter over JDK HttpResponse<byte[]> to your shared Response. */
 public class StandardJavaResponse implements Response {
 
   private final HttpResponse<byte[]> delegate;
+  private Object responseBean;
 
   public StandardJavaResponse(HttpResponse<byte[]> delegate) {
     this.delegate = delegate;
@@ -58,5 +62,22 @@ public class StandardJavaResponse implements Response {
   @Override
   public List<String> getHeader(String header) {
     return delegate.headers().allValues(header);
+  }
+
+  public void setResponseBean(Object responseBean) {
+    this.responseBean = responseBean;
+  }
+
+  @Override
+  public Optional<Object> getBean() {
+    return Optional.ofNullable(responseBean);
+  }
+
+  @Override
+  public void setBean(Object bean) {
+    if (nonNull(this.responseBean)) {
+      throw new IllegalStateException("The response bean has already been set");
+    }
+    this.responseBean = bean;
   }
 }

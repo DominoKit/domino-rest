@@ -15,12 +15,15 @@
  */
 package org.dominokit.rest.js;
 
+import static java.util.Objects.nonNull;
+
 import elemental2.core.ArrayBuffer;
 import elemental2.core.Int8Array;
 import elemental2.dom.XMLHttpRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jsinterop.base.Js;
@@ -30,6 +33,7 @@ import org.dominokit.rest.shared.Response;
 public class JsResponse implements Response {
 
   private final XMLHttpRequest request;
+  private Object responseBean;
 
   JsResponse(XMLHttpRequest request) {
     this.request = request;
@@ -111,5 +115,22 @@ public class JsResponse implements Response {
       out[i] = Js.uncheckedCast(view.getAt(i));
     }
     return out;
+  }
+
+  public void setResponseBean(Object responseBean) {
+    this.responseBean = responseBean;
+  }
+
+  @Override
+  public Optional<Object> getBean() {
+    return Optional.ofNullable(responseBean);
+  }
+
+  @Override
+  public void setBean(Object bean) {
+    if (nonNull(this.responseBean)) {
+      throw new IllegalStateException("The response bean has already been set");
+    }
+    this.responseBean = bean;
   }
 }

@@ -17,6 +17,7 @@ package org.dominokit.rest.shared;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /** Representation of {@link RestfulRequest} response */
 public interface Response {
@@ -40,4 +41,8 @@ public interface Response {
   String getBodyAsString();
 
   byte[] getBodyAsBytes();
+
+  Optional<Object> getBean();
+
+  void setBean(Object bean);
 }

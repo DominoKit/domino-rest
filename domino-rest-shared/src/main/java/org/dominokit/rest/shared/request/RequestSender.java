@@ -122,8 +122,10 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
       ServerRequest<R, S> request, ServerRequestCallBack callBack, Response response) {
     if (Arrays.stream(request.getSuccessCodes())
         .anyMatch(code -> code.equals(response.getStatusCode()))) {
+      S result = readResponse(request, response);
+      response.setBean(result);
       callSuccessGlobalHandlers(request, response);
-      callBack.onSuccess(readResponse(request, response));
+      callBack.onSuccess(result);
     } else {
       FailedResponseBean failedResponse = new FailedResponseBean(request, response);
       callFailedResponseHandlers(request, failedResponse);
@@ -131,18 +133,14 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
     }
   }
 
-  private <R, S> S readResponse(ServerRequest<R, S> request, Response response) {
+  private S readResponse(ServerRequest<R, S> request, Response response) {
     int statusCode = response.getStatusCode();
-    switch (statusCode) {
-      case 204:
-        {
-          if (isNull(response.getBodyAsString()) || response.getBodyAsString().isEmpty()) {
-            return null;
-          }
-        }
-      default:
-        return request.getResponseReader().read(response);
+    if (statusCode == 204) {
+      if (isNull(response.getBodyAsString()) || response.getBodyAsString().isEmpty()) {
+        return null;
+      }
     }
+    return request.getResponseReader().read(response);
   }
 
   private void callSuccessGlobalHandlers(ServerRequest<R, S> request, Response response) {
@@ -153,7 +151,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
   }
 
   private void callFailedResponseHandlers(
-      ServerRequest request, FailedResponseBean failedResponse) {
+      ServerRequest<R, S> request, FailedResponseBean failedResponse) {
     DominoRestContext.make()
         .getConfig()
         .getResponseInterceptors()

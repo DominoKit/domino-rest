@@ -16,6 +16,7 @@
 package org.dominokit.rest.test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,9 +42,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.dominokit.rest.DominoRestConfig;
 import org.dominokit.rest.model.MultipartTestService;
+import org.dominokit.rest.model.SampleObject;
+import org.dominokit.rest.model.SampleObject_MapperImpl;
 import org.dominokit.rest.shared.MultipartForm;
+import org.dominokit.rest.shared.Response;
 import org.dominokit.rest.shared.request.DominoRestContext;
 import org.dominokit.rest.shared.request.RequestMeta;
+import org.dominokit.rest.shared.request.ResponseInterceptor;
 import org.dominokit.rest.shared.request.ServerRequest;
 import org.dominokit.rest.shared.request.StringReader;
 import org.dominokit.rest.shared.request.Success;
@@ -73,6 +78,7 @@ class ServerRequestHttpTest {
     port = server.getAddress().getPort();
 
     server.createContext("/echo", ServerRequestHttpTest::echoHandler);
+    server.createContext("/echobean", ServerRequestHttpTest::echoBeanHandler);
     server.createContext("/json", ServerRequestHttpTest::jsonHandler);
     server.createContext("/upload", ServerRequestHttpTest::uploadHandler);
     server.createContext("/delay", ServerRequestHttpTest::delayHandler);
@@ -86,10 +92,6 @@ class ServerRequestHttpTest {
   void tearDown() {
     if (server != null) server.stop(0);
   }
-
-  // ---------------------------------------------------------------------------
-  // Tests
-  // ---------------------------------------------------------------------------
 
   @Test
   void get_with_headers_and_multi_query_params() throws Exception {
@@ -216,6 +218,34 @@ class ServerRequestHttpTest {
     assertTrue(result.successBody.contains("multipart-ok"));
   }
 
+  @Test
+  void response_interceptor_test() throws Exception {
+
+    ResponseInterceptor interceptor =
+        new ResponseInterceptor() {
+          @Override
+          public void interceptOnSuccess(ServerRequest serverRequest, Response response) {
+            response
+                .getBean()
+                .ifPresent(
+                    o -> {
+                      assertTrue(o instanceof SampleObject);
+                      ((SampleObject) o).setName("intercepted");
+                    });
+          }
+        };
+    DominoRestContext.make().getConfig().addResponseInterceptor(interceptor);
+    EchoGetBean req = new EchoGetBean("http://localhost:" + port);
+
+    var result = runBeanRequest(req);
+    assertNull(result.error);
+
+    SampleObject body = result.successBodyBean;
+    assertEquals("intercepted", body.getName());
+    assertEquals("1234", body.getId());
+    DominoRestContext.make().getConfig().removeResponseInterceptor(interceptor);
+  }
+
   // ---------------------------------------------------------------------------
   // Small concrete requests (mimic your generated classes)
   // ---------------------------------------------------------------------------
@@ -229,7 +259,20 @@ class ServerRequestHttpTest {
       setPath("/echo");
       setAccept(new String[] {"application/json"});
       // simplest reader: return raw response body as String
-      setResponseReader(resp -> resp.getBodyAsString());
+      setResponseReader(Response::getBodyAsString);
+    }
+  }
+  /** GET /echo with String body reader. */
+  static final class EchoGetBean extends ServerRequest<Void, SampleObject> {
+    EchoGetBean(String serviceRoot) {
+      super(new RequestMeta(EchoGet.class, "echo", Void.class, String.class), null);
+      setServiceRoot(serviceRoot);
+      setHttpMethod(HttpMethod.GET);
+      setPath("/echobean");
+      setAccept(new String[] {"application/json"});
+      // simplest reader: return raw response body as String
+      setResponseReader(
+          response -> SampleObject_MapperImpl.INSTANCE.read(response.getBodyAsString()));
     }
   }
 
@@ -263,12 +306,9 @@ class ServerRequestHttpTest {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
-
   private static final class Result {
     String successBody;
+    SampleObject successBodyBean;
     Throwable error;
   }
 
@@ -287,9 +327,21 @@ class ServerRequestHttpTest {
     return r;
   }
 
-  // ---------------------------------------------------------------------------
-  // Server handlers
-  // ---------------------------------------------------------------------------
+  private <R> Result runBeanRequest(ServerRequest<R, SampleObject> req)
+      throws InterruptedException {
+    CountDownLatch done = new CountDownLatch(1);
+    Result r = new Result();
+    req.onSuccess(
+            (Success<SampleObject>)
+                body -> {
+                  r.successBodyBean = body;
+                })
+        .onFailed(err -> r.error = err.getThrowable())
+        .onComplete(done::countDown);
+    req.send();
+    assertTrue(done.await(5, TimeUnit.SECONDS), "Request did not complete in time");
+    return r;
+  }
 
   private static void echoHandler(HttpExchange ex) throws IOException {
     String method = ex.getRequestMethod();
@@ -328,6 +380,15 @@ class ServerRequestHttpTest {
             + "\""
             + "}";
     write(ex, 200, json, "application/json");
+  }
+
+  private static void echoBeanHandler(HttpExchange ex) throws IOException {
+
+    SampleObject bean = new SampleObject();
+    bean.setName("domino");
+    bean.setId("1234");
+
+    write(ex, 200, SampleObject_MapperImpl.INSTANCE.write(bean), "application/json");
   }
 
   private static void jsonHandler(HttpExchange ex) throws IOException {
@@ -383,10 +444,6 @@ class ServerRequestHttpTest {
     }
     write(ex, code, code == 204 ? "" : ("status-" + code), "text/plain");
   }
-
-  // ---------------------------------------------------------------------------
-  // Tiny utils
-  // ---------------------------------------------------------------------------
 
   private static String readBody(HttpExchange ex) throws IOException {
     try (InputStream is = ex.getRequestBody()) {
