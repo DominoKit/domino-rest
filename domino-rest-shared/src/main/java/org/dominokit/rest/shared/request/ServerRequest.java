@@ -77,13 +77,13 @@ public class ServerRequest<R, S> extends BaseRequest
       context -> {
         success.onSuccess((S) context.responseBean);
         state = completed;
-        completeHandler.onCompleted();
+        onCompleted();
       };
 
   private final RequestState<ServerSuccessRequestStateContext> aborted =
       context -> {
         LOGGER.info("Request have already been aborted.!");
-        completeHandler.onCompleted();
+        onCompleted();
       };
 
   private final RequestState<ServerResponseReceivedStateContext> sent =

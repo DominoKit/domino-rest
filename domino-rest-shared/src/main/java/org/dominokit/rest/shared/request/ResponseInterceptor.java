@@ -25,7 +25,40 @@ import org.dominokit.rest.shared.Response;
  * @see FailedResponseBean
  */
 public interface ResponseInterceptor {
+  /**
+   * @param serverRequest
+   * @param response
+   * @deprecated use {@link #onBeforeSuccessCallback(ServerRequest, Response)} instead
+   */
+  @Deprecated
   default void interceptOnSuccess(ServerRequest serverRequest, Response response) {}
 
+  default void onBeforeSuccessCallback(ServerRequest serverRequest, Response response) {
+    interceptOnSuccess(serverRequest, response);
+  }
+
+  /**
+   * Intercepts the failed response
+   *
+   * @param serverRequest
+   * @param failedResponse
+   * @deprecated use {@link #onBeforeFailedCallback(ServerRequest, FailedResponseBean)} instead
+   */
+  @Deprecated
   default void interceptOnFailed(ServerRequest serverRequest, FailedResponseBean failedResponse) {}
+
+  /**
+   * Intercepts the failed response
+   *
+   * @param serverRequest
+   * @param failedResponse
+   */
+  default void onBeforeFailedCallback(
+      ServerRequest serverRequest, FailedResponseBean failedResponse) {
+    interceptOnFailed(serverRequest, failedResponse);
+  }
+
+  default void onBeforeCompleteCallback(ServerRequest serverRequest) {}
+
+  default void onAfterCompleteCallback(ServerRequest serverRequest) {}
 }

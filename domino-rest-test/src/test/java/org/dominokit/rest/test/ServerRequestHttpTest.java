@@ -17,6 +17,7 @@ package org.dominokit.rest.test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,6 +40,7 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.dominokit.rest.DominoRestConfig;
 import org.dominokit.rest.model.MultipartTestService;
@@ -47,6 +49,7 @@ import org.dominokit.rest.model.SampleObject_MapperImpl;
 import org.dominokit.rest.shared.MultipartForm;
 import org.dominokit.rest.shared.Response;
 import org.dominokit.rest.shared.request.DominoRestContext;
+import org.dominokit.rest.shared.request.FailedResponseBean;
 import org.dominokit.rest.shared.request.RequestMeta;
 import org.dominokit.rest.shared.request.ResponseInterceptor;
 import org.dominokit.rest.shared.request.ServerRequest;
@@ -246,6 +249,98 @@ class ServerRequestHttpTest {
     DominoRestContext.make().getConfig().removeResponseInterceptor(interceptor);
   }
 
+  @Test
+  void response_interceptor_before_after_success_and_complete_are_called() throws Exception {
+    AtomicBoolean beforeSuccess = new AtomicBoolean(false);
+    AtomicBoolean beforeComplete = new AtomicBoolean(false);
+    AtomicBoolean afterComplete = new AtomicBoolean(false);
+    AtomicBoolean beforeFailed = new AtomicBoolean(false);
+
+    ResponseInterceptor interceptor =
+        new ResponseInterceptor() {
+          @Override
+          public void onBeforeSuccessCallback(ServerRequest serverRequest, Response response) {
+            beforeSuccess.set(true);
+          }
+
+          @Override
+          public void onBeforeCompleteCallback(ServerRequest serverRequest) {
+            beforeComplete.set(true);
+          }
+
+          @Override
+          public void onAfterCompleteCallback(ServerRequest serverRequest) {
+            afterComplete.set(true);
+          }
+
+          @Override
+          public void onBeforeFailedCallback(
+              ServerRequest serverRequest, FailedResponseBean failedResponse) {
+            beforeFailed.set(true);
+          }
+        };
+
+    DominoRestContext.make().getConfig().addResponseInterceptor(interceptor);
+    EchoGetBean req = new EchoGetBean("http://localhost:" + port);
+    var result = runBeanRequest(req);
+    assertNull(result.error);
+
+    // success path: success callbacks should be called; failed callbacks should not
+    assertTrue(beforeSuccess.get(), "onBeforeSuccessCallback should have been called");
+    assertTrue(beforeComplete.get(), "onBeforeCompleteCallback should have been called");
+    assertTrue(afterComplete.get(), "onAfterCompleteCallback should have been called");
+    assertFalse(
+        beforeFailed.get(), "onBeforeFailedCallback should NOT have been called on success");
+  }
+
+  @Test
+  void response_interceptor_before_after_failed_and_complete_are_called() throws Exception {
+    AtomicBoolean beforeSuccess = new AtomicBoolean(false);
+    AtomicBoolean beforeComplete = new AtomicBoolean(false);
+    AtomicBoolean afterComplete = new AtomicBoolean(false);
+    AtomicBoolean beforeFailed = new AtomicBoolean(false);
+
+    ResponseInterceptor interceptor =
+        new ResponseInterceptor() {
+          @Override
+          public void onBeforeSuccessCallback(ServerRequest serverRequest, Response response) {
+            beforeSuccess.set(true);
+          }
+
+          @Override
+          public void onBeforeCompleteCallback(ServerRequest serverRequest) {
+            beforeComplete.set(true);
+          }
+
+          @Override
+          public void onAfterCompleteCallback(ServerRequest serverRequest) {
+            afterComplete.set(true);
+          }
+
+          @Override
+          public void onBeforeFailedCallback(
+              ServerRequest serverRequest, FailedResponseBean failedResponse) {
+            beforeFailed.set(true);
+          }
+        };
+
+    DominoRestContext.make().getConfig().addResponseInterceptor(interceptor);
+    // Use a request class that is explicitly targeting the /status handler so we ensure a 500
+    // response is returned from the test server. Using EchoGet and changing the path can be
+    // ambiguous depending on routing/formatting; creating an explicit StatusGet avoids that.
+    StatusGet req = new StatusGet("http://localhost:" + port);
+    // setPath to the final segment (we keep the service root pointing to host:port)
+    req.setPath("/status/500");
+    var result = run(req);
+
+    // failed callbacks should be called; success callbacks should not
+    assertTrue(beforeFailed.get(), "onBeforeFailedCallback should have been called");
+    assertTrue(beforeComplete.get(), "onBeforeCompleteCallback should have been called");
+    assertTrue(afterComplete.get(), "onAfterCompleteCallback should have been called");
+    assertFalse(
+        beforeSuccess.get(), "onBeforeSuccessCallback should NOT have been called on failure");
+  }
+
   // ---------------------------------------------------------------------------
   // Small concrete requests (mimic your generated classes)
   // ---------------------------------------------------------------------------
@@ -259,6 +354,18 @@ class ServerRequestHttpTest {
       setPath("/echo");
       setAccept(new String[] {"application/json"});
       // simplest reader: return raw response body as String
+      setResponseReader(Response::getBodyAsString);
+    }
+  }
+  /** GET /status with String body reader. */
+  static final class StatusGet extends ServerRequest<Void, String> {
+    StatusGet(String serviceRoot) {
+      super(new RequestMeta(StatusGet.class, "status", Void.class, String.class), null);
+      setServiceRoot(serviceRoot);
+      setHttpMethod(HttpMethod.GET);
+      // default base path for this helper; tests may override with setPath
+      setPath("/status");
+      setAccept(new String[] {"text/plain"});
       setResponseReader(Response::getBodyAsString);
     }
   }
@@ -310,6 +417,19 @@ class ServerRequestHttpTest {
     String successBody;
     SampleObject successBodyBean;
     Throwable error;
+
+    @Override
+    public String toString() {
+      return "Result{"
+          + "successBody='"
+          + successBody
+          + '\''
+          + ", successBodyBean="
+          + successBodyBean
+          + ", error="
+          + error
+          + '}';
+    }
   }
 
   private <R> Result run(ServerRequest<R, String> req) throws InterruptedException {
@@ -320,7 +440,10 @@ class ServerRequestHttpTest {
                 body -> {
                   r.successBody = body;
                 })
-        .onFailed(err -> r.error = err.getThrowable())
+        .onFailed(
+            err -> {
+              r.error = err.getThrowable();
+            })
         .onComplete(done::countDown);
     req.send();
     assertTrue(done.await(5, TimeUnit.SECONDS), "Request did not complete in time");
