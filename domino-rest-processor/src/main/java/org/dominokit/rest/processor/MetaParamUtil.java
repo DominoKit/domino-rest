@@ -154,6 +154,10 @@ public class MetaParamUtil {
 
     codeBlock.add(
         "$T.of($S, $S)", TypeName.get(MetaParam.class), metaParam.getName(), metaParam.getValue());
+    if (!metaParam.getMetaParams().isEmpty()) {
+      codeBlock.add("\n");
+      codeBlock.indent();
+    }
     metaParam
         .getMetaParams()
         .forEach(
@@ -162,6 +166,9 @@ public class MetaParamUtil {
               codeBlock.add(toCodeBlock(mp, CodeBlock.builder()));
               codeBlock.add(")");
             });
+    if (!metaParam.getMetaParams().isEmpty()) {
+      codeBlock.unindent();
+    }
 
     return codeBlock.build();
   }

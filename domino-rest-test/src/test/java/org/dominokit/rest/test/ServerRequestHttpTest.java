@@ -46,6 +46,7 @@ import org.dominokit.rest.DominoRestConfig;
 import org.dominokit.rest.model.MultipartTestService;
 import org.dominokit.rest.model.SampleObject;
 import org.dominokit.rest.model.SampleObject_MapperImpl;
+import org.dominokit.rest.model.locator.CustomersResourceFactory;
 import org.dominokit.rest.shared.MultipartForm;
 import org.dominokit.rest.shared.Response;
 import org.dominokit.rest.shared.request.DominoRestContext;
@@ -86,6 +87,7 @@ class ServerRequestHttpTest {
     server.createContext("/upload", ServerRequestHttpTest::uploadHandler);
     server.createContext("/delay", ServerRequestHttpTest::delayHandler);
     server.createContext("/status", ServerRequestHttpTest::statusHandler);
+    server.createContext("/customers", ServerRequestHttpTest::customersHandler);
 
     server.setExecutor(Executors.newCachedThreadPool());
     server.start();
@@ -341,6 +343,57 @@ class ServerRequestHttpTest {
         beforeSuccess.get(), "onBeforeSuccessCallback should NOT have been called on failure");
   }
 
+  @Test
+  void resource_locator_generated_clients_can_traverse_child_resources() throws Exception {
+    String root = "http://localhost:" + port;
+    CustomersResourceFactory factory = CustomersResourceFactory.INSTANCE;
+
+    var customerReq = factory.getCustomer("alice");
+    customerReq.setServiceRoot(root);
+    var customerResult = run(customerReq);
+    assertNull(customerResult.error);
+    assertEquals("customer-alice", customerResult.successBody);
+
+    var ordersFactory = factory.orders("alice");
+    var listOrdersReq = ordersFactory.listOrders();
+    listOrdersReq.setServiceRoot(root);
+    var listOrdersResult = run(listOrdersReq);
+    assertNull(listOrdersResult.error);
+    assertEquals("orders-alice", listOrdersResult.successBody);
+
+    var orderReq = ordersFactory.getOrder("A1");
+    orderReq.setServiceRoot(root);
+    var orderResult = run(orderReq);
+    assertNull(orderResult.error);
+    assertEquals("order-alice-A1", orderResult.successBody);
+  }
+
+  @Test
+  void resource_locator_supports_overloads_and_sibling_paths() throws Exception {
+    String root = "http://localhost:" + port;
+    CustomersResourceFactory factory = CustomersResourceFactory.INSTANCE;
+
+    var ordersByIntFactory = factory.orders(7);
+    var listOrdersReq = ordersByIntFactory.listOrders();
+    listOrdersReq.setServiceRoot(root);
+    var listOrdersResult = run(listOrdersReq);
+    assertNull(listOrdersResult.error);
+    assertEquals("orders-7", listOrdersResult.successBody);
+
+    var standingOrdersFactory = factory.standingOrders("bob");
+    var standingOrdersReq = standingOrdersFactory.listOrders();
+    standingOrdersReq.setServiceRoot(root);
+    var standingOrdersResult = run(standingOrdersReq);
+    assertNull(standingOrdersResult.error);
+    assertEquals("standing-orders-bob", standingOrdersResult.successBody);
+
+    var standingOrderReq = standingOrdersFactory.getOrder("SO-9");
+    standingOrderReq.setServiceRoot(root);
+    var standingOrderResult = run(standingOrderReq);
+    assertNull(standingOrderResult.error);
+    assertEquals("standing-order-bob-SO-9", standingOrderResult.successBody);
+  }
+
   // ---------------------------------------------------------------------------
   // Small concrete requests (mimic your generated classes)
   // ---------------------------------------------------------------------------
@@ -540,6 +593,51 @@ class ServerRequestHttpTest {
             + " | body-len="
             + body.length();
     write(ex, 200, text, "text/plain");
+  }
+
+  private static void customersHandler(HttpExchange ex) throws IOException {
+    String path = ex.getRequestURI().getRawPath();
+    if (!path.startsWith("/customers/")) {
+      write(ex, 404, "not-found", "text/plain");
+      return;
+    }
+
+    String remainder = path.substring("/customers/".length());
+    String[] parts = remainder.split("/");
+    List<String> segments = new ArrayList<>();
+    for (String part : parts) {
+      if (!part.isEmpty()) {
+        segments.add(part);
+      }
+    }
+
+    if (segments.isEmpty()) {
+      write(ex, 400, "bad-request", "text/plain");
+      return;
+    }
+
+    String customerId = segments.get(0);
+    String payload;
+
+    if (segments.size() == 1) {
+      payload = "customer-" + customerId;
+    } else if ("orders".equals(segments.get(1))) {
+      if (segments.size() == 2) {
+        payload = "orders-" + customerId;
+      } else {
+        payload = "order-" + customerId + "-" + segments.get(2);
+      }
+    } else if ("standing-orders".equals(segments.get(1))) {
+      if (segments.size() == 2) {
+        payload = "standing-orders-" + customerId;
+      } else {
+        payload = "standing-order-" + customerId + "-" + segments.get(2);
+      }
+    } else {
+      payload = "unknown";
+    }
+
+    write(ex, 200, "\"" + payload + "\"", "application/json");
   }
 
   private static void delayHandler(HttpExchange ex) throws IOException {

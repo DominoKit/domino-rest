@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared.request;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -42,7 +43,12 @@ public class MetaParam {
   }
 
   public MetaParam addMetaParam(MetaParam metaParam) {
-    metaParams.add(metaParam);
+    this.metaParams.add(metaParam);
+    return this;
+  }
+
+  public MetaParam addMetaParams(Collection<MetaParam> metaParams) {
+    this.metaParams.addAll(metaParams);
     return this;
   }
 

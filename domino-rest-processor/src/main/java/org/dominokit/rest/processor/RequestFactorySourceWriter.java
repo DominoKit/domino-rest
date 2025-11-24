@@ -30,13 +30,14 @@ import jakarta.ws.rs.core.MediaType;
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.Diagnostic;
 import org.dominokit.jackson.AbstractObjectReader;
 import org.dominokit.jackson.AbstractObjectWriter;
 import org.dominokit.jackson.JsonDeserializer;
@@ -87,30 +88,33 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
   @Override
   public List<TypeSpec.Builder> asTypeBuilder() {
-    String namePrefix = "";
-    if (!ElementKind.PACKAGE.equals(serviceElement.getEnclosingElement().getKind())) {
-      namePrefix = serviceElement.getEnclosingElement().getSimpleName().toString() + "_";
-    }
+    return Collections.singletonList(asTypeBuilder(serviceElement, null));
+  }
 
-    String factoryName = namePrefix + serviceElement.getSimpleName().toString() + "Factory";
-
-    FieldSpec instanceField =
-        FieldSpec.builder(
-                ClassName.bestGuess(factoryName),
-                "INSTANCE",
-                Modifier.PUBLIC,
-                Modifier.STATIC,
-                Modifier.FINAL)
-            .initializer("new " + factoryName + "()")
-            .build();
+  private TypeSpec.Builder asTypeBuilder(Element serviceElement, ServiceMethod parent) {
+    String factoryName = getRequestClassName(serviceElement, parent);
 
     methodCount = new HashMap<>();
 
     List<ProcessedType> processedTypes = new ArrayList<>();
 
-    List<ServiceMethod> serviceMethods = getServiceMethods(processedTypes, "", serviceElement);
+    List<ServiceMethod> serviceMethods =
+        getServiceMethods(
+            processedTypes, isNull(parent) ? "" : getPath(parent), serviceElement, parent);
 
-    List<TypeSpec> requests = serviceMethods.stream().map(this::makeRequestClass).collect(toList());
+    List<TypeSpec> subResource =
+        serviceMethods.stream()
+            .filter(serviceMethod -> ResourceLocatorFilter.isResourceLocator(serviceMethod.method))
+            .map(
+                serviceMethod ->
+                    asTypeBuilder(getResponseElement(serviceMethod), serviceMethod).build())
+            .collect(Collectors.toList());
+
+    List<TypeSpec> requests =
+        serviceMethods.stream()
+            .filter(serviceMethod -> !ResourceLocatorFilter.isResourceLocator(serviceMethod.method))
+            .map(this::makeRequestClass)
+            .collect(toList());
 
     List<MethodSpec> overrideMethods =
         serviceMethods.stream().map(this::makeRequestFactoryMethod).collect(toList());
@@ -120,16 +124,83 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
             .addAnnotation(
                 AnnotationSpec.builder(RestService.class)
                     .addMember("value", "$T.class", serviceElement.asType())
-                    .build())
-            .addField(instanceField)
-            .addTypes(requests)
-            .addMethods(overrideMethods);
+                    .build());
+    if (nonNull(parent)) {
+      factory.addModifiers(Modifier.STATIC);
+      MethodSpec.Builder constructorBuilder =
+          MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE);
+      parent
+          .method
+          .getParameters()
+          .forEach(
+              variableElement -> {
+                factory.addField(
+                    FieldSpec.builder(
+                            TypeName.get(variableElement.asType()),
+                            variableElement.getSimpleName().toString(),
+                            Modifier.PRIVATE,
+                            Modifier.FINAL)
+                        .build());
+                constructorBuilder.addParameter(
+                    ParameterSpec.builder(
+                            TypeName.get(variableElement.asType()),
+                            variableElement.getSimpleName().toString())
+                        .build());
+                constructorBuilder.addStatement(
+                    "this.$L = $L",
+                    variableElement.getSimpleName().toString(),
+                    variableElement.getSimpleName().toString());
+              });
+      factory.addMethod(constructorBuilder.build());
+    } else {
+      FieldSpec instanceField =
+          FieldSpec.builder(
+                  ClassName.bestGuess(factoryName),
+                  "INSTANCE",
+                  Modifier.PUBLIC,
+                  Modifier.STATIC,
+                  Modifier.FINAL)
+              .initializer("new " + factoryName + "()")
+              .build();
+      factory.addField(instanceField);
+    }
 
-    return Collections.singletonList(factory);
+    factory.addTypes(requests).addTypes(subResource).addMethods(overrideMethods);
+
+    return factory;
+  }
+
+  private String getRequestClassName(Element serviceElement, ServiceMethod parent) {
+    String namePrefix = "";
+    if (!ElementKind.PACKAGE.equals(serviceElement.getEnclosingElement().getKind())) {
+      namePrefix = serviceElement.getEnclosingElement().getSimpleName().toString() + "_";
+    }
+
+    String classifier = "";
+    if (nonNull(parent)) {
+      String methodClassifier = getMethodClassifier(parent);
+      classifier =
+          "_"
+              + parent.method.getSimpleName()
+              + (methodClassifier.isEmpty() ? "_" : "")
+              + methodClassifier
+              + (methodClassifier.isEmpty() ? "" : "_");
+    }
+
+    return namePrefix + serviceElement.getSimpleName().toString() + classifier + "Factory";
+  }
+
+  private Element getResponseElement(ServiceMethod serviceMethod) {
+    TypeMirror returnType = serviceMethod.method.getReturnType();
+    DeclaredType declared = (DeclaredType) returnType;
+    return declared.asElement();
   }
 
   private List<ServiceMethod> getServiceMethods(
-      List<ProcessedType> processedTypes, String servicePath, Element serviceElement) {
+      List<ProcessedType> processedTypes,
+      String servicePath,
+      Element serviceElement,
+      ServiceMethod parent) {
     TypeElement serviceType = (TypeElement) serviceElement;
     String[] currentPath = new String[] {""};
 
@@ -146,24 +217,27 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
 
     if (serviceType.getInterfaces().isEmpty()) {
-      return getMethods(processedTypes, currentPath[0], serviceElement);
+      return getMethods(processedTypes, currentPath[0], serviceElement, parent);
     }
 
     List<ServiceMethod> methods = new ArrayList<>();
-    methods.addAll(getMethods(processedTypes, currentPath[0], serviceElement));
+    methods.addAll(getMethods(processedTypes, currentPath[0], serviceElement, parent));
     ((TypeElement) serviceElement)
         .getInterfaces()
         .forEach(
             superInterface ->
                 methods.addAll(
                     getServiceMethods(
-                        processedTypes, currentPath[0], types.asElement(superInterface))));
+                        processedTypes, currentPath[0], types.asElement(superInterface), parent)));
 
     return methods;
   }
 
   private List<ServiceMethod> getMethods(
-      List<ProcessedType> processedTypes, String servicePath, Element serviceElement) {
+      List<ProcessedType> processedTypes,
+      String servicePath,
+      Element serviceElement,
+      ServiceMethod parent) {
     ProcessedType processedType = new ProcessedType(elements, (TypeElement) serviceElement);
     processedTypes.add(processedType);
     return processorUtil.getElementMethods(serviceElement).stream()
@@ -171,7 +245,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         .map(
             executableElement -> {
               processedType.addMethod(executableElement);
-              return asServiceMethod(servicePath, executableElement);
+              return asServiceMethod(servicePath, executableElement, parent);
             })
         .collect(toList());
   }
@@ -185,85 +259,209 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     return true;
   }
 
-  private ServiceMethod asServiceMethod(String servicePath, ExecutableElement executableElement) {
+  private ServiceMethod asServiceMethod(
+      String servicePath, ExecutableElement executableElement, ServiceMethod parent) {
     String name = executableElement.getSimpleName().toString();
     if (hasClassifier(executableElement)) {
-      return new ServiceMethod(executableElement, 0, servicePath);
+      return new ServiceMethod(executableElement, 0, servicePath, parent);
     } else {
       if (!methodCount.containsKey(name)) {
         methodCount.put(name, 1);
-        return new ServiceMethod(executableElement, 0, servicePath);
+        return new ServiceMethod(executableElement, 0, servicePath, parent);
       } else {
         Integer index = methodCount.get(name);
         methodCount.put(name, methodCount.get(name) + 1);
-        return new ServiceMethod(executableElement, index, servicePath);
+        return new ServiceMethod(executableElement, index, servicePath, parent);
       }
     }
   }
 
   private MethodSpec makeRequestFactoryMethod(ServiceMethod serviceMethod) {
-    String classifier = getMethodClassifier(serviceMethod);
+    if (ResourceLocatorFilter.isResourceLocator(serviceMethod.method)) {
+      String requestClassName =
+          getRequestClassName(getResponseElement(serviceMethod), serviceMethod);
+      ClassName returnType = ClassName.bestGuess(requestClassName);
+      MethodSpec.Builder request =
+          MethodSpec.methodBuilder(serviceMethod.method.getSimpleName().toString())
+              .addModifiers(Modifier.PUBLIC)
+              .returns(returnType);
+      String paramsNames =
+          getMethodParameters(serviceMethod).stream()
+              .map(
+                  parameter -> {
+                    request.addParameter(
+                        getParameterType(parameter), parameter.getSimpleName().toString());
+                    return parameter.getSimpleName();
+                  })
+              .collect(joining(","));
+      request.addStatement("return new $T($L)", returnType, paramsNames);
 
-    TypeName requestTypeName = TypeName.get(getRequestBeanType(serviceMethod).type);
-    TypeMirror responseBean = getResponseBeanType(serviceMethod);
+      return request.build();
+    } else {
+      String classifier = getMethodClassifier(serviceMethod);
 
-    MethodSpec.Builder request =
-        MethodSpec.methodBuilder(serviceMethod.method.getSimpleName().toString())
-            .addModifiers(Modifier.PUBLIC)
-            .returns(
-                ParameterizedTypeName.get(
-                    ClassName.get(ServerRequest.class),
-                    requestTypeName,
-                    ClassName.get(responseBean)));
+      TypeName requestTypeName = TypeName.get(getRequestBeanType(serviceMethod).type);
+      TypeMirror responseBean = getResponseBeanType(serviceMethod);
 
-    getMethodParameters(serviceMethod)
-        .forEach(
-            parameter ->
-                request.addParameter(
-                    getParameterType(parameter), parameter.getSimpleName().toString()));
+      MethodSpec.Builder request =
+          MethodSpec.methodBuilder(serviceMethod.method.getSimpleName().toString())
+              .addModifiers(Modifier.PUBLIC)
+              .returns(
+                  ParameterizedTypeName.get(
+                      ClassName.get(ServerRequest.class),
+                      requestTypeName,
+                      ClassName.get(responseBean)));
 
-    String requestClassName =
-        serviceElement.getSimpleName().toString()
-            + "_"
-            + serviceMethod.method.getSimpleName()
-            + classifier;
-    String initializeStatement = requestClassName + " instance = new " + requestClassName;
-
-    Optional<String> requestBodyParamName = getRequestBeanType(serviceMethod).getParamName();
-
-    if (consumesMultipartForm(serviceMethod)) {
-      request.addStatement("MultipartForm multipartForm = new MultipartForm()");
       getMethodParameters(serviceMethod)
           .forEach(
-              variableElement -> {
-                if (variableElement.getAnnotation(Multipart.class) != null) {
-                  // get from object
-                  getFromModel(serviceMethod, request, variableElement);
-                } else {
-                  if (!isParamField(variableElement)) {
-                    addMultipart(
-                        serviceMethod,
-                        request,
-                        variableElement,
-                        variableElement.getSimpleName().toString());
+              parameter ->
+                  request.addParameter(
+                      getParameterType(parameter), parameter.getSimpleName().toString()));
+
+      String requestClassName =
+          serviceElement.getSimpleName().toString()
+              + "_"
+              + serviceMethod.method.getSimpleName()
+              + classifier;
+      String initializeStatement = requestClassName + " instance = new " + requestClassName;
+
+      Optional<String> requestBodyParamName = getRequestBeanType(serviceMethod).getParamName();
+
+      if (consumesMultipartForm(serviceMethod)) {
+        request.addStatement("MultipartForm multipartForm = new MultipartForm()");
+        getMethodParameters(serviceMethod)
+            .forEach(
+                variableElement -> {
+                  if (variableElement.getAnnotation(Multipart.class) != null) {
+                    // get from object
+                    getFromModel(serviceMethod, request, variableElement);
+                  } else {
+                    if (!isParamField(variableElement)) {
+                      addMultipart(
+                          serviceMethod,
+                          request,
+                          variableElement,
+                          variableElement.getSimpleName().toString());
+                    }
                   }
-                }
-              });
-      request.addStatement(initializeStatement + "(multipartForm)");
-    } else if (requestBodyParamName.isPresent()) {
-      request.addStatement(initializeStatement + "(" + requestBodyParamName.get() + ")");
-    } else {
-      request.addStatement(initializeStatement + "()");
+                });
+        request.addStatement(initializeStatement + "(multipartForm)");
+      } else if (requestBodyParamName.isPresent()) {
+        request.addStatement(initializeStatement + "(" + requestBodyParamName.get() + ")");
+      } else {
+        request.addStatement(initializeStatement + "()");
+      }
+
+      if (nonNull(serviceMethod.parent)) {
+        addQueryParameters(serviceMethod.parent, request);
+      }
+      addQueryParameters(serviceMethod, request);
+
+      if (nonNull(serviceMethod.parent)) {
+        addMatrixParameters(serviceMethod.parent, request);
+      }
+      addMatrixParameters(serviceMethod, request);
+
+      if (nonNull(serviceMethod.parent)) {
+        addPathParameters(serviceMethod.parent, request);
+      }
+      addPathParameters(serviceMethod, request);
+
+      if (nonNull(serviceMethod.parent)) {
+        addHeaderParameters(serviceMethod.parent, request);
+      }
+      addHeaderParameters(serviceMethod, request);
+
+      if (nonNull(serviceMethod.parent)) {
+        addBeanParams(serviceMethod.parent, request);
+      }
+      addBeanParams(serviceMethod, request);
+
+      if (nonNull(serviceMethod.parent)) {
+        addMetParamStatement(
+            request,
+            MetaParam.of("parent", "parent").addMetaParams(getMetaParams(serviceMethod.parent)));
+      }
+      addMetaParams(serviceMethod, request);
+
+      request.addStatement("return instance");
+
+      return request.build();
     }
+  }
 
+  private String fqMethodName(ExecutableElement method) {
+    TypeElement owner = (TypeElement) method.getEnclosingElement();
+    String ownerFqn = owner.getQualifiedName().toString();
+
+    String methodName =
+        method.getKind() == ElementKind.CONSTRUCTOR
+            ? owner.getSimpleName().toString()
+            : method.getSimpleName().toString();
+
+    String params =
+        method.getParameters().stream()
+            .map(v -> fqType(types.erasure(v.asType())))
+            .reduce((a, b) -> a + ", " + b)
+            .orElse("");
+
+    return ownerFqn + "." + methodName + "(" + params + ")";
+  }
+
+  private String fqType(TypeMirror t) {
+    // t.toString() is usually already fully qualified in AP context,
+    // but for declared types we can be explicit:
+    if (t.getKind() == TypeKind.DECLARED) {
+      DeclaredType dt = (DeclaredType) t;
+      TypeElement te = (TypeElement) dt.asElement();
+      return te.getQualifiedName().toString();
+    }
+    return t.toString(); // primitives, arrays, type vars, etc.
+  }
+
+  private void addMetaParams(ServiceMethod serviceMethod, MethodSpec.Builder request) {
+    getMetaParams(serviceMethod).forEach(metaParam -> addMetParamStatement(request, metaParam));
+  }
+
+  private static Collection<MetaParam> getMetaParams(ServiceMethod serviceMethod) {
+    return serviceMethod.method.getAnnotationMirrors().stream()
+        .map(MetaParamUtil::fromAnnotationMirror)
+        .collect(Collectors.toList());
+  }
+
+  private void addBeanParams(ServiceMethod serviceMethod, MethodSpec.Builder request) {
     serviceMethod.method.getParameters().stream()
-        .filter(parameter -> nonNull(parameter.getAnnotation(QueryParam.class)))
-        .forEach(parameter -> addSetParameterStatement(request, parameter));
+        .filter(parameter -> nonNull(parameter.getAnnotation(BeanParam.class)))
+        .forEach(
+            parameter -> {
+              CodeBlock.Builder builder = CodeBlock.builder();
+              getBeanParams(builder, parameter);
+              request.addCode(builder.build());
+            });
+  }
 
+  private void addHeaderParameters(ServiceMethod serviceMethod, MethodSpec.Builder request) {
     serviceMethod.method.getParameters().stream()
-        .filter(parameter -> nonNull(parameter.getAnnotation(MatrixParam.class)))
-        .forEach(parameter -> addSetMatrixParameterStatement(request, parameter));
+        .filter(parameter -> nonNull(parameter.getAnnotation(HeaderParam.class)))
+        .forEach(
+            parameter -> {
+              if (processorUtil.isAssignableFrom(parameter, Date.class)
+                  && nonNull(parameter.getAnnotation(DateFormat.class))) {
+                request.addStatement(
+                    "instance.setPathParameter($S, instance.formatDate(() -> $L, $S))",
+                    parameter.getAnnotation(HeaderParam.class).value(),
+                    parameter.getSimpleName(),
+                    parameter.getAnnotation(DateFormat.class).value());
+              } else {
+                request.addStatement(
+                    "instance.setHeaderParameter($S, instance.emptyOrStringValue(() -> $L))",
+                    parameter.getAnnotation(HeaderParam.class).value(),
+                    parameter.getSimpleName());
+              }
+            });
+  }
 
+  private void addPathParameters(ServiceMethod serviceMethod, MethodSpec.Builder request) {
     serviceMethod.method.getParameters().stream()
         .filter(parameter -> nonNull(parameter.getAnnotation(PathParam.class)))
         .forEach(
@@ -284,48 +482,18 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                     parameter.getSimpleName());
               }
             });
+  }
 
+  private void addMatrixParameters(ServiceMethod serviceMethod, MethodSpec.Builder request) {
     serviceMethod.method.getParameters().stream()
-        .filter(parameter -> nonNull(parameter.getAnnotation(HeaderParam.class)))
-        .forEach(
-            parameter -> {
-              if (processorUtil.isAssignableFrom(parameter, Date.class)
-                  && nonNull(parameter.getAnnotation(DateFormat.class))) {
-                request.addStatement(
-                    "instance.setPathParameter($S, instance.formatDate(() -> $L, $S))",
-                    parameter.getAnnotation(HeaderParam.class).value(),
-                    parameter.getSimpleName(),
-                    parameter.getAnnotation(DateFormat.class).value());
-              } else {
-                request.addStatement(
-                    "instance.setHeaderParameter($S, instance.emptyOrStringValue(() -> $L))",
-                    parameter.getAnnotation(HeaderParam.class).value(),
-                    parameter.getSimpleName());
-              }
-            });
+        .filter(parameter -> nonNull(parameter.getAnnotation(MatrixParam.class)))
+        .forEach(parameter -> addSetMatrixParameterStatement(request, parameter));
+  }
 
+  private void addQueryParameters(ServiceMethod serviceMethod, MethodSpec.Builder request) {
     serviceMethod.method.getParameters().stream()
-        .filter(parameter -> nonNull(parameter.getAnnotation(BeanParam.class)))
-        .forEach(
-            parameter -> {
-              CodeBlock.Builder builder = CodeBlock.builder();
-              getBeanParams(builder, parameter);
-              request.addCode(builder.build());
-            });
-
-    serviceMethod.method.getAnnotationMirrors().stream()
-        .map(MetaParamUtil::fromAnnotationMirror)
-        .forEach(
-            metaParam -> {
-              processorUtil
-                  .getMessager()
-                  .printMessage(Diagnostic.Kind.NOTE, "Adding meta param: " + metaParam);
-              addMetParamStatement(request, metaParam);
-            });
-
-    request.addStatement("return instance");
-
-    return request.build();
+        .filter(parameter -> nonNull(parameter.getAnnotation(QueryParam.class)))
+        .forEach(parameter -> addSetParameterStatement(request, parameter));
   }
 
   private void addMetParamStatement(MethodSpec.Builder request, MetaParam metaParam) {
@@ -1213,11 +1381,18 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     private ExecutableElement method;
     private Integer index;
     private String servicePath;
+    private ServiceMethod parent;
 
     public ServiceMethod(ExecutableElement method, Integer index, String servicePath) {
       this.method = method;
       this.index = index;
       this.servicePath = servicePath;
+    }
+
+    public ServiceMethod(
+        ExecutableElement method, Integer index, String servicePath, ServiceMethod parent) {
+      this(method, index, servicePath);
+      this.parent = parent;
     }
   }
 
