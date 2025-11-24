@@ -1,6 +1,6 @@
 ![logoimage](https://raw.githubusercontent.com/DominoKit/DominoKit.github.io/master/logo/128.png)
 
-<a title="Gitter" href="https://gitter.im/DominoKit/domino"><img src="https://badges.gitter.im/Join%20Chat.svg"></a>
+<a title="elements" href="https://matrix.to/#/#DominoKit_domino:gitter.im"><img src="https://badges.gitter.im/Join%20Chat.svg"></a>
 [![Development Build Status](https://github.com/DominoKit/domino-rest/actions/workflows/deploy.yaml/badge.svg?branch=development)](https://github.com/DominoKit/domino-rest/actions/workflows/deploy.yaml/badge.svg?branch=development)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dominokit/domino-rest/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/org.dominokit/domino-rest)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/badge/Snapshot-HEAD--SNAPSHOT-orange)
