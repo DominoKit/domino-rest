@@ -56,22 +56,21 @@ public class RequestFactoryProcessor extends BaseProcessor {
   /** {@inheritDoc} */
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+          new RequestFactoryProcessingStep.Builder()
+                  .setProcessingEnv(processingEnv)
+                  .build()
+                  .process(
+                          roundEnv.getElementsAnnotatedWith(RequestFactory.class).stream()
+                                  .filter(e -> ElementKind.INTERFACE.equals(e.getKind()))
+                                  .collect(Collectors.toSet()));
 
-    new RequestFactoryProcessingStep.Builder()
-        .setProcessingEnv(processingEnv)
-        .build()
-        .process(
-            roundEnv.getElementsAnnotatedWith(RequestFactory.class).stream()
-                .filter(e -> ElementKind.INTERFACE.equals(e.getKind()))
-                .collect(Collectors.toSet()));
-
-    new ResourceListProcessingStep.Builder()
-        .setProcessingEnv(processingEnv)
-        .build()
-        .process(
-            roundEnv.getElementsAnnotatedWith(ResourceList.class).stream()
-                .filter(e -> ElementKind.PACKAGE.equals(e.getKind()))
-                .collect(Collectors.toSet()));
+          new ResourceListProcessingStep.Builder()
+                  .setProcessingEnv(processingEnv)
+                  .build()
+                  .process(
+                          roundEnv.getElementsAnnotatedWith(ResourceList.class).stream()
+                                  .filter(e -> ElementKind.PACKAGE.equals(e.getKind()))
+                                  .collect(Collectors.toSet()));
     return false;
   }
 }

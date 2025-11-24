@@ -54,6 +54,7 @@
         <module>domino-rest-test-java17</module>
         <module>domino-rest-client-test</module>
         <module>domino-rest-processor</module>
+        <module>domino-rest-auto</module>
         <module>domino-rest-client</module>
         <module>domino-rest-jvm</module>
         <module>domino-rest-jaxrs</module>
@@ -81,7 +82,7 @@
 
         <gwt.version>2.12.0</gwt.version>
         <domino.logger.version>1.0.3</domino.logger.version>
-        <domino.jackson.version>1.0.5</domino.jackson.version>
+        <domino.jackson.version>HEAD-SNAPSHOT</domino.jackson.version>
         <domino.aggregator.version>1.0.3</domino.aggregator.version>
         <jax.rs.version>3.1.0</jax.rs.version>
         <jackson.databind.version>2.16.0</jackson.databind.version>
@@ -169,6 +170,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.14.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.36</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

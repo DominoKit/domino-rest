@@ -1,0 +1,197 @@
+openapi: 3.1.0
+info:
+  title: Domino Rest Auto Demo
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+paths:
+  /users:
+    get:
+      tags: [Users]
+      operationId: listUsers
+      summary: List users
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      tags: [Users]
+      operationId: createUser
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /users/{id}:
+    get:
+      tags: [Users]
+      operationId: getUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      tags: [Users]
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /orders:
+    get:
+      tags: [Orders]
+      operationId: listOrders
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, closed]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+  /orders/{orderId}:
+    get:
+      tags: [Orders]
+      operationId: getOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+    patch:
+      tags: [Orders]
+      operationId: updateOrderStatus
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderStatusRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        active:
+          type: boolean
+    CreateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        active:
+          type: boolean
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        status:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+    OrderItem:
+      type: object
+      properties:
+        sku:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+    UpdateOrderStatusRequest:
+      type: object
+      properties:
+        status:
+          type: string

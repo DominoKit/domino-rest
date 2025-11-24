@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.annotation.processing.FilerException;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
@@ -123,7 +124,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
         DominoTypeBuilder.classBuilder(factoryName, RequestFactoryProcessor.class)
             .addAnnotation(
                 AnnotationSpec.builder(RestService.class)
-                    .addMember("value", "$T.class", serviceElement.asType())
+                    .addMember("value", "$L.class", fqType(serviceElement.asType()))
                     .build());
     if (nonNull(parent)) {
       factory.addModifiers(Modifier.STATIC);
@@ -999,9 +1000,9 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
 
     constructorBuilder.addStatement(
-        "super(new $T($T.class, $S, $T.class, $T.class), $L)",
+        "super(new $T($L.class, $S, $T.class, $T.class), $L)",
         RequestMeta.class,
-        serviceElement.asType(),
+        fqType(serviceElement.asType()),
         serviceMethod.method.getSimpleName().toString(),
         types.erasure(requestBean),
         types.erasure(serviceMethod.method.getReturnType()),
@@ -1050,8 +1051,14 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
 
     if (!isVoidType(serviceMethod.method.getReturnType())) {
-      Optional<CodeBlock> responseReader = getResponseReader(serviceMethod);
-      responseReader.ifPresent(constructorBuilder::addCode);
+      try {
+        Optional<CodeBlock> responseReader = getResponseReader(serviceMethod);
+        responseReader.ifPresent(constructorBuilder::addCode);
+      } catch (Exception e) {
+        if (!(e.getCause() instanceof FilerException)) {
+          throw e;
+        }
+      }
     }
 
     return constructorBuilder.build();
@@ -1167,6 +1174,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
   }
 
   private Optional<CodeBlock> getResponseReader(ServiceMethod serviceMethod) {
+
     CodeBlock.Builder builder = CodeBlock.builder();
 
     Reader annotation = serviceMethod.method.getAnnotation(Reader.class);
