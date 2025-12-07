@@ -106,6 +106,7 @@ public class ServerRequest<R, S> extends BaseRequest
   private String responseType;
   private NullQueryParamStrategy nullQueryParamStrategy;
   private boolean multipartForm = false;
+  private RequestParametersProvider parametersProvider = new DefaultParametersProvider<R, S>(this);
 
   protected ServerRequest() {
     this.httpMethod = HttpMethod.GET;
@@ -115,6 +116,7 @@ public class ServerRequest<R, S> extends BaseRequest
     this.requestMeta = requestMeta;
     this.requestBean = requestBean;
     this.httpMethod = HttpMethod.GET;
+    this.requestMeta.setParametersProvider(parametersProvider);
   }
 
   /** prepare the request and execute it. */
@@ -848,6 +850,45 @@ public class ServerRequest<R, S> extends BaseRequest
 
     public boolean isWithCredentials() {
       return withCredentials;
+    }
+  }
+
+  private static class DefaultParametersProvider<R, S> implements RequestParametersProvider {
+
+    private final ServerRequest<R, S> serverRequest;
+
+    public DefaultParametersProvider(ServerRequest<R, S> serverRequest) {
+      this.serverRequest = serverRequest;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return new HashMap<>(serverRequest.headers());
+    }
+
+    @Override
+    public Map<String, List<String>> getQueryParameters() {
+      return new HashMap<>(serverRequest.queryParameters());
+    }
+
+    @Override
+    public Map<String, String> getPathParameters() {
+      return new HashMap<>(serverRequest.pathParameters());
+    }
+
+    @Override
+    public Map<String, List<String>> getMatrixParameters() {
+      return new HashMap<>(serverRequest.matrixParameters());
+    }
+
+    @Override
+    public Map<String, String> getFragmentParameters() {
+      return new HashMap<>(serverRequest.fragmentParameters());
+    }
+
+    @Override
+    public Map<String, MetaParam> getMetaParameters() {
+      return new HashMap<>(serverRequest.getMetaParameters());
     }
   }
 }

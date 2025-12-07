@@ -17,10 +17,21 @@ package org.dominokit.rest.shared.request;
 
 import org.dominokit.rest.shared.Response;
 
-/** Reads the response body as a {@link String} */
-public class GeneralResponseReader implements ResponseReader<Response> {
-  @Override
-  public Response read(Response response) {
+public class GenericResponse {
+
+  private final Response response;
+  private final RequestMeta requestMeta;
+
+  public GenericResponse(Response response, RequestMeta requestMeta) {
+    this.response = response;
+    this.requestMeta = requestMeta;
+  }
+
+  public Response getResponse() {
     return response;
+  }
+
+  public RequestMeta getRequestMeta() {
+    return requestMeta;
   }
 }

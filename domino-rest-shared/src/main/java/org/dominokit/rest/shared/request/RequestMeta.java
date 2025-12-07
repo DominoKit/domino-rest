@@ -18,12 +18,13 @@ package org.dominokit.rest.shared.request;
 /** The meta of the request */
 public class RequestMeta {
 
-  private Class<?> serviceClass;
-  private String methodName;
-  private Class<?> requestClass;
-  private Class<?> responseClass;
+  private final Class<?> serviceClass;
+  private final String methodName;
+  private final Class<?> requestClass;
+  private final Class<?> responseClass;
   private String[] consume;
   private String[] produce;
+  private RequestParametersProvider parametersProvider = new RequestParametersProvider() {};
 
   public RequestMeta(
       Class<?> serviceClass, String methodName, Class<?> requestClass, Class<?> responseClass) {
@@ -57,12 +58,20 @@ public class RequestMeta {
     this.produce = produce;
   }
 
+  void setParametersProvider(RequestParametersProvider parametersProvider) {
+    this.parametersProvider = parametersProvider;
+  }
+
   public String[] getConsume() {
     return consume;
   }
 
   public String[] getProduce() {
     return produce;
+  }
+
+  public RequestParametersProvider getParametersProvider() {
+    return parametersProvider;
   }
 
   @Override
