@@ -58,5 +58,8 @@ import org.dominokit.rest.shared.request.RequestWriter;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Writer {
+  /**
+   * @return the writer class
+   */
   Class<? extends RequestWriter> value();
 }

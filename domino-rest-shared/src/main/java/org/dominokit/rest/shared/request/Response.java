@@ -24,5 +24,11 @@ package org.dominokit.rest.shared.request;
  * @see CanFailOrSend
  */
 public interface Response<S> {
+  /**
+   * Sets the success handler.
+   *
+   * @param success the success handler
+   * @return the next builder step
+   */
   CanFailOrSend onSuccess(Success<S> success);
 }

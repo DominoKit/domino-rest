@@ -47,7 +47,9 @@ public interface HasPathMatcher {
   /** Producer to a new service root */
   @FunctionalInterface
   interface HasServiceRoot {
-    /** @return the new service root */
+    /**
+     * @return the new service root
+     */
     String onMatch();
   }
 

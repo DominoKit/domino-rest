@@ -26,12 +26,21 @@ import org.dominokit.rest.shared.request.service.annotations.RequestFactory;
 /** A step to generating factories for all {@link RequestFactory} listed in source path */
 public class RequestFactoryProcessingStep extends AbstractProcessingStep {
 
+  /**
+   * Creates a new instance.
+   *
+   * @param processingEnv the {@link ProcessingEnvironment}
+   */
   public RequestFactoryProcessingStep(ProcessingEnvironment processingEnv) {
     super(processingEnv);
   }
 
+  /** A builder for {@link RequestFactoryProcessingStep}. */
   public static class Builder extends StepBuilder<RequestFactoryProcessingStep> {
 
+    /**
+     * @return a new {@link RequestFactoryProcessingStep} instance
+     */
     public RequestFactoryProcessingStep build() {
       return new RequestFactoryProcessingStep(processingEnv);
     }

@@ -17,20 +17,33 @@ package org.dominokit.rest.shared.request;
 
 import org.dominokit.rest.shared.Response;
 
+/** A wrapper for a response and its associated request metadata. */
 public class GenericResponse {
 
   private final Response response;
   private final RequestMeta requestMeta;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param response the {@link Response}
+   * @param requestMeta the {@link RequestMeta}
+   */
   public GenericResponse(Response response, RequestMeta requestMeta) {
     this.response = response;
     this.requestMeta = requestMeta;
   }
 
+  /**
+   * @return the {@link Response}
+   */
   public Response getResponse() {
     return response;
   }
 
+  /**
+   * @return the {@link RequestMeta}
+   */
   public RequestMeta getRequestMeta() {
     return requestMeta;
   }

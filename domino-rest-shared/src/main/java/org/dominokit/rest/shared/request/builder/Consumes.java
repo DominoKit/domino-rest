@@ -15,6 +15,18 @@
  */
 package org.dominokit.rest.shared.request.builder;
 
+/**
+ * Interface for specifying the media type that a request consumes.
+ *
+ * @param <R> the request type
+ * @param <S> the response type
+ */
 public interface Consumes<R, S> {
+  /**
+   * Specifies the media type that the request consumes (e.g., "application/json").
+   *
+   * @param consumes the media type
+   * @return the next step in the builder (Produces)
+   */
   Produces<R, S> accepts(String consumes);
 }

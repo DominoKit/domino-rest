@@ -27,11 +27,15 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.dominokit.rest.shared.request.MetaParam;
 
+/** Utility class for handling {@link MetaParam} in the processor. */
 public class MetaParamUtil {
 
   /**
    * Convert a full AnnotationMirror into a root MetaParam. The annotation itself will have name =
    * FQN, value = FQN.
+   *
+   * @param mirror the {@link AnnotationMirror} to convert
+   * @return the created {@link MetaParam}
    */
   public static MetaParam fromAnnotationMirror(AnnotationMirror mirror) {
     TypeElement annType = (TypeElement) mirror.getAnnotationType().asElement();
@@ -150,6 +154,13 @@ public class MetaParamUtil {
     return sb.toString();
   }
 
+  /**
+   * Converts a {@link MetaParam} to a {@link CodeBlock}.
+   *
+   * @param metaParam the {@link MetaParam} to convert
+   * @param codeBlock the {@link CodeBlock.Builder} to add to
+   * @return the resulting {@link CodeBlock}
+   */
   public static CodeBlock toCodeBlock(MetaParam metaParam, CodeBlock.Builder codeBlock) {
 
     codeBlock.add(

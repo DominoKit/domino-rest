@@ -15,6 +15,13 @@
  */
 package org.dominokit.rest.shared.request;
 
+/** An interface for matching URL tokens using regular expressions. */
 public interface UrlTokenRegexMatcher {
+  /**
+   * Converts the given URL to a token string.
+   *
+   * @param url the URL to convert
+   * @return the token string
+   */
   String asTokenString(String url);
 }

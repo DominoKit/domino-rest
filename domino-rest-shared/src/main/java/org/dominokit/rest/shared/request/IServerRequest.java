@@ -30,31 +30,49 @@ import java.util.function.Supplier;
  */
 public interface IServerRequest<R, S> {
 
-  /** @return the request metadata */
+  /**
+   * @return the request metadata
+   */
   RequestMeta getMeta();
 
-  /** @return the rest sender associated with this request */
+  /**
+   * @return the rest sender associated with this request
+   */
   RequestRestSender<R, S> getSender();
 
-  /** @return the request bean of the request */
+  /**
+   * @return the request bean of the request
+   */
   R requestBean();
 
-  /** @return Optional if the with credentials is supported by this request */
+  /**
+   * @return Optional if the with credentials is supported by this request
+   */
   Optional<ServerRequest.WithCredentialsRequest> getWithCredentialsRequest();
 
-  /** @return new map containing all headers defined in the request */
+  /**
+   * @return new map containing all headers defined in the request
+   */
   Map<String, String> headers();
 
-  /** @return new map containing all query parameters defined in the request */
+  /**
+   * @return new map containing all query parameters defined in the request
+   */
   Map<String, List<String>> queryParameters();
 
-  /** @return new map containing all path parameters defined in the request */
+  /**
+   * @return new map containing all path parameters defined in the request
+   */
   Map<String, String> pathParameters();
 
-  /** @return new map containing all matrix parameters defined in the request */
+  /**
+   * @return new map containing all matrix parameters defined in the request
+   */
   Map<String, List<String>> matrixParameters();
 
-  /** @return new map containing all fragment parameters defined in the request */
+  /**
+   * @return new map containing all fragment parameters defined in the request
+   */
   Map<String, String> fragmentParameters();
 
   /**
@@ -63,7 +81,9 @@ public interface IServerRequest<R, S> {
    */
   MetaParam getMetaParameter(String key);
 
-  /** @return a copy of the request current meta parameters */
+  /**
+   * @return a copy of the request current meta parameters
+   */
   Map<String, MetaParam> getMetaParameters();
 
   /**
@@ -71,46 +91,74 @@ public interface IServerRequest<R, S> {
    */
   Map<String, List<String>> getRequestParameters();
 
-  /** @return the request http method */
+  /**
+   * @return the request http method
+   */
   String getHttpMethod();
 
-  /** @return the accepted success codes */
+  /**
+   * @return the accepted success codes
+   */
   Integer[] getSuccessCodes();
 
-  /** @return the custom service root for this request */
+  /**
+   * @return the custom service root for this request
+   */
   String getServiceRoot();
 
-  /** @return the writer class to be used for serializing the request body */
+  /**
+   * @return the writer class to be used for serializing the request body
+   */
   RequestWriter<R> getRequestWriter();
 
-  /** @return the response reader associated with this request */
+  /**
+   * @return the response reader associated with this request
+   */
   ResponseReader<S> getResponseReader();
 
-  /** @return the path of the request */
+  /**
+   * @return the path of the request
+   */
   String getPath();
 
-  /** @return true if the request has been aborted, false otherwise */
+  /**
+   * @return true if the request has been aborted, false otherwise
+   */
   boolean isAborted();
 
-  /** @return true if the request does not have body, false otherwise */
+  /**
+   * @return true if the request does not have body, false otherwise
+   */
   boolean isVoidRequest();
 
-  /** @return true if the request does not have response */
+  /**
+   * @return true if the request does not have response
+   */
   boolean isVoidResponse();
 
-  /** @return the url of the request */
+  /**
+   * @return the url of the request
+   */
   String getUrl();
 
-  /** @return The url after matching with using the DynamicServiceRoot */
+  /**
+   * @return The url after matching with using the DynamicServiceRoot
+   */
   String getMatchedUrl();
 
-  /** @return the timeout in milliseconds */
+  /**
+   * @return the timeout in milliseconds
+   */
   int getTimeout();
 
-  /** @return the maximum retries of the request */
+  /**
+   * @return the maximum retries of the request
+   */
   int getMaxRetries();
 
-  /** @return the response type */
+  /**
+   * @return the response type
+   */
   String getResponseType();
 
   /**
@@ -130,9 +178,13 @@ public interface IServerRequest<R, S> {
    */
   String formatDate(Supplier<Date> supplier, String pattern);
 
-  /** @return the request {@link NullQueryParamStrategy} */
+  /**
+   * @return the request {@link NullQueryParamStrategy}
+   */
   NullQueryParamStrategy getNullParamStrategy();
 
-  /** @return true if the request is a multipart form data, false otherwise */
+  /**
+   * @return true if the request is a multipart form data, false otherwise
+   */
   boolean isMultipartForm();
 }

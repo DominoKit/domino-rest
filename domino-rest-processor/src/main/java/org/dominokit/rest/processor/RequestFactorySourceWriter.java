@@ -61,6 +61,12 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
   private final String requestsServiceRoot;
   private Map<String, Integer> methodCount;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param serviceElement the service {@link Element}
+   * @param processingEnvironment the {@link ProcessingEnvironment}
+   */
   public RequestFactorySourceWriter(
       Element serviceElement, ProcessingEnvironment processingEnvironment) {
     super(processingEnvironment);
@@ -73,6 +79,13 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     ObjectMapperProcessor.filer = filer;
   }
 
+  /**
+   * Creates a new instance.
+   *
+   * @param serviceElement the service {@link Element}
+   * @param serviceRoot the service root
+   * @param processingEnvironment the {@link ProcessingEnvironment}
+   */
   public RequestFactorySourceWriter(
       Element serviceElement, String serviceRoot, ProcessingEnvironment processingEnvironment) {
     super(processingEnvironment);
@@ -1277,6 +1290,14 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     return Arrays.stream(accepts).map(s -> "\"" + s + "\"").collect(joining(","));
   }
 
+  /**
+   * Finds an annotation in the element or its enclosing elements.
+   *
+   * @param element the {@link Element} to start search from
+   * @param annotation the annotation class
+   * @param <A> the annotation type
+   * @return the annotation if found, null otherwise
+   */
   public <A extends Annotation> A findAnnotationInEnclosingElements(
       Element element, Class<A> annotation) {
     A result = element.getAnnotation(annotation);

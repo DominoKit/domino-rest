@@ -45,6 +45,12 @@ import org.dominokit.domino.api.shared.extension.ContextAggregator;
  * @see ServerRequest
  */
 public interface RequestInterceptor {
+  /**
+   * Intercepts the request.
+   *
+   * @param request the {@link ServerRequest} to intercept
+   * @param contextWait the {@link ContextWait} to signal completion
+   */
   void interceptRequest(
       ServerRequest request, ContextAggregator.ContextWait<ServerRequest> contextWait);
 }

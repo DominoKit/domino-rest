@@ -81,12 +81,16 @@ public class MultipartForm {
     return this;
   }
 
-  /** @return The text parts */
+  /**
+   * @return The text parts
+   */
   public List<TextMultipart> getTextMultiParts() {
     return textMultiParts;
   }
 
-  /** @return the binary parts */
+  /**
+   * @return the binary parts
+   */
   public List<FileMultipart> getFileMultiParts() {
     return fileMultiParts;
   }
@@ -113,18 +117,30 @@ public class MultipartForm {
       this.fileName = fileName;
     }
 
+    /**
+     * @return the name of the part
+     */
     public String name() {
       return name;
     }
 
+    /**
+     * @return the binary value of the part
+     */
     public byte[] value() {
       return file;
     }
 
+    /**
+     * @return the content type of the part
+     */
     public String contentType() {
       return contentType;
     }
 
+    /**
+     * @return an Optional containing the file name, if present
+     */
     public Optional<String> fileName() {
       return Optional.ofNullable(fileName);
     }
@@ -153,18 +169,30 @@ public class MultipartForm {
       this.fileName = fileName;
     }
 
+    /**
+     * @return the name of the part
+     */
     public String name() {
       return name;
     }
 
+    /**
+     * @return the text value of the part
+     */
     public String value() {
       return valueSupplier.get();
     }
 
+    /**
+     * @return the content type of the part
+     */
     public String contentType() {
       return contentType;
     }
 
+    /**
+     * @return an Optional containing the file name, if present
+     */
     public Optional<String> fileName() {
       return Optional.ofNullable(fileName);
     }

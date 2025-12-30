@@ -27,6 +27,12 @@ public class DefaultRequestAsyncSender extends AbstractRequestAsyncSender {
 
   private final RequestRestSender requestSender;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param requestEventFactory the {@link ServerRequestEventFactory}
+   * @param requestSender the {@link RequestRestSender}
+   */
   public DefaultRequestAsyncSender(
       ServerRequestEventFactory requestEventFactory, RequestRestSender requestSender) {
     super(requestEventFactory);

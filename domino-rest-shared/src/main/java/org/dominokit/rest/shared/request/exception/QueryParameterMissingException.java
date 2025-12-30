@@ -25,6 +25,11 @@ import org.dominokit.rest.shared.request.UrlFormatter;
  */
 public class QueryParameterMissingException extends RuntimeException {
 
+  /**
+   * Creates a new instance.
+   *
+   * @param paramName the name of the missing query parameter
+   */
   public QueryParameterMissingException(String paramName) {
     super("No parameter provided for query parameter [" + paramName + "]");
   }

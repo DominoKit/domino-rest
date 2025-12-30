@@ -23,56 +23,74 @@ import java.util.Map;
 import java.util.Optional;
 import org.dominokit.rest.shared.Response;
 
-/** Simple adapter over JDK HttpResponse<byte[]> to your shared Response. */
+/** Simple adapter over JDK {@code HttpResponse<byte[]>} to your shared Response. */
 public class StandardJavaResponse implements Response {
 
   private final HttpResponse<byte[]> delegate;
   private Object responseBean;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param delegate the {@link HttpResponse} to wrap
+   */
   public StandardJavaResponse(HttpResponse<byte[]> delegate) {
     this.delegate = delegate;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int getStatusCode() {
     return delegate.statusCode();
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getStatusText() {
     // JDK HttpResponse doesn't carry reason phrase; return empty or synthesize
     return "";
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getBodyAsString() {
     return delegate.body() == null ? "" : new String(delegate.body());
   }
 
+  /** {@inheritDoc} */
   @Override
   public byte[] getBodyAsBytes() {
     return delegate.body();
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, List<String>> getHeaders() {
     return delegate.headers().map();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<String> getHeader(String header) {
     return delegate.headers().allValues(header);
   }
 
+  /**
+   * Sets the response bean.
+   *
+   * @param responseBean the response bean
+   */
   public void setResponseBean(Object responseBean) {
     this.responseBean = responseBean;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<Object> getBean() {
     return Optional.ofNullable(responseBean);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void setBean(Object bean) {
     if (nonNull(this.responseBean)) {

@@ -18,6 +18,12 @@ package org.dominokit.rest.shared.request.builder;
 import org.dominokit.rest.shared.request.RequestMeta;
 import org.dominokit.rest.shared.request.ServerRequest;
 
+/**
+ * A generic implementation of a server request.
+ *
+ * @param <R> the request type
+ * @param <S> the response type
+ */
 class GenericRequest<R, S> extends ServerRequest<R, S> {
 
   public GenericRequest(RequestMeta requestMeta, R requestBean) {

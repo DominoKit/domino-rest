@@ -29,6 +29,7 @@ public class ParameterSetter {
    * @param request {@link ServerRequest} the target request for which we add the query parameter
    * @param name String name of the query parameter
    * @param valueSupplier {@link Supplier} for the query parameter value
+   * @param type String type of the parameter (query, path, matrix)
    * @param <T> The generic type of the query parameter value
    */
   public static <T> void setParameter(
@@ -67,6 +68,7 @@ public class ParameterSetter {
    * @param request {@link ServerRequest} the target request for which we add the query parameter
    * @param name String name of the query parameter
    * @param valueSupplier {@link Supplier} for the query parameter value
+   * @param type String type of the parameter (query, path, matrix)
    * @param <T> The generic type of the query parameter value
    */
   public static <T extends Collection<?>> void setCollectionParameter(
@@ -86,6 +88,7 @@ public class ParameterSetter {
    * @param name String name of the query parameter
    * @param valueSupplier a {@link Date} value {@link Supplier}
    * @param pattern String date format pattern
+   * @param type String type of the parameter (query, path, matrix)
    */
   public static void setDateParameter(
       ServerRequest<?, ?> request,
@@ -115,6 +118,7 @@ public class ParameterSetter {
    * @param name String name of the query parameter
    * @param valueSupplier a {@link Date} collection value {@link Supplier}
    * @param pattern String date format pattern
+   * @param type String type of the parameter (query, path, matrix)
    */
   public static void setDateCollectionParameter(
       ServerRequest<?, ?> request,

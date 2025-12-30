@@ -31,12 +31,16 @@ public class DominoRestContext {
     DominoRestContext.config = config;
   }
 
-  /** @return new instance */
+  /**
+   * @return new instance
+   */
   public static DominoRestContext make() {
     return new DominoRestContext();
   }
 
-  /** @return the configurations associated with the context */
+  /**
+   * @return the configurations associated with the context
+   */
   public RestConfig getConfig() {
     return config;
   }

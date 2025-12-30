@@ -28,21 +28,40 @@ public interface Response {
    */
   List<String> getHeader(String header);
 
-  /** @return all response headers */
+  /**
+   * @return all response headers
+   */
   Map<String, List<String>> getHeaders();
 
-  /** @return the status code of the response */
+  /**
+   * @return the status code of the response
+   */
   int getStatusCode();
 
-  /** @return the status of the response as text */
+  /**
+   * @return the status of the response as text
+   */
   String getStatusText();
 
-  /** @return the body of the response as a {@link String} */
+  /**
+   * @return the body of the response as a {@link String}
+   */
   String getBodyAsString();
 
+  /**
+   * @return the body of the response as a byte array
+   */
   byte[] getBodyAsBytes();
 
+  /**
+   * @return the response bean if available
+   */
   Optional<Object> getBean();
 
+  /**
+   * Sets the response bean.
+   *
+   * @param bean the response bean
+   */
   void setBean(Object bean);
 }

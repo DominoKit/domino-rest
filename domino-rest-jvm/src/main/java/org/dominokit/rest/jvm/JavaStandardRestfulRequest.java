@@ -53,6 +53,12 @@ public class JavaStandardRestfulRequest extends BaseRestfulRequest {
   private final AtomicReference<CompletableFuture<HttpResponse<byte[]>>> inFlight =
       new AtomicReference<>();
 
+  /**
+   * Creates a new instance.
+   *
+   * @param uri the request URI
+   * @param method the HTTP method
+   */
   public JavaStandardRestfulRequest(String uri, String method) {
     super(uri, method);
     this.method = method == null ? "GET" : method.toUpperCase(Locale.ROOT);

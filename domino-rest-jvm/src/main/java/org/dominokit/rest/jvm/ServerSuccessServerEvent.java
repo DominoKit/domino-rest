@@ -29,6 +29,12 @@ public class ServerSuccessServerEvent<T> implements Event {
   private final ServerRequest request;
   private final T responseBean;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param request the {@link ServerRequest}
+   * @param responseBean the response bean
+   */
   public ServerSuccessServerEvent(ServerRequest request, T responseBean) {
     this.request = request;
     this.responseBean = responseBean;

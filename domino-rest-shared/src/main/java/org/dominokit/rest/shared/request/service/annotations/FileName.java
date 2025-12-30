@@ -17,11 +17,16 @@ package org.dominokit.rest.shared.request.service.annotations;
 
 import java.lang.annotation.*;
 
+/** Annotation to specify a file name for a request parameter. */
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface FileName {
 
-  /** Defines the file name of the form parameter. */
+  /**
+   * Defines the file name of the form parameter.
+   *
+   * @return the file name
+   */
   String value();
 }

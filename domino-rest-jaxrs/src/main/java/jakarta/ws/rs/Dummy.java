@@ -13,5 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** Dummy package to generate javadocs to qualify for staging rules */
 package jakarta.ws.rs;
+
+/**
+ * Represents a placeholder class for documentation purposes within the jakarta.ws.rs package. This
+ * class does not contain any functional implementation and exists solely for satisfying staging or
+ * deployment-related requirements for generating Javadocs.
+ */
+public class Dummy {}

@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared.request;
 
+/** A class to provide a dynamic service root based on path matching. */
 public class DynamicServiceRoot implements HasPathMatcher {
 
   private final PathMatcher pathMatcher;
@@ -25,25 +26,50 @@ public class DynamicServiceRoot implements HasPathMatcher {
     this.pathMatcher = pathMatcher;
   }
 
+  /**
+   * Checks if the path matches the request.
+   *
+   * @param serviceRoot the {@link ImmutableServerRequest}
+   * @return true if the path matches, false otherwise
+   */
   public boolean isMatchingPath(ImmutableServerRequest<?, ?> serviceRoot) {
     return pathMatcher.isMatch(serviceRoot);
   }
 
+  /**
+   * Called when the path matches the request.
+   *
+   * @param request the {@link ImmutableServerRequest}
+   * @return the service root
+   */
   public String onMatchingPath(ImmutableServerRequest<?, ?> request) {
     String root = hasServiceRoot.onMatch();
     return pathFormatter.format(root, request);
   }
 
+  /**
+   * Creates a new instance with a path matcher.
+   *
+   * @param pathMatcher the {@link PathMatcher}
+   * @return a new instance
+   */
   public static DynamicServiceRoot pathMatcher(PathMatcher pathMatcher) {
     return new DynamicServiceRoot(pathMatcher);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DynamicServiceRoot serviceRoot(HasServiceRoot hasServiceRoot) {
     this.hasServiceRoot = hasServiceRoot;
     return this;
   }
 
+  /**
+   * Sets the path formatter.
+   *
+   * @param pathFormatter the {@link PathFormatter}
+   * @return same instance to support builder pattern
+   */
   public DynamicServiceRoot pathFormatter(PathFormatter pathFormatter) {
     this.pathFormatter = pathFormatter;
     return this;

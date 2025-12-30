@@ -22,6 +22,7 @@ import org.dominokit.rest.shared.regex.DominoMatcher;
 import org.dominokit.rest.shared.regex.RegexEngine;
 import org.dominokit.rest.shared.regex.Replacer;
 
+/** JVM implementation of the {@link RegexEngine}. */
 public class JvmRegexEngine implements RegexEngine {
 
   @Override

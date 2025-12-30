@@ -21,7 +21,9 @@ import elemental2.dom.Location;
 /** This is the default service root which reads it from the browser location */
 public class DefaultServiceRoot {
 
-  /** @return the service root */
+  /**
+   * @return the service root
+   */
   public static String get() {
     Location location = DomGlobal.window.location;
     String protocol = location.protocol;

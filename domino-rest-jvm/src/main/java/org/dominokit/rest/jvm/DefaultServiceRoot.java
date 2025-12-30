@@ -15,8 +15,12 @@
  */
 package org.dominokit.rest.jvm;
 
+/** Default service root configuration for JVM environment. */
 public class DefaultServiceRoot {
 
+  /**
+   * @return the default service root URL
+   */
   public static String get() {
     return "http://localhost:8080/";
   }

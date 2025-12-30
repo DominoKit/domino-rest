@@ -28,9 +28,18 @@ import org.dominokit.rest.shared.request.ServerRequest;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ServerFailedRequestEvent extends ServerFailedRequestGwtEvent implements Event {
 
+  /** The {@link ServerRequest} associated with this event. */
   protected final ServerRequest request;
+
+  /** The failed response bean. */
   private final FailedResponseBean failedResponseBean;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param request the {@link ServerRequest}
+   * @param failedResponseBean the failed response bean
+   */
   ServerFailedRequestEvent(ServerRequest request, FailedResponseBean failedResponseBean) {
     this.request = request;
     this.failedResponseBean = failedResponseBean;

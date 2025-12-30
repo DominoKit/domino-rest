@@ -52,5 +52,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Classifier {
 
+  /**
+   * @return the classifier value
+   */
   String value() default "";
 }

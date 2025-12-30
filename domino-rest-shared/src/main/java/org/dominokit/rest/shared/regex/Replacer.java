@@ -15,6 +15,13 @@
  */
 package org.dominokit.rest.shared.regex;
 
+/** Interface for replacing content during a regular expression replace operation. */
 public interface Replacer {
+  /**
+   * Returns the replacement string for the current match.
+   *
+   * @param m the {@link DominoMatcher} containing the current match state
+   * @return the replacement string
+   */
   String replace(DominoMatcher m);
 }

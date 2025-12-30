@@ -30,6 +30,11 @@ public class SenderSupplier<R, S> implements Supplier<RequestRestSender<R, S>> {
   private RequestRestSender<R, S> sender;
   private final Supplier<RequestRestSender<R, S>> senderFactory;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param senderFactory the {@link Supplier} for creating the sender
+   */
   public SenderSupplier(Supplier<RequestRestSender<R, S>> senderFactory) {
     this.senderFactory = senderFactory;
   }

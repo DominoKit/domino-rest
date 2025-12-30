@@ -59,5 +59,8 @@ import org.dominokit.rest.shared.request.ResponseReader;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Reader {
+  /**
+   * @return the reader class
+   */
   Class<? extends ResponseReader> value();
 }

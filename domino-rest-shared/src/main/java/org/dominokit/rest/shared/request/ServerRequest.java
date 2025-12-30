@@ -108,10 +108,17 @@ public class ServerRequest<R, S> extends BaseRequest
   private boolean multipartForm = false;
   private RequestParametersProvider parametersProvider = new DefaultParametersProvider<R, S>(this);
 
+  /** Default constructor. */
   protected ServerRequest() {
     this.httpMethod = HttpMethod.GET;
   }
 
+  /**
+   * Creates a new instance.
+   *
+   * @param requestMeta the request meta
+   * @param requestBean the request bean
+   */
   protected ServerRequest(RequestMeta requestMeta, R requestBean) {
     this.requestMeta = requestMeta;
     this.requestBean = requestBean;
@@ -156,6 +163,11 @@ public class ServerRequest<R, S> extends BaseRequest
     requestContext.getConfig().getServerRouter().routeRequest(this);
   }
 
+  /**
+   * Sets the HTTP request.
+   *
+   * @param httpRequest the HTTP request
+   */
   public void setHttpRequest(RestfulRequest httpRequest) {
     this.httpRequest = httpRequest;
   }
@@ -187,7 +199,9 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /** @return Optional if the with credentials is supported by this request */
+  /**
+   * @return Optional if the with credentials is supported by this request
+   */
   public Optional<WithCredentialsRequest> getWithCredentialsRequest() {
     return withCredentialsRequest;
   }
@@ -372,17 +386,23 @@ public class ServerRequest<R, S> extends BaseRequest
     return new HashMap<>(fragmentParameters);
   }
 
-  /** @return new map containing all headers defined in the request */
+  /**
+   * @return new map containing all headers defined in the request
+   */
   public Map<String, String> headers() {
     return new HashMap<>(headers);
   }
 
-  /** @return new map containing all query parameters defined in the request */
+  /**
+   * @return new map containing all query parameters defined in the request
+   */
   public Map<String, List<String>> queryParameters() {
     return new HashMap<>(queryParameters);
   }
 
-  /** @return new map containing all path parameters defined in the request */
+  /**
+   * @return new map containing all path parameters defined in the request
+   */
   public Map<String, String> pathParameters() {
     return new HashMap<>(pathParameters);
   }
@@ -484,7 +504,9 @@ public class ServerRequest<R, S> extends BaseRequest
     return metaParameters.get(key);
   }
 
-  /** @return a copy of the request current meta parameters */
+  /**
+   * @return a copy of the request current meta parameters
+   */
   public Map<String, MetaParam> getMetaParameters() {
     return new HashMap<>(metaParameters);
   }
@@ -599,12 +621,16 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /** @return the request http method */
+  /**
+   * @return the request http method
+   */
   public String getHttpMethod() {
     return httpMethod;
   }
 
-  /** @return the accepted succees codes */
+  /**
+   * @return the accepted succees codes
+   */
   public Integer[] getSuccessCodes() {
     return successCodes;
   }
@@ -620,7 +646,9 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /** @return the custom service root for this request. */
+  /**
+   * @return the custom service root for this request.
+   */
   public String getServiceRoot() {
     return serviceRoot;
   }
@@ -636,7 +664,9 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /** @return the writer class to be used for serializing the request body */
+  /**
+   * @return the writer class to be used for serializing the request body
+   */
   public RequestWriter<R> getRequestWriter() {
     if (nonNull(requestWriter)) {
       return requestWriter;
@@ -661,7 +691,9 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /** @return the response reader associated with this request */
+  /**
+   * @return the response reader associated with this request
+   */
   public ResponseReader<S> getResponseReader() {
     if (nonNull(responseReader)) {
       return responseReader;
@@ -687,7 +719,9 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /** @return the path of the request */
+  /**
+   * @return the path of the request
+   */
   public String getPath() {
     return path;
   }
@@ -716,21 +750,28 @@ public class ServerRequest<R, S> extends BaseRequest
     return state.equals(aborted);
   }
 
-  /** @return true if the request does not have body, false otherwise */
+  /**
+   * @return true if the request does not have body, false otherwise
+   */
   public boolean isVoidRequest() {
     return requestBean instanceof VoidRequest;
   }
 
-  /** @return true if the request does not have response */
+  /**
+   * @return true if the request does not have response
+   */
   public boolean isVoidResponse() {
     return voidResponse;
   }
 
+  /** Marks the request as having a void response. */
   protected void markAsVoidResponse() {
     this.voidResponse = true;
   }
 
-  /** @return the url of the request */
+  /**
+   * @return the url of the request
+   */
   public String getUrl() {
     return this.url;
   }
@@ -740,7 +781,9 @@ public class ServerRequest<R, S> extends BaseRequest
     return this.matchedUrl;
   }
 
-  /** @return the timeout in milliseconds */
+  /**
+   * @return the timeout in milliseconds
+   */
   public int getTimeout() {
     return timeout;
   }
@@ -754,7 +797,9 @@ public class ServerRequest<R, S> extends BaseRequest
     this.timeout = timeout;
   }
 
-  /** @return the maximum retries of the request */
+  /**
+   * @return the maximum retries of the request
+   */
   public int getMaxRetries() {
     return maxRetries;
   }
@@ -779,7 +824,9 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /** @return the response type */
+  /**
+   * @return the response type
+   */
   public String getResponseType() {
     return responseType;
   }
@@ -838,30 +885,43 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /** @return true if the request is a multipart form data, false otherwise */
+  /**
+   * @return true if the request is a multipart form data, false otherwise
+   */
   public boolean isMultipartForm() {
     return multipartForm;
   }
 
-  /** @param multipartForm true to mark the request as a multipart form data */
+  /**
+   * @param multipartForm true to mark the request as a multipart form data
+   */
   public void setMultipartForm(boolean multipartForm) {
     this.multipartForm = multipartForm;
   }
 
-  /** A function that get called right before sending the request to the server */
+  /** Handler for before send events. */
   @FunctionalInterface
   public interface BeforeSendHandler {
+    /** Called before sending the request. */
     void onBeforeSend();
   }
 
-  /** A config class to configure the credential flag for the request */
+  /** Represents a request with credentials. */
   public static class WithCredentialsRequest {
     private final boolean withCredentials;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param withCredentials true if with credentials is enabled, false otherwise
+     */
     public WithCredentialsRequest(boolean withCredentials) {
       this.withCredentials = withCredentials;
     }
 
+    /**
+     * @return true if with credentials is enabled, false otherwise
+     */
     public boolean isWithCredentials() {
       return withCredentials;
     }

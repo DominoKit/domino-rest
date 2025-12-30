@@ -76,6 +76,7 @@ public interface NoFactoryAnnotationSampleService {
   @GET
   @Path("someService/{id}")
   int[][] getById8(int id);
+
   // custom reder/writer test
 
   @GET

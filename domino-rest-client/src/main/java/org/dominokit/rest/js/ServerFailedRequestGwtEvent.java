@@ -21,6 +21,7 @@ import org.gwtproject.event.shared.Event;
 /** An {@link org.gwtproject.event.shared.EventBus} failed event */
 public abstract class ServerFailedRequestGwtEvent extends Event<EventProcessor> {
 
+  /** The event type for server failed request events. */
   protected static final Event.Type<EventProcessor> SERVER_FAILED_REQUEST_EVENT_TYPE =
       new Event.Type<>();
 

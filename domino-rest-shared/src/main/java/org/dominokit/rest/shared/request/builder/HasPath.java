@@ -15,6 +15,18 @@
  */
 package org.dominokit.rest.shared.request.builder;
 
+/**
+ * Interface for specifying the path of a request.
+ *
+ * @param <R> the request type
+ * @param <S> the response type
+ */
 public interface HasPath<R, S> {
-  Consumes<R, S> withPath(String consumes);
+  /**
+   * Specifies the request path.
+   *
+   * @param path the path
+   * @return the next builder step
+   */
+  Consumes<R, S> withPath(String path);
 }

@@ -31,10 +31,18 @@ public class InterceptorRequestWait extends ContextAggregator.ContextWait<Server
 
   private final RequestInterceptor interceptor;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param interceptor the {@link RequestInterceptor}
+   */
   public InterceptorRequestWait(RequestInterceptor interceptor) {
     this.interceptor = interceptor;
   }
 
+  /**
+   * @return the {@link RequestInterceptor}
+   */
   public RequestInterceptor getInterceptor() {
     return interceptor;
   }

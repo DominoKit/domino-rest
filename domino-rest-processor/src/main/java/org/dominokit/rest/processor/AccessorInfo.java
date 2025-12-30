@@ -24,16 +24,28 @@ public class AccessorInfo {
   private final Optional<ExecutableElement> method;
   private String name;
 
+  /**
+   * Constructs an AccessorInfo from an {@link ExecutableElement}.
+   *
+   * @param method the method element
+   */
   public AccessorInfo(ExecutableElement method) {
     this.method = Optional.of(method);
   }
 
+  /**
+   * Constructs an AccessorInfo from a name.
+   *
+   * @param name the name of the accessor
+   */
   public AccessorInfo(String name) {
     this.name = name;
     this.method = Optional.empty();
   }
 
-  /** @return the name of the method */
+  /**
+   * @return the name of the method
+   */
   public String getName() {
     if (method.isPresent()) {
       return method.get().getSimpleName().toString();
@@ -41,7 +53,9 @@ public class AccessorInfo {
     return name;
   }
 
-  /** @return the method element */
+  /**
+   * @return the method element
+   */
   public Optional<ExecutableElement> getMethod() {
     return method;
   }

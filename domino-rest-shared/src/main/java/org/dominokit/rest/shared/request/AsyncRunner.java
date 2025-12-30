@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 @FunctionalInterface
 public interface AsyncRunner {
 
+  /** The logger for {@link AsyncRunner}. */
   Logger LOGGER = Logger.getLogger(AsyncRunner.class.getName());
 
   /**
@@ -34,8 +35,14 @@ public interface AsyncRunner {
    * wrong
    */
   interface AsyncTask {
+    /** Called when the async task completes successfully. */
     void onSuccess();
 
+    /**
+     * Called when the async task fails.
+     *
+     * @param error the error that occurred
+     */
     default void onFailed(Throwable error) {
       LOGGER.log(Level.SEVERE, "Failed to run async task : ", error);
     }

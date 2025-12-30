@@ -26,6 +26,11 @@ public class ServerRouter implements RequestRouter<ServerRequest> {
 
   private final RequestAsyncSender requestAsyncRunner;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param requestAsyncRunner the {@link RequestAsyncSender} to use
+   */
   public ServerRouter(RequestAsyncSender requestAsyncRunner) {
     this.requestAsyncRunner = requestAsyncRunner;
   }

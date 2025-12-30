@@ -20,5 +20,8 @@ package org.dominokit.rest.shared.request.service.annotations;
  * change the format as needed.
  */
 public @interface DateFormat {
+  /**
+   * @return the date format value
+   */
   String value() default "dd-MM-yyyy";
 }

@@ -23,6 +23,12 @@ import org.dominokit.rest.shared.request.RequestWriter;
 import org.dominokit.rest.shared.request.ResponseReader;
 import org.dominokit.rest.shared.request.ServerRequest;
 
+/**
+ * A builder for creating and configuring REST requests.
+ *
+ * @param <R> the request type
+ * @param <S> the response type
+ */
 public class RestRequestBuilder<R, S>
     implements HasMethod<R, S>, HasPath<R, S>, Consumes<R, S>, Produces<R, S> {
 
@@ -37,6 +43,16 @@ public class RestRequestBuilder<R, S>
   private ResponseReader<S> responseReader = response -> null;
   private RequestWriter<R> requestWriter = request -> null;
 
+  /**
+   * Creates a new instance of {@link RestRequestBuilder}.
+   *
+   * @param requestClass the request class
+   * @param responseClass the response class
+   * @param key a key to identify the request
+   * @param <R> the request type
+   * @param <S> the response type
+   * @return the builder instance
+   */
   public static <R, S> HasMethod<R, S> of(
       Class<R> requestClass, Class<S> responseClass, String key) {
     RestRequestBuilder<R, S> builder = new RestRequestBuilder<>();
@@ -46,49 +62,82 @@ public class RestRequestBuilder<R, S>
     return builder;
   }
 
+  /** {@inheritDoc} */
   @Override
   public HasPath<R, S> withMethod(String method) {
     this.method = method;
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Consumes<R, S> withPath(String path) {
     this.path = path;
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Produces<R, S> accepts(String consumes) {
     this.consumes = consumes;
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public RestRequestBuilder<R, S> produces(String produces) {
     this.produce = produces;
     return this;
   }
 
+  /**
+   * Sets the service root.
+   *
+   * @param serviceRoot the service root
+   * @return same instance to support builder pattern
+   */
   public RestRequestBuilder<R, S> withServiceRoot(String serviceRoot) {
     this.serviceRoot = serviceRoot;
     return this;
   }
 
+  /**
+   * Sets the response reader.
+   *
+   * @param responseReader the response reader
+   * @return same instance to support builder pattern
+   */
   public RestRequestBuilder<R, S> withResponseReader(ResponseReader<S> responseReader) {
     this.responseReader = responseReader;
     return this;
   }
 
+  /**
+   * Sets the request writer.
+   *
+   * @param requestWriter the request writer
+   * @return same instance to support builder pattern
+   */
   public RestRequestBuilder<R, S> withRequestWriter(RequestWriter<R> requestWriter) {
     this.requestWriter = requestWriter;
     return this;
   }
 
+  /**
+   * Builds the request.
+   *
+   * @return the created {@link ServerRequest}
+   */
   public ServerRequest<R, S> build() {
     return build(null);
   }
 
+  /**
+   * Builds the request with a request bean.
+   *
+   * @param requestBean the request bean
+   * @return the created {@link ServerRequest}
+   */
   public ServerRequest<R, S> build(R requestBean) {
     ServerRequest<R, S> request =
         new GenericRequest<>(

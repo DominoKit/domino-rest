@@ -20,38 +20,73 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+/** Represents a metadata parameter for a request. */
 public class MetaParam {
   private final String name;
   private final String value;
   private final Set<MetaParam> metaParams = new HashSet<>();
 
+  /**
+   * Creates a new MetaParam with the specified name and value.
+   *
+   * @param name the name of the meta parameter
+   * @param value the value of the meta parameter
+   * @return a new MetaParam instance
+   */
   public static MetaParam of(String name, String value) {
     return new MetaParam(name, value);
   }
 
+  /**
+   * Constructs a new MetaParam with the specified name and value.
+   *
+   * @param name the name of the meta parameter
+   * @param value the value of the meta parameter
+   */
   public MetaParam(String name, String value) {
     this.name = name;
     this.value = value;
   }
 
+  /**
+   * @return the name of the meta parameter
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * @return the value of the meta parameter
+   */
   public String getValue() {
     return value;
   }
 
+  /**
+   * Adds a nested meta parameter.
+   *
+   * @param metaParam the meta parameter to add
+   * @return this instance for chaining
+   */
   public MetaParam addMetaParam(MetaParam metaParam) {
     this.metaParams.add(metaParam);
     return this;
   }
 
+  /**
+   * Adds a collection of nested meta parameters.
+   *
+   * @param metaParams the collection of meta parameters to add
+   * @return this instance for chaining
+   */
   public MetaParam addMetaParams(Collection<MetaParam> metaParams) {
     this.metaParams.addAll(metaParams);
     return this;
   }
 
+  /**
+   * @return a set of nested meta parameters
+   */
   public Set<MetaParam> getMetaParams() {
     return new HashSet<>(metaParams);
   }
