@@ -366,6 +366,11 @@
                         <centralSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</centralSnapshotsUrl>
                         <publishingServerId>central</publishingServerId>
                         <autoPublish>false</autoPublish>
+                        <excludeArtifacts>
+                            <excludeArtifact>domino-rest-client-test</excludeArtifact>
+                            <excludeArtifact>domino-rest-test</excludeArtifact>
+                            <excludeArtifact>domino-rest-test-java17</excludeArtifact>
+                        </excludeArtifacts>
                     </configuration>
                 </plugin>
                 <plugin>
