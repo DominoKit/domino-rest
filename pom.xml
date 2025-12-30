@@ -61,7 +61,7 @@
 
     <properties>
         <snapshot.version>HEAD-SNAPSHOT</snapshot.version>
-        <next.release.version>2.0.1</next.release.version>
+        <next.release.version>2.0.0</next.release.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -366,6 +366,11 @@
                         <centralSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</centralSnapshotsUrl>
                         <publishingServerId>central</publishingServerId>
                         <autoPublish>false</autoPublish>
+                        <excludeArtifacts>
+                            <excludeArtifact>domino-rest-client-test</excludeArtifact>
+                            <excludeArtifact>domino-rest-test</excludeArtifact>
+                            <excludeArtifact>domino-rest-test-java17</excludeArtifact>
+                        </excludeArtifacts>
                     </configuration>
                 </plugin>
                 <plugin>
