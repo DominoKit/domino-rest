@@ -24,11 +24,11 @@ import jakarta.ws.rs.core.Response;
 import org.dominokit.rest.shared.request.service.annotations.RequestFactory;
 
 @RequestFactory
-@Path("test")
-public interface JakartaResponseService {
+@Path("/library")
+public interface GenericResponseResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  Response getResponse();
+  Response ready();
 }

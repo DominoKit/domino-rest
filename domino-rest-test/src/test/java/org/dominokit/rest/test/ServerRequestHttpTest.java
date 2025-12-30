@@ -60,6 +60,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * End-to-end tests for ServerRequest using a real in-JVM HTTP server and the JVM DominoRestConfig
@@ -68,6 +70,8 @@ import org.junit.jupiter.api.TestInstance;
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServerRequestHttpTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServerRequestHttpTest.class);
 
   private HttpServer server;
   private int port;
