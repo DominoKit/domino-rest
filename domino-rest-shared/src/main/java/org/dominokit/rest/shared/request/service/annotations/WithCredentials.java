@@ -27,5 +27,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface WithCredentials {
+  /**
+   * @return true if credentials should be used, false otherwise
+   */
   boolean value() default true;
 }

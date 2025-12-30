@@ -23,8 +23,16 @@ package org.dominokit.rest.shared;
 @FunctionalInterface
 public interface EventsBus<T> {
 
+  /**
+   * Represents an event on the bus.
+   *
+   * @param <T> the event type
+   */
   @FunctionalInterface
   interface RequestEvent<T> {
+    /**
+     * @return the event
+     */
     T asEvent();
   }
 

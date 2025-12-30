@@ -35,7 +35,7 @@ public class TestResponse {
 
   public static TestResponse make() {
     return new TestResponse();
-  };
+  }
 
   public Map<String, String> getHeaders() {
     return headers;

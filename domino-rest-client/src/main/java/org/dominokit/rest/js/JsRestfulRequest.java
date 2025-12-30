@@ -37,11 +37,22 @@ import org.gwtproject.timer.client.Timer;
 /** JS implementation for {@link RestfulRequest} that uses {@link XMLHttpRequest} */
 public class JsRestfulRequest extends BaseRestfulRequest {
 
+  /** Content-Type header name. */
   public static final String CONTENT_TYPE = "Content-Type";
+
+  /** PDF media type. */
   public static final String APPLICATION_PDF = "application/pdf";
+
+  /** The {@link XMLHttpRequest} instance. */
   private final XMLHttpRequest request;
+
+  /** The map of parameters. */
   private final Map<String, List<String>> params = new LinkedHashMap<>();
+
+  /** The map of headers. */
   private final Map<String, String> headers = new LinkedHashMap<>();
+
+  /** The timer for handling timeouts. */
   private final Timer timer =
       new Timer() {
         @Override
@@ -50,6 +61,12 @@ public class JsRestfulRequest extends BaseRestfulRequest {
         }
       };
 
+  /**
+   * Creates a new instance.
+   *
+   * @param uri the request URI
+   * @param method the HTTP method
+   */
   public JsRestfulRequest(String uri, String method) {
     super(uri, method);
     request = new XMLHttpRequest();

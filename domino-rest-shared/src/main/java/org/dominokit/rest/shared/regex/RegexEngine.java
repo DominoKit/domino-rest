@@ -17,8 +17,21 @@ package org.dominokit.rest.shared.regex;
 
 /** Minimal matcher API we need across JVM/Browser. */
 public interface RegexEngine {
+  /**
+   * Compiles the given pattern.
+   *
+   * @param pattern the regular expression pattern
+   * @return a {@link DominoCompiledPattern}
+   */
   DominoCompiledPattern compile(String pattern); // no flags
 
+  /**
+   * Compiles the given pattern with flags.
+   *
+   * @param pattern the regular expression pattern
+   * @param flags the regular expression flags (e.g. "gim")
+   * @return a {@link DominoCompiledPattern}
+   */
   DominoCompiledPattern compile(String pattern, String flags); // e.g. "gim" (JS-style flags)
 
   /**

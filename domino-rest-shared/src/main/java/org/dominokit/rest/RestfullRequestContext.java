@@ -20,6 +20,9 @@ public class RestfullRequestContext {
 
   private static RestfulRequestFactory factory;
 
+  /**
+   * @return the {@link RestfulRequestFactory}
+   */
   public static RestfulRequestFactory getFactory() {
     return factory;
   }

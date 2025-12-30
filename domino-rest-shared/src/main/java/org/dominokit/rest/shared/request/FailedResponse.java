@@ -20,11 +20,26 @@ import java.util.Map;
 /** A throwable represents the failed response */
 public class FailedResponse extends Throwable {
 
+  /** The HTTP status code. */
   private final int statusCode;
+
+  /** The response status text. */
   private final String responseText;
+
+  /** The response body as string. */
   private final String bodyAsString;
+
+  /** The response headers. */
   private final Map<String, String> headers;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param statusCode the status code
+   * @param responseText the response text
+   * @param bodyAsString the response body as string
+   * @param headers the response headers
+   */
   public FailedResponse(
       int statusCode, String responseText, String bodyAsString, Map<String, String> headers) {
     this.statusCode = statusCode;
@@ -33,22 +48,30 @@ public class FailedResponse extends Throwable {
     this.headers = headers;
   }
 
-  /** @return the status code of the response */
+  /**
+   * @return the status code of the response
+   */
   public int getStatusCode() {
     return statusCode;
   }
 
-  /** @return the response text */
+  /**
+   * @return the response text
+   */
   public String getResponseText() {
     return responseText;
   }
 
-  /** @return the body as a string */
+  /**
+   * @return the body as a string
+   */
   public String getBodyAsString() {
     return bodyAsString;
   }
 
-  /** @return the response headers */
+  /**
+   * @return the response headers
+   */
   public Map<String, String> getHeaders() {
     return headers;
   }

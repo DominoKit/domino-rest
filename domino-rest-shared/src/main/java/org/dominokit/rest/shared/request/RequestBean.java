@@ -23,5 +23,6 @@ import java.io.Serializable;
  * @see VoidRequest
  */
 public interface RequestBean extends Serializable {
+  /** A constant for void requests. */
   VoidRequest VOID_REQUEST = new VoidRequest();
 }

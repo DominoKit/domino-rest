@@ -91,7 +91,9 @@ public interface Request {
    */
   void applyState(RequestStateContext context);
 
-  /** @return the meta associated with the request */
+  /**
+   * @return the meta associated with the request
+   */
   default RequestMeta getMeta() {
     return null;
   }
@@ -99,7 +101,9 @@ public interface Request {
   /** Abort the request */
   default void abort() {}
 
-  /** @return true if the request was aborted, false otherwise */
+  /**
+   * @return true if the request was aborted, false otherwise
+   */
   default boolean isAborted() {
     return false;
   }

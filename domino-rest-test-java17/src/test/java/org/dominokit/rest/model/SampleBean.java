@@ -15,5 +15,4 @@
  */
 package org.dominokit.rest.model;
 
-public record SampleBean(int id, String name) {
-}
+public record SampleBean(int id, String name) {}

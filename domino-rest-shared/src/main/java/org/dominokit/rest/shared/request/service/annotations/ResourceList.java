@@ -33,8 +33,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PACKAGE)
 public @interface ResourceList {
-
+  /**
+   * @return the list of resources
+   */
   Class<?>[] value() default {};
 
+  /**
+   * @return the service root
+   */
   String serviceRoot() default "";
 }

@@ -17,7 +17,10 @@ package org.dominokit.rest.shared.request;
 
 /** Enum representing the validation mode for regular expressions. */
 public enum RegexValidationMode {
+  /** Ignore validation errors. */
   IGNORE,
+  /** Log a warning on validation errors. */
   WARN,
+  /** Fail the request on validation errors. */
   FAIL;
 }

@@ -89,7 +89,9 @@ public class DominoRestConfig implements RestConfig {
     return DominoRestConfig.getInstance();
   }
 
-  /** @return new instance */
+  /**
+   * @return new instance
+   */
   public static DominoRestConfig getInstance() {
     return new DominoRestConfig();
   }

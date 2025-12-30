@@ -34,5 +34,8 @@ import org.dominokit.rest.shared.request.Success;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface SuccessCodes {
+  /**
+   * @return the array of success HTTP status codes
+   */
   int[] value() default {200, 201, 202, 203, 204};
 }

@@ -31,13 +31,19 @@ public interface RestConfig {
    */
   RestConfig setDefaultResourceRootPath(String rootPath);
 
-  /** @return the router configured */
+  /**
+   * @return the router configured
+   */
   RequestRouter<ServerRequest> getServerRouter();
 
-  /** @return the default service root */
+  /**
+   * @return the default service root
+   */
   String getDefaultServiceRoot();
 
-  /** @return the default date format for JSON date fields */
+  /**
+   * @return the default date format for JSON date fields
+   */
   String getDefaultJsonDateFormat();
 
   /**
@@ -121,7 +127,9 @@ public interface RestConfig {
    */
   List<ResponseInterceptor> getResponseInterceptors();
 
-  /** @return the default resource root configured */
+  /**
+   * @return the default resource root configured
+   */
   String getDefaultResourceRootPath();
 
   /**
@@ -156,7 +164,9 @@ public interface RestConfig {
    */
   RestConfig setDateParamFormatter(DateParamFormatter formatter);
 
-  /** @return the date parameter formatter configured */
+  /**
+   * @return the date parameter formatter configured
+   */
   DateParamFormatter getDateParamFormatter();
 
   /**
@@ -176,16 +186,24 @@ public interface RestConfig {
    */
   RestConfig setNullQueryParamStrategy(NullQueryParamStrategy strategy);
 
-  /** @return the {@link RegexEngine} */
+  /**
+   * @return the {@link RegexEngine}
+   */
   RegexEngine getRegexEngine();
 
-  /** @return a map of global path parameters */
+  /**
+   * @return a map of global path parameters
+   */
   Map<String, String> getGlobalPathParameters();
 
-  /** @return a map of global header parameters */
+  /**
+   * @return a map of global header parameters
+   */
   Map<String, String> getGlobalHeaderParameters();
 
-  /** @return a map of global query parameters */
+  /**
+   * @return a map of global query parameters
+   */
   Map<String, List<String>> getGlobalQueryParameters();
 
   /**
@@ -264,7 +282,9 @@ public interface RestConfig {
    */
   RestConfig setRegexValidationMode(RegexValidationMode regexValidationMode);
 
-  /** @return the {@link RegexValidationMode} */
+  /**
+   * @return the {@link RegexValidationMode}
+   */
   RegexValidationMode getRegexValidationMode();
 
   /** Formatter to format the date parameter based on a pattern */

@@ -29,6 +29,7 @@ public abstract class BaseRequest implements Request {
   protected RequestState state;
 
   private boolean skipFailHandler = false;
+
   /** The context for the REST request. */
   protected final DominoRestContext requestContext = DominoRestContext.make();
 
@@ -46,6 +47,7 @@ public abstract class BaseRequest implements Request {
 
   /** Handler to be called when the request is completed. */
   protected CompleteHandler completeHandler = () -> {};
+
   /** Handler to be called after the request is completed. */
   protected CompleteHandler afterCompleteHandler = () -> {};
 

@@ -18,6 +18,11 @@ package org.dominokit.rest.shared;
 /** A processor that process an event */
 public class EventProcessor {
 
+  /**
+   * Processes the given event.
+   *
+   * @param event the {@link Event} to process
+   */
   public void process(Event event) {
     event.process();
   }

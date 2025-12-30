@@ -36,6 +36,7 @@ public class RequestFactoryProcessor extends BaseProcessor {
 
   private final Set<String> supportedAnnotations = new HashSet<>();
 
+  /** Default constructor. */
   public RequestFactoryProcessor() {
     supportedAnnotations.add(RequestFactory.class.getCanonicalName());
     supportedAnnotations.add(ResourceList.class.getCanonicalName());

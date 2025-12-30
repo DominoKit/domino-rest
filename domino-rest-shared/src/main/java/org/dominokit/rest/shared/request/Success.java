@@ -22,5 +22,10 @@ package org.dominokit.rest.shared.request;
  */
 @FunctionalInterface
 public interface Success<S> {
+  /**
+   * Called when the request completes successfully.
+   *
+   * @param response the response object
+   */
   void onSuccess(S response);
 }

@@ -21,6 +21,13 @@ package org.dominokit.rest.shared.request;
  * @see ServerRequest
  */
 public class NoResponseReaderFoundForRequest extends RuntimeException {
+  /**
+   * Creates a new instance.
+   *
+   * @param request the {@link ServerRequest}
+   * @param <R> the request type
+   * @param <S> the response type
+   */
   public <R, S> NoResponseReaderFoundForRequest(ServerRequest<R, S> request) {
     super(request.getMeta().toString());
   }

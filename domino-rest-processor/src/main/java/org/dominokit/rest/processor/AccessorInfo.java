@@ -43,7 +43,9 @@ public class AccessorInfo {
     this.method = Optional.empty();
   }
 
-  /** @return the name of the method */
+  /**
+   * @return the name of the method
+   */
   public String getName() {
     if (method.isPresent()) {
       return method.get().getSimpleName().toString();
@@ -51,7 +53,9 @@ public class AccessorInfo {
     return name;
   }
 
-  /** @return the method element */
+  /**
+   * @return the method element
+   */
   public Optional<ExecutableElement> getMethod() {
     return method;
   }

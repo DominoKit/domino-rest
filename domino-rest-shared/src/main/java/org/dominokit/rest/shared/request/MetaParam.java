@@ -48,12 +48,16 @@ public class MetaParam {
     this.value = value;
   }
 
-  /** @return the name of the meta parameter */
+  /**
+   * @return the name of the meta parameter
+   */
   public String getName() {
     return name;
   }
 
-  /** @return the value of the meta parameter */
+  /**
+   * @return the value of the meta parameter
+   */
   public String getValue() {
     return value;
   }
@@ -80,7 +84,9 @@ public class MetaParam {
     return this;
   }
 
-  /** @return a set of nested meta parameters */
+  /**
+   * @return a set of nested meta parameters
+   */
   public Set<MetaParam> getMetaParams() {
     return new HashSet<>(metaParams);
   }

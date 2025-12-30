@@ -36,6 +36,11 @@ public abstract class AbstractRequestAsyncSender implements RequestAsyncSender {
   private static final Logger LOGGER = Logger.getLogger(RequestAsyncSender.class.getName());
   private final ServerRequestEventFactory requestEventFactory;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param requestEventFactory the {@link ServerRequestEventFactory}
+   */
   public AbstractRequestAsyncSender(ServerRequestEventFactory requestEventFactory) {
     this.requestEventFactory = requestEventFactory;
   }
@@ -65,6 +70,12 @@ public abstract class AbstractRequestAsyncSender implements RequestAsyncSender {
     }
   }
 
+  /**
+   * Sends the request.
+   *
+   * @param request the {@link ServerRequest}
+   * @param requestEventFactory the {@link ServerRequestEventFactory}
+   */
   protected abstract void sendRequest(
       ServerRequest request, ServerRequestEventFactory requestEventFactory);
 }

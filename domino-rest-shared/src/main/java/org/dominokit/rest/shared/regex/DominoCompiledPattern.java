@@ -17,9 +17,21 @@ package org.dominokit.rest.shared.regex;
 
 /** Interface for a compiled regular expression pattern. */
 public interface DominoCompiledPattern {
+  /**
+   * Creates a matcher for the given input.
+   *
+   * @param input the input string to match against
+   * @return a {@link DominoMatcher}
+   */
   DominoMatcher matcher(String input);
 
+  /**
+   * @return the original pattern text
+   */
   String pattern(); // original pattern text
 
+  /**
+   * @return the flag string like "gim" (empty if none)
+   */
   String flags(); // flag string like "gim" (empty if none)
 }

@@ -30,9 +30,18 @@ import org.dominokit.rest.shared.request.ServerRequest;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ServerSuccessRequestEvent<T> extends ServerSuccessRequestGwtEvent implements Event {
 
+  /** The {@link ServerRequest} associated with this event. */
   protected final ServerRequest request;
+
+  /** The response bean received from the server. */
   private final T responseBean;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param request the {@link ServerRequest}
+   * @param responseBean the response bean
+   */
   public ServerSuccessRequestEvent(ServerRequest request, T responseBean) {
     this.request = request;
     this.responseBean = responseBean;

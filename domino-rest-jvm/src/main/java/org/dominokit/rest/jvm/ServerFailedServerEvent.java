@@ -27,6 +27,12 @@ public class ServerFailedServerEvent implements Event {
   private final ServerRequest request;
   private final FailedResponseBean failedResponseBean;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param request the {@link ServerRequest}
+   * @param failedResponseBean the failed response bean
+   */
   public ServerFailedServerEvent(ServerRequest request, FailedResponseBean failedResponseBean) {
     this.request = request;
     this.failedResponseBean = failedResponseBean;

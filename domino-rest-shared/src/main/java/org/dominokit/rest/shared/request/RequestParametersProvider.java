@@ -21,32 +21,44 @@ import java.util.Map;
 
 /** An interface for providing various parameters associated with a request. */
 public interface RequestParametersProvider {
-  /** @return a map of request headers */
+  /**
+   * @return a map of request headers
+   */
   default Map<String, String> getHeaders() {
     return new HashMap<>();
   }
 
-  /** @return a map of query parameters */
+  /**
+   * @return a map of query parameters
+   */
   default Map<String, List<String>> getQueryParameters() {
     return new HashMap<>();
   }
 
-  /** @return a map of path parameters */
+  /**
+   * @return a map of path parameters
+   */
   default Map<String, String> getPathParameters() {
     return new HashMap<>();
   }
 
-  /** @return a map of matrix parameters */
+  /**
+   * @return a map of matrix parameters
+   */
   default Map<String, List<String>> getMatrixParameters() {
     return new HashMap<>();
   }
 
-  /** @return a map of fragment parameters */
+  /**
+   * @return a map of fragment parameters
+   */
   default Map<String, String> getFragmentParameters() {
     return new HashMap<>();
   }
 
-  /** @return a map of meta parameters */
+  /**
+   * @return a map of meta parameters
+   */
   default Map<String, MetaParam> getMetaParameters() {
     return new HashMap<>();
   }

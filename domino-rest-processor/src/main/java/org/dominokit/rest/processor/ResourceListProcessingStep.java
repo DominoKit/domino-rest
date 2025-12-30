@@ -32,12 +32,21 @@ import org.dominokit.rest.shared.request.service.annotations.ResourceList;
  */
 public class ResourceListProcessingStep extends AbstractProcessingStep {
 
+  /**
+   * Creates a new instance.
+   *
+   * @param processingEnv the {@link ProcessingEnvironment}
+   */
   public ResourceListProcessingStep(ProcessingEnvironment processingEnv) {
     super(processingEnv);
   }
 
+  /** A builder for {@link ResourceListProcessingStep}. */
   public static class Builder extends StepBuilder<ResourceListProcessingStep> {
 
+    /**
+     * @return a new {@link ResourceListProcessingStep} instance
+     */
     public ResourceListProcessingStep build() {
       return new ResourceListProcessingStep(processingEnv);
     }

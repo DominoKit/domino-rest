@@ -27,11 +27,17 @@ import org.slf4j.LoggerFactory;
 public class DominoSimpleEventsBus implements EventsBus<Event<EventProcessor>> {
   private static final Logger LOGGER = LoggerFactory.getLogger(DominoSimpleEventsBus.class);
 
+  /** The singleton instance of the event bus. */
   public static final EventsBus INSTANCE = new DominoSimpleEventsBus(new EventProcessor());
 
   private final EventBus simpleGwtEventsBus;
   private final EventProcessor eventProcessor;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param eventProcessor the {@link EventProcessor} to use
+   */
   public DominoSimpleEventsBus(EventProcessor eventProcessor) {
     this.simpleGwtEventsBus = new SimpleEventBus();
     this.eventProcessor = eventProcessor;

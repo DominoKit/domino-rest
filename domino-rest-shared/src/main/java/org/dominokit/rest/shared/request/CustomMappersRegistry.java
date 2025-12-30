@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 /** A registry to register custom readers and writers for the requests */
 public class CustomMappersRegistry {
 
+  /** The singleton instance of the registry. */
   public static final CustomMappersRegistry INSTANCE = new CustomMappersRegistry();
 
   private static final List<RequestWriterMatcher> writerMatchers = new ArrayList<>();

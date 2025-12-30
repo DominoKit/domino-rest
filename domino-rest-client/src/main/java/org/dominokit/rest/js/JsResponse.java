@@ -32,7 +32,10 @@ import org.dominokit.rest.shared.Response;
 /** JS implementation for the {@link Response} */
 public class JsResponse implements Response {
 
+  /** The {@link XMLHttpRequest} instance. */
   private final XMLHttpRequest request;
+
+  /** The response bean. */
   private Object responseBean;
 
   JsResponse(XMLHttpRequest request) {
@@ -86,7 +89,9 @@ public class JsResponse implements Response {
     return Js.cast(request.response);
   }
 
-  /** @return the {@code XMLHttpRequest} associated with this response. */
+  /**
+   * @return the {@code XMLHttpRequest} associated with this response.
+   */
   public XMLHttpRequest getRequest() {
     return request;
   }
@@ -96,6 +101,12 @@ public class JsResponse implements Response {
     return toByteArray(getResponseArrayBuffer());
   }
 
+  /**
+   * Converts an {@link ArrayBuffer} to a byte array.
+   *
+   * @param buffer the {@link ArrayBuffer} to convert
+   * @return the resulting byte array
+   */
   public static byte[] toByteArray(ArrayBuffer buffer) {
     Int8Array view = new Int8Array(buffer); // signed bytes [-128,127]
     int len = (int) view.length;
@@ -106,7 +117,14 @@ public class JsResponse implements Response {
     return out;
   }
 
-  /** Copy a slice (offset/length in bytes) into a Java byte[]. */
+  /**
+   * Copy a slice (offset/length in bytes) into a Java byte[].
+   *
+   * @param buffer the {@link ArrayBuffer} to copy from
+   * @param byteOffset the offset in bytes
+   * @param length the length in bytes
+   * @return the resulting byte array
+   */
   public static byte[] toByteArray(ArrayBuffer buffer, int byteOffset, int length) {
     Int8Array view = new Int8Array(buffer, byteOffset, length);
     int len = (int) view.length;
@@ -117,6 +135,11 @@ public class JsResponse implements Response {
     return out;
   }
 
+  /**
+   * Sets the response bean.
+   *
+   * @param responseBean the response bean to set
+   */
   public void setResponseBean(Object responseBean) {
     this.responseBean = responseBean;
   }

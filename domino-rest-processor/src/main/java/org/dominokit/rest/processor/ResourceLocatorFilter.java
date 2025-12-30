@@ -23,6 +23,12 @@ import javax.lang.model.util.ElementFilter;
 /** A filter to identify JAX-RS resource locator methods. */
 public class ResourceLocatorFilter {
 
+  /**
+   * Checks if the given method is a JAX-RS resource locator.
+   *
+   * @param method the {@link ExecutableElement} representing the method
+   * @return true if the method is a resource locator, false otherwise
+   */
   public static boolean isResourceLocator(ExecutableElement method) {
 
     // 1) must have @Path on the method

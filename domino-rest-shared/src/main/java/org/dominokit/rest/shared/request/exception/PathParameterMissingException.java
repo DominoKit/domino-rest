@@ -25,6 +25,11 @@ import org.dominokit.rest.shared.request.UrlFormatter;
  */
 public class PathParameterMissingException extends RuntimeException {
 
+  /**
+   * Creates a new instance.
+   *
+   * @param paramName the name of the missing path parameter
+   */
   public PathParameterMissingException(String paramName) {
     super("No parameter provided for path [" + paramName + "]");
   }

@@ -29,6 +29,12 @@ public class BeanAccessors {
   private Element beanElement;
   private ProcessorUtil processorUtil;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param processorUtil the {@link ProcessorUtil}
+   * @param beanElement the {@link Element} representing the bean
+   */
   public BeanAccessors(ProcessorUtil processorUtil, Element beanElement) {
     this.processorUtil = processorUtil;
     this.beanElement = beanElement;

@@ -25,5 +25,8 @@ import java.lang.annotation.*;
 })
 @Documented
 public @interface GwtIncompatible {
+  /**
+   * @return the reason why it's incompatible
+   */
   String value() default "";
 }

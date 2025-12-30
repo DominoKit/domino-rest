@@ -24,7 +24,9 @@ public interface DominoMatcher {
    */
   boolean find();
 
-  /** @return true if there is a match, false otherwise. */
+  /**
+   * @return true if there is a match, false otherwise.
+   */
   boolean isMatch();
 
   /**
@@ -42,10 +44,14 @@ public interface DominoMatcher {
    */
   int groupCount();
 
-  /** @return the start index of current match */
+  /**
+   * @return the start index of current match
+   */
   int start(); // start index of current match
 
-  /** @return the end index (exclusive) */
+  /**
+   * @return the end index (exclusive)
+   */
   int end(); // end index (exclusive)
 
   /** reset to search again from beginning */

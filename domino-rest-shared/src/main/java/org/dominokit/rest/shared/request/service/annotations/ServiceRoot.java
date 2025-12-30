@@ -33,5 +33,8 @@ import org.dominokit.rest.shared.request.RestConfig;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface ServiceRoot {
+  /**
+   * @return the service root value
+   */
   String value() default "";
 }

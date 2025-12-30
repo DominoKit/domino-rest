@@ -24,20 +24,28 @@ public interface RestfulRequest {
 
   /** POST HTTP method */
   String POST = "POST";
+
   /** GET HTTP method */
   String GET = "GET";
+
   /** PUT HTTP method */
   String PUT = "PUT";
+
   /** DELETE HTTP method */
   String DELETE = "DELETE";
+
   /** HEAD HTTP method */
   String HEAD = "HEAD";
+
   /** OPTIONS HTTP method */
   String OPTIONS = "OPTIONS";
+
   /** PATCH HTTP method */
   String PATCH = "PATCH";
 
-  /** @return returns the factory of the {@link RestfulRequest} */
+  /**
+   * @return returns the factory of the {@link RestfulRequest}
+   */
   static RestfulRequestFactory factory() {
     return RestfullRequestContext.getFactory();
   }
@@ -123,13 +131,19 @@ public interface RestfulRequest {
     return factory().patch(uri);
   }
 
-  /** @return the uri of the request */
+  /**
+   * @return the uri of the request
+   */
   String getUri();
 
-  /** @return the path of the request */
+  /**
+   * @return the path of the request
+   */
   String getPath();
 
-  /** @return the method of the request */
+  /**
+   * @return the method of the request
+   */
   String getMethod();
 
   /**
@@ -149,7 +163,9 @@ public interface RestfulRequest {
    */
   RestfulRequest putHeaders(Map<String, String> headers);
 
-  /** @return the request headers */
+  /**
+   * @return the request headers
+   */
   Map<String, String> getHeaders();
 
   /**
@@ -160,7 +176,9 @@ public interface RestfulRequest {
    */
   RestfulRequest timeout(int timeout);
 
-  /** @return the timeout of the request */
+  /**
+   * @return the timeout of the request
+   */
   int getTimeout();
 
   /**

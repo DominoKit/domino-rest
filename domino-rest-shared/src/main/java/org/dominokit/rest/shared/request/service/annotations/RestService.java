@@ -39,6 +39,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface RestService {
-  /** @return The service class that this factory implements */
+  /**
+   * @return The service class that this factory implements
+   */
   Class<?> value();
 }

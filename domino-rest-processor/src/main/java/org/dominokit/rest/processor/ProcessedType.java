@@ -28,6 +28,12 @@ public class ProcessedType {
   private final List<ExecutableElement> methods = new ArrayList<>();
   private final Elements elements;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param elements the {@link Elements} utility
+   * @param enclosingType the enclosing {@link TypeElement}
+   */
   public ProcessedType(Elements elements, TypeElement enclosingType) {
     this.elements = elements;
     this.enclosingType = enclosingType;

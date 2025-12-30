@@ -28,15 +28,27 @@ public class RequestWriterMatcher {
   private final MetaMatcher metaMatcher;
   private final Supplier<RequestWriter<?>> writer;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param metaMatcher the {@link MetaMatcher}
+   * @param writer the {@link RequestWriter} supplier
+   */
   RequestWriterMatcher(MetaMatcher metaMatcher, Supplier<RequestWriter<?>> writer) {
     this.metaMatcher = metaMatcher;
     this.writer = writer;
   }
 
+  /**
+   * @return the {@link MetaMatcher}
+   */
   public MetaMatcher getMetaMatcher() {
     return metaMatcher;
   }
 
+  /**
+   * @return the {@link RequestWriter}
+   */
   public RequestWriter<?> getWriter() {
     return writer.get();
   }

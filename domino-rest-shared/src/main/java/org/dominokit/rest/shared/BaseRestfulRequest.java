@@ -26,10 +26,21 @@ public abstract class BaseRestfulRequest implements RestfulRequest {
 
   private final String uri;
   private final String method;
+
+  /** The success handler. */
   protected SuccessHandler successHandler;
+
+  /** The error handler. */
   protected ErrorHandler errorHandler;
+
   private int timeout;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param uri the request URI
+   * @param method the HTTP method
+   */
   public BaseRestfulRequest(String uri, String method) {
     if (isNull(uri) || uri.trim().isEmpty())
       throw new IllegalArgumentException("Invalid URI [" + uri + "]");

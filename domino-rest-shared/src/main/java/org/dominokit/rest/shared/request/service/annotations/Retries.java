@@ -27,7 +27,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Retries {
+  /**
+   * @return the timeout in milliseconds for each request
+   */
   int timeout() default 4000;
 
+  /**
+   * @return the maximum number of retries
+   */
   int maxRetries() default 3;
 }

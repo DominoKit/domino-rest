@@ -28,15 +28,27 @@ public class ResponseReaderMatcher {
   private final MetaMatcher metaMatcher;
   private final Supplier<ResponseReader<?>> reader;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param metaMatcher the {@link MetaMatcher}
+   * @param reader the {@link ResponseReader} supplier
+   */
   ResponseReaderMatcher(MetaMatcher metaMatcher, Supplier<ResponseReader<?>> reader) {
     this.metaMatcher = metaMatcher;
     this.reader = reader;
   }
 
+  /**
+   * @return the {@link MetaMatcher}
+   */
   public MetaMatcher getMetaMatcher() {
     return metaMatcher;
   }
 
+  /**
+   * @return the {@link ResponseReader}
+   */
   public ResponseReader<?> getReader() {
     return reader.get();
   }

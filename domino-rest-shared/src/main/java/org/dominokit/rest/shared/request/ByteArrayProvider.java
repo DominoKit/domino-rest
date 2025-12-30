@@ -53,22 +53,30 @@ public class ByteArrayProvider {
     this.fileName = fileName;
   }
 
-  /** @return the byte array data */
+  /**
+   * @return the byte array data
+   */
   public byte[] getData() {
     return data;
   }
 
-  /** @param data the byte array data to set */
+  /**
+   * @param data the byte array data to set
+   */
   public void setData(byte[] data) {
     this.data = data;
   }
 
-  /** @return the file name */
+  /**
+   * @return the file name
+   */
   public String getFileName() {
     return fileName;
   }
 
-  /** @param fileName the file name to set */
+  /**
+   * @param fileName the file name to set
+   */
   public void setFileName(String fileName) {
     this.fileName = fileName;
   }

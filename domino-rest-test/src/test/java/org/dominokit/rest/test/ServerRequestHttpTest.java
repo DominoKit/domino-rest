@@ -420,6 +420,7 @@ class ServerRequestHttpTest {
       setResponseReader(Response::getBodyAsString);
     }
   }
+
   /** GET /status with String body reader. */
   static final class StatusGet extends ServerRequest<Void, String> {
     StatusGet(String serviceRoot) {
@@ -432,6 +433,7 @@ class ServerRequestHttpTest {
       setResponseReader(Response::getBodyAsString);
     }
   }
+
   /** GET /echo with String body reader. */
   static final class EchoGetBean extends ServerRequest<Void, SampleObject> {
     EchoGetBean(String serviceRoot) {

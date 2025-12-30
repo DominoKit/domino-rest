@@ -42,52 +42,72 @@ public class RequestMeta {
     this.responseClass = responseClass;
   }
 
-  /** @return the service class */
+  /**
+   * @return the service class
+   */
   public Class<?> getServiceClass() {
     return serviceClass;
   }
 
-  /** @return the method name */
+  /**
+   * @return the method name
+   */
   public String getMethodName() {
     return methodName;
   }
 
-  /** @return the request class */
+  /**
+   * @return the request class
+   */
   public Class<?> getRequestClass() {
     return requestClass;
   }
 
-  /** @return the response class */
+  /**
+   * @return the response class
+   */
   public Class<?> getResponseClass() {
     return responseClass;
   }
 
-  /** @param consume the consume media types */
+  /**
+   * @param consume the consume media types
+   */
   void setConsume(String[] consume) {
     this.consume = consume;
   }
 
-  /** @param produce the produce media types */
+  /**
+   * @param produce the produce media types
+   */
   void setProduce(String[] produce) {
     this.produce = produce;
   }
 
-  /** @param parametersProvider the parameters provider */
+  /**
+   * @param parametersProvider the parameters provider
+   */
   void setParametersProvider(RequestParametersProvider parametersProvider) {
     this.parametersProvider = parametersProvider;
   }
 
-  /** @return the consume media types */
+  /**
+   * @return the consume media types
+   */
   public String[] getConsume() {
     return consume;
   }
 
-  /** @return the produce media types */
+  /**
+   * @return the produce media types
+   */
   public String[] getProduce() {
     return produce;
   }
 
-  /** @return the parameters provider */
+  /**
+   * @return the parameters provider
+   */
   public RequestParametersProvider getParametersProvider() {
     return parametersProvider;
   }

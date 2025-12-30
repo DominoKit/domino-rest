@@ -31,5 +31,11 @@ public interface CanCompleteOrSend extends CanSend {
    */
   CanSend onComplete(CompleteHandler completeHandler);
 
+  /**
+   * Setting a handler to be called after the request is completed.
+   *
+   * @param completeHandler the handler to be called
+   * @return same instance to support builder pattern
+   */
   CanSend onAfterComplete(CompleteHandler completeHandler);
 }

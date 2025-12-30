@@ -32,6 +32,11 @@ public final class UrlSplitUtil {
 
   private final DominoCompiledPattern compiled;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param engine the {@link RegexEngine} to use for splitting
+   */
   public UrlSplitUtil(RegexEngine engine) {
     this.compiled = engine.compile(SPLIT_PATTERN);
   }
@@ -90,10 +95,20 @@ public final class UrlSplitUtil {
     return -1;
   }
 
+  /** A result of splitting a URL. */
   public static final class Split {
+    /** The left side of the split (e.g. protocol and host). */
     public final String leftSide;
+
+    /** The right side of the split (e.g. path, query and fragment). */
     public final String rightSide;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param leftSide the left side
+     * @param rightSide the right side
+     */
     public Split(String leftSide, String rightSide) {
       this.leftSide = leftSide;
       this.rightSide = rightSide;

@@ -188,7 +188,20 @@ public interface HasParameters<R, S> {
    */
   HasParameters<R, S> setHeaderParameter(String name, String value);
 
+  /**
+   * Sets a fragment parameter name and value.
+   *
+   * @param name the name of the parameter
+   * @param value the value of the parameter
+   * @return same instance to support builder pattern
+   */
   HasParameters<R, S> setFragmentParameter(String name, String value);
 
+  /**
+   * Sets a list of fragment parameters names and values.
+   *
+   * @param params the parameters
+   * @return same instance to support builder pattern
+   */
   HasParameters<R, S> setFragmentParameters(Map<String, String> params);
 }

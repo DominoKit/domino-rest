@@ -187,11 +187,23 @@ public class ServicePath {
     return fragments;
   }
 
+  /**
+   * Appends a fragment to the path.
+   *
+   * @param fragment the fragment to append
+   * @return same instance to support builder pattern
+   */
   public ServicePath appendFragment(String fragment) {
     this.fragments.add(fragment);
     return this;
   }
 
+  /**
+   * Checks if the path has the given fragment.
+   *
+   * @param fragment the fragment to check
+   * @return true if the fragment is present, false otherwise
+   */
   public boolean hasFragment(String fragment) {
     return this.fragments.contains(fragment);
   }
@@ -220,7 +232,9 @@ public class ServicePath {
   // Query parameters
   // ---------------------------------------------------------------------------------------------
 
-  /** @return the full query string (without the leading '?'), e.g. {@code x=1&y=2&y=3} */
+  /**
+   * @return the full query string (without the leading '?'), e.g. {@code x=1&y=2&y=3}
+   */
   public String query() {
     return queryParameters.stream().map(Parameter::asQueryString).collect(Collectors.joining("&"));
   }
@@ -480,12 +494,16 @@ public class ServicePath {
   // Fragment & general state
   // ---------------------------------------------------------------------------------------------
 
-  /** @return the fragment portion (without leading '#'), joined by '/'. */
+  /**
+   * @return the fragment portion (without leading '#'), joined by '/'.
+   */
   public String fragment() {
     return String.join("/", fragments());
   }
 
-  /** @return true if all parts (path, query, fragments) are empty. */
+  /**
+   * @return true if all parts (path, query, fragments) are empty.
+   */
   public boolean isEmpty() {
     return paths.isEmpty() && queryParameters.isEmpty() && fragments.isEmpty();
   }
@@ -605,7 +623,8 @@ public class ServicePath {
   // Replace the old parsedParameters(String, String) with this:
   private List<Parameter> parsedParameters(
       String paramString, String delimiter, boolean allowFlags) {
-    return Stream.of(paramString.split(delimiter)).map(part -> part.split("=", 2))
+    return Stream.of(paramString.split(delimiter))
+        .map(part -> part.split("=", 2))
         .collect(
             Collectors.groupingBy(
                 keyValue -> keyValue[0],
@@ -619,7 +638,8 @@ public class ServicePath {
                       }
                     },
                     Collectors.toList())))
-        .entrySet().stream()
+        .entrySet()
+        .stream()
         .map(entry -> new Parameter(entry.getKey(), entry.getValue()))
         .collect(Collectors.toCollection(LinkedList::new));
   }
@@ -676,7 +696,9 @@ public class ServicePath {
   // Accessors and equality
   // ---------------------------------------------------------------------------------------------
 
-  /** @return the configured root path (may be empty, never null). */
+  /**
+   * @return the configured root path (may be empty, never null).
+   */
   public String getRootPath() {
     return rootPath;
   }
@@ -790,7 +812,9 @@ public class ServicePath {
       this.matrix = new LinkedList<>(matrix == null ? new LinkedList<>() : matrix);
     }
 
-    /** @return segment name (without matrix parameters) */
+    /**
+     * @return segment name (without matrix parameters)
+     */
     public String name() {
       return name;
     }
@@ -855,7 +879,9 @@ public class ServicePath {
       return name + ";" + matrices;
     }
 
-    /** @return a new {@link PathSegment} with the same matrix parameters and a different name. */
+    /**
+     * @return a new {@link PathSegment} with the same matrix parameters and a different name.
+     */
     PathSegment renamed(String newName) {
       return new PathSegment(newName, new LinkedList<>(this.matrix));
     }

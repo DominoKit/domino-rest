@@ -22,6 +22,11 @@ public class GenericResponseReader implements ResponseReader<GenericResponse> {
 
   private final RequestMeta request;
 
+  /**
+   * Creates a new instance.
+   *
+   * @param request the {@link RequestMeta}
+   */
   public GenericResponseReader(RequestMeta request) {
     this.request = request;
   }
