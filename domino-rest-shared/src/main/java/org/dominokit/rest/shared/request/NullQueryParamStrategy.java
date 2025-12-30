@@ -24,7 +24,22 @@ public enum NullQueryParamStrategy {
    *
    * <pre>param1=null</pre>
    */
-  NULL((request, name) -> request.addQueryParameter(name, "null")),
+  NULL(
+      (request, name, type) -> {
+        switch (type.toLowerCase()) {
+          case "query":
+            request.addQueryParameter(name, "null");
+            break;
+          case "path":
+            request.setPathParameter(name, "null");
+            break;
+          case "matrix":
+            request.addMatrixParameter(name, "null");
+            break;
+          default:
+            request.addQueryParameter(name, "null");
+        }
+      }),
   /**
    * set the parameter value as empty
    *
@@ -32,9 +47,24 @@ public enum NullQueryParamStrategy {
    *
    * <pre>param1=</pre>
    */
-  EMPTY((request, name) -> request.addQueryParameter(name, "")),
+  EMPTY(
+      (request, name, type) -> {
+        switch (type.toLowerCase()) {
+          case "query":
+            request.addQueryParameter(name, "");
+            break;
+          case "path":
+            request.setPathParameter(name, "");
+            break;
+          case "matrix":
+            request.addMatrixParameter(name, "");
+            break;
+          default:
+            request.addQueryParameter(name, "");
+        }
+      }),
   /** Omit the parameter from the request query string */
-  OMIT((request, name) -> {});
+  OMIT((request, name, type) -> {});
 
   private final ParamValueSetter paramValueSetter;
 
@@ -48,11 +78,11 @@ public enum NullQueryParamStrategy {
    * @param request {@link ServerRequest}
    * @param name String name of the query parameter
    */
-  public void setNullValue(ServerRequest<?, ?> request, String name) {
-    paramValueSetter.setParameter(request, name);
+  public void setNullValue(ServerRequest<?, ?> request, String name, String type) {
+    paramValueSetter.setParameter(request, name, type);
   }
 
   private interface ParamValueSetter {
-    void setParameter(ServerRequest<?, ?> request, String name);
+    void setParameter(ServerRequest<?, ?> request, String name, String type);
   }
 }

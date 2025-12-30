@@ -15,9 +15,15 @@
  */
 package org.dominokit.rest.js;
 
+import static java.util.Objects.nonNull;
+
 import elemental2.core.ArrayBuffer;
+import elemental2.core.Int8Array;
 import elemental2.dom.XMLHttpRequest;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jsinterop.base.Js;
@@ -27,6 +33,7 @@ import org.dominokit.rest.shared.Response;
 public class JsResponse implements Response {
 
   private final XMLHttpRequest request;
+  private Object responseBean;
 
   JsResponse(XMLHttpRequest request) {
     this.request = request;
@@ -34,19 +41,21 @@ public class JsResponse implements Response {
 
   /** {@inheritDoc} */
   @Override
-  public String getHeader(String header) {
-    return request.getResponseHeader(header);
+  public List<String> getHeader(String header) {
+    return Collections.singletonList(request.getResponseHeader(header));
   }
 
   /** {@inheritDoc} */
   @Override
-  public Map<String, String> getHeaders() {
+  public Map<String, List<String>> getHeaders() {
     String allResponseHeaders = request.getAllResponseHeaders();
     String[] headers = allResponseHeaders.split("\r\n");
     return Stream.of(headers)
         .filter(header -> !header.isEmpty())
         .map(header -> header.split(":", 2))
-        .collect(Collectors.toMap(header -> header[0], header -> header[1].trim()));
+        .collect(
+            Collectors.toMap(
+                header -> header[0], header -> Collections.singletonList(header[1].trim())));
   }
 
   /** {@inheritDoc} */
@@ -80,5 +89,48 @@ public class JsResponse implements Response {
   /** @return the {@code XMLHttpRequest} associated with this response. */
   public XMLHttpRequest getRequest() {
     return request;
+  }
+
+  @Override
+  public byte[] getBodyAsBytes() {
+    return toByteArray(getResponseArrayBuffer());
+  }
+
+  public static byte[] toByteArray(ArrayBuffer buffer) {
+    Int8Array view = new Int8Array(buffer); // signed bytes [-128,127]
+    int len = (int) view.length;
+    byte[] out = new byte[len];
+    for (int i = 0; i < len; i++) {
+      out[i] = Js.uncheckedCast(view.getAt(i)); // getAt returns a JS number
+    }
+    return out;
+  }
+
+  /** Copy a slice (offset/length in bytes) into a Java byte[]. */
+  public static byte[] toByteArray(ArrayBuffer buffer, int byteOffset, int length) {
+    Int8Array view = new Int8Array(buffer, byteOffset, length);
+    int len = (int) view.length;
+    byte[] out = new byte[len];
+    for (int i = 0; i < len; i++) {
+      out[i] = Js.uncheckedCast(view.getAt(i));
+    }
+    return out;
+  }
+
+  public void setResponseBean(Object responseBean) {
+    this.responseBean = responseBean;
+  }
+
+  @Override
+  public Optional<Object> getBean() {
+    return Optional.ofNullable(responseBean);
+  }
+
+  @Override
+  public void setBean(Object bean) {
+    if (nonNull(this.responseBean)) {
+      throw new IllegalStateException("The response bean has already been set");
+    }
+    this.responseBean = bean;
   }
 }

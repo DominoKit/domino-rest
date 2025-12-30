@@ -15,7 +15,9 @@
  */
 package org.dominokit.rest.shared;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /** Representation of {@link RestfulRequest} response */
 public interface Response {
@@ -24,10 +26,10 @@ public interface Response {
    * @param header the name
    * @return response header value
    */
-  String getHeader(String header);
+  List<String> getHeader(String header);
 
   /** @return all response headers */
-  Map<String, String> getHeaders();
+  Map<String, List<String>> getHeaders();
 
   /** @return the status code of the response */
   int getStatusCode();
@@ -37,4 +39,10 @@ public interface Response {
 
   /** @return the body of the response as a {@link String} */
   String getBodyAsString();
+
+  byte[] getBodyAsBytes();
+
+  Optional<Object> getBean();
+
+  void setBean(Object bean);
 }

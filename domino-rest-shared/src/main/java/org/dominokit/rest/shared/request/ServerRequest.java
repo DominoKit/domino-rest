@@ -32,7 +32,7 @@ import org.dominokit.rest.shared.RestfulRequest;
  * @param <S> the response type
  */
 public class ServerRequest<R, S> extends BaseRequest
-    implements Response<S>, HasComplete, HasHeadersAndParameters<R, S> {
+    implements Response<S>, HasComplete, HasParameters<R, S>, IServerRequest<R, S> {
 
   private static final Logger LOGGER = Logger.getLogger(ServerRequest.class.getName());
 
@@ -45,13 +45,19 @@ public class ServerRequest<R, S> extends BaseRequest
   private final Map<String, String> headers = new HashMap<>();
   private final Map<String, List<String>> queryParameters = new HashMap<>();
   private final Map<String, String> pathParameters = new HashMap<>();
-  private final Map<String, String> metaParameters = new HashMap<>();
+
+  // NEW: matrix parameters support
+  private final Map<String, List<String>> matrixParameters = new HashMap<>();
+  // NEW: fragment parameters (used for {name} or {name:regex} inside the fragment part)
+  private final Map<String, String> fragmentParameters = new HashMap<>();
+  private final Map<String, MetaParam> metaParameters = new HashMap<>();
 
   private RequestMeta requestMeta;
   private R requestBean;
   private RestfulRequest httpRequest;
 
   private String url;
+  private String matchedUrl;
   private String httpMethod;
   private String path = "";
   private String serviceRoot = "";
@@ -71,13 +77,13 @@ public class ServerRequest<R, S> extends BaseRequest
       context -> {
         success.onSuccess((S) context.responseBean);
         state = completed;
-        completeHandler.onCompleted();
+        onCompleted();
       };
 
   private final RequestState<ServerSuccessRequestStateContext> aborted =
       context -> {
         LOGGER.info("Request have already been aborted.!");
-        completeHandler.onCompleted();
+        onCompleted();
       };
 
   private final RequestState<ServerResponseReceivedStateContext> sent =
@@ -100,6 +106,7 @@ public class ServerRequest<R, S> extends BaseRequest
   private String responseType;
   private NullQueryParamStrategy nullQueryParamStrategy;
   private boolean multipartForm = false;
+  private RequestParametersProvider parametersProvider = new DefaultParametersProvider<R, S>(this);
 
   protected ServerRequest() {
     this.httpMethod = HttpMethod.GET;
@@ -109,6 +116,7 @@ public class ServerRequest<R, S> extends BaseRequest
     this.requestMeta = requestMeta;
     this.requestBean = requestBean;
     this.httpMethod = HttpMethod.GET;
+    this.requestMeta.setParametersProvider(parametersProvider);
   }
 
   /** prepare the request and execute it. */
@@ -133,10 +141,10 @@ public class ServerRequest<R, S> extends BaseRequest
    * Use this method to intercept the request before it is sent to the server, this is good for
    * setting headers or adding extra parameters.
    *
-   * @param interceptor {@link Consumer} of {@link HasHeadersAndParameters}
+   * @param interceptor {@link Consumer} of {@link HasParameters}
    * @return same instance to support builder pattern
    */
-  public ServerRequest<R, S> intercept(Consumer<HasHeadersAndParameters<R, S>> interceptor) {
+  public ServerRequest<R, S> intercept(Consumer<HasParameters<R, S>> interceptor) {
     interceptor.accept(this);
     return this;
   }
@@ -231,7 +239,7 @@ public class ServerRequest<R, S> extends BaseRequest
   }
 
   @Override
-  public HasHeadersAndParameters<R, S> addQueryParameter(String name, String value) {
+  public HasParameters<R, S> addQueryParameter(String name, String value) {
     if (queryParameters.containsKey(name)) {
       queryParameters.get(name).add(value);
     } else {
@@ -251,7 +259,7 @@ public class ServerRequest<R, S> extends BaseRequest
 
   /** {@inheritDoc} */
   @Override
-  public HasHeadersAndParameters<R, S> addQueryParameters(Map<String, List<String>> parameters) {
+  public HasParameters<R, S> addQueryParameters(Map<String, List<String>> parameters) {
     parameters.forEach(
         (key, values) -> {
           values.forEach(value -> addQueryParameter(key, value));
@@ -259,9 +267,70 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
+  // -------------------- Matrix parameters (NEW) --------------------
+
+  @Override
+  public HasParameters<R, S> setMatrixParameter(String name, String value) {
+    matrixParameters.put(name, new ArrayList<>());
+    addMatrixParameter(name, value);
+    return this;
+  }
+
+  @Override
+  public HasParameters<R, S> setMatrixParameter(String name, List<String> values) {
+    matrixParameters.put(name, new ArrayList<>());
+    values.forEach(v -> addMatrixParameter(name, v));
+    return this;
+  }
+
+  @Override
+  public HasParameters<R, S> setMatrixParameters(Map<String, List<String>> matrixParameters) {
+    if (nonNull(matrixParameters) && !matrixParameters.isEmpty()) {
+      matrixParameters.forEach(this::setMatrixParameter);
+    }
+    return this;
+  }
+
+  @Override
+  public HasParameters<R, S> addMatrixParameter(String name, String value) {
+    if (matrixParameters.containsKey(name)) {
+      matrixParameters.get(name).add(value);
+    } else {
+      setMatrixParameter(name, value);
+    }
+    return this;
+  }
+
+  @Override
+  public HasParameters<R, S> addMatrixParameter(String name, List<String> values) {
+    if (matrixParameters.containsKey(name)) {
+      matrixParameters.get(name).addAll(values);
+    } else {
+      setMatrixParameter(name, values);
+    }
+    return this;
+  }
+
+  @Override
+  public HasParameters<R, S> addMatrixParameters(Map<String, List<String>> matrixParameters) {
+    if (nonNull(matrixParameters) && !matrixParameters.isEmpty()) {
+      matrixParameters.forEach(this::addMatrixParameter);
+    }
+    return this;
+  }
+
+  /** Exposes a defensive copy of matrix params (optional helper). */
+  public Map<String, List<String>> matrixParameters() {
+    Map<String, List<String>> copy = new HashMap<>();
+    matrixParameters.forEach((k, v) -> copy.put(k, new ArrayList<>(v)));
+    return copy;
+  }
+
+  // ---------------------------------------------------------------
+
   /** {@inheritDoc} */
   @Override
-  public HasHeadersAndParameters<R, S> setPathParameters(Map<String, String> pathParameters) {
+  public HasParameters<R, S> setPathParameters(Map<String, String> pathParameters) {
     if (nonNull(pathParameters) && !pathParameters.isEmpty()) {
       this.pathParameters.putAll(pathParameters);
     }
@@ -270,23 +339,37 @@ public class ServerRequest<R, S> extends BaseRequest
 
   /** {@inheritDoc} */
   @Override
-  public HasHeadersAndParameters<R, S> setPathParameter(String name, String value) {
+  public HasParameters<R, S> setPathParameter(String name, String value) {
     pathParameters.put(name, value);
     return this;
   }
 
   /** {@inheritDoc} */
   @Override
-  public HasHeadersAndParameters<R, S> setHeaderParameters(Map<String, String> headerParameters) {
+  public HasParameters<R, S> setHeaderParameters(Map<String, String> headerParameters) {
     headers.putAll(headerParameters);
     return this;
   }
 
   /** {@inheritDoc} */
   @Override
-  public HasHeadersAndParameters<R, S> setHeaderParameter(String name, String value) {
+  public HasParameters<R, S> setHeaderParameter(String name, String value) {
     headers.put(name, value);
     return this;
+  }
+
+  public ServerRequest<R, S> setFragmentParameter(String name, String value) {
+    if (name != null) fragmentParameters.put(name, value);
+    return this;
+  }
+
+  public ServerRequest<R, S> setFragmentParameters(Map<String, String> params) {
+    if (params != null && !params.isEmpty()) fragmentParameters.putAll(params);
+    return this;
+  }
+
+  public Map<String, String> fragmentParameters() {
+    return new HashMap<>(fragmentParameters);
   }
 
   /** @return new map containing all headers defined in the request */
@@ -294,12 +377,12 @@ public class ServerRequest<R, S> extends BaseRequest
     return new HashMap<>(headers);
   }
 
-  /** @return new map containing all headers defined in the request */
+  /** @return new map containing all query parameters defined in the request */
   public Map<String, List<String>> queryParameters() {
     return new HashMap<>(queryParameters);
   }
 
-  /** @return new map containing all headers defined in the request */
+  /** @return new map containing all path parameters defined in the request */
   public Map<String, String> pathParameters() {
     return new HashMap<>(pathParameters);
   }
@@ -312,14 +395,72 @@ public class ServerRequest<R, S> extends BaseRequest
     if (isNull(this.url)) {
       String root =
           (isNull(this.serviceRoot) || this.serviceRoot.isEmpty())
-              ? ServiceRootMatcher.matchedServiceRoot(path)
-              : (this.serviceRoot + path);
-      Map<String, String> combinedParams = new HashMap<>();
-      combinedParams.putAll(DominoRestContext.make().getConfig().getGlobalPathParameters());
-      combinedParams.putAll(pathParameters);
-      UrlFormatter urlFormatter = new UrlFormatter(combinedParams);
-      this.setUrl(urlFormatter.formatUrl(root));
+              ? ServiceRootMatcher.matchedServiceRoot(new ImmutableServerRequest<>(this))
+              : insureBackSlash(this.serviceRoot, path);
+
+      this.matchedUrl = root;
+
+      // PATH params: globals + request-scoped
+      Map<String, String> combinedPathParams = new HashMap<>();
+      combinedPathParams.putAll(DominoRestContext.make().getConfig().getGlobalPathParameters());
+      combinedPathParams.putAll(pathParameters);
+
+      // Build UrlFormatter with per-component maps:
+      // - PATH: combinedPathParams
+      // - MATRIX: single-value view (for template placeholders like ;{k}={v})
+      // - QUERY: single-value view (for placeholders like ?{k}={v})
+      // - FRAGMENT: explicit fragmentParameters map (new)
+      UrlFormatter urlFormatter =
+          new UrlFormatter(
+              combinedPathParams,
+              toSingleValueMap(matrixParameters),
+              toSingleValueMap(queryParameters),
+              fragmentParameters);
+
+      UrlSplitUtil.Split result =
+          new UrlSplitUtil(DominoRestContext.make().getConfig().getRegexEngine()).split(root);
+      String tokenString = result.rightSide;
+      String serviceRoot = result.leftSide;
+
+      String formatted = urlFormatter.formatUrl(tokenString);
+
+      ServicePath sp = new ServicePath(formatted);
+      // Preserve multiplicity of matrix params by appending all values to the LAST segment
+      if (!matrixParameters.isEmpty()) {
+        List<String> segments = sp.paths();
+        if (!segments.isEmpty()) {
+          int lastIdx = segments.size() - 1;
+          matrixParameters.forEach(
+              (name, values) -> values.forEach(v -> sp.appendMatrixParameter(lastIdx, name, v)));
+        }
+      }
+
+      if (!queryParameters.isEmpty()) {
+        for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
+          sp.setQueryParameter(entry.getKey(), entry.getValue());
+        }
+      }
+
+      formatted = sp.value();
+
+      this.setUrl(insureBackSlash(serviceRoot, formatted));
     }
+  }
+
+  private String insureBackSlash(String lh, String rh) {
+    return (lh.endsWith("/") || rh.startsWith("/")) ? (lh + rh) : (lh + "/" + rh);
+  }
+
+  // Helper: collapse matrix map (List<String>) to a single-value map for UrlFormatter
+  // used only for placeholder replacement in matrix *names* inside templates, e.g. ;{k}={v}
+  // For multiple values, explicit append via ServicePath happens above.
+  private static Map<String, String> toSingleValueMap(Map<String, List<String>> multi) {
+    Map<String, String> single = new HashMap<>();
+    multi.forEach(
+        (k, v) -> {
+          if (v != null && !v.isEmpty()) single.put(k, v.get(0));
+        });
+    return single;
   }
 
   /**
@@ -327,12 +468,11 @@ public class ServerRequest<R, S> extends BaseRequest
    * rest request We can use those parameters inside of a request interceptor to apply some
    * conditional logic
    *
-   * @param key parameter key
-   * @param value parameter value
+   * @param metaParam parameter value
    * @return the current request instance
    */
-  public ServerRequest<R, S> setMetaParameter(String key, String value) {
-    this.metaParameters.put(key, value);
+  public ServerRequest<R, S> setMetaParameter(MetaParam metaParam) {
+    this.metaParameters.put(metaParam.getName(), metaParam);
     return this;
   }
 
@@ -340,12 +480,12 @@ public class ServerRequest<R, S> extends BaseRequest
    * @param key the key of the meta parameter
    * @return the value of the meta parameter of the specified key
    */
-  public String getMetaParameter(String key) {
+  public MetaParam getMetaParameter(String key) {
     return metaParameters.get(key);
   }
 
   /** @return a copy of the request current meta parameters */
-  public Map<String, String> getMetaParameters() {
+  public Map<String, MetaParam> getMetaParameters() {
     return new HashMap<>(metaParameters);
   }
 
@@ -372,12 +512,14 @@ public class ServerRequest<R, S> extends BaseRequest
     return this;
   }
 
-  /** @return new map of all added call arguments. */
   public Map<String, List<String>> getRequestParameters() {
     Map<String, List<String>> result = new HashMap<>();
     result.putAll(queryParameters);
-    pathParameters.forEach((key, value) -> result.put(key, Collections.singletonList(value)));
-    headers.forEach((key, value) -> result.put(key, Collections.singletonList(value)));
+    pathParameters.forEach((k, v) -> result.put(k, Collections.singletonList(v)));
+    headers.forEach((k, v) -> result.put(k, Collections.singletonList(v)));
+    matrixParameters.forEach((k, values) -> result.put(k, new ArrayList<>(values)));
+    // NEW: fragment params as single-valued entries
+    fragmentParameters.forEach((k, v) -> result.put(k, Collections.singletonList(v)));
     return result;
   }
 
@@ -403,6 +545,20 @@ public class ServerRequest<R, S> extends BaseRequest
   public CanFailOrSend onComplete(CompleteHandler completeHandler) {
     if (nonNull(completeHandler)) {
       this.completeHandler = completeHandler;
+    }
+    return this;
+  }
+
+  /**
+   * define the on complete handler
+   *
+   * @param completeHandler the handler
+   * @return same instance to support builder pattern
+   */
+  @Override
+  public CanFailOrSend onAfterComplete(CompleteHandler completeHandler) {
+    if (nonNull(completeHandler)) {
+      this.afterCompleteHandler = completeHandler;
     }
     return this;
   }
@@ -579,6 +735,11 @@ public class ServerRequest<R, S> extends BaseRequest
     return this.url;
   }
 
+  @Override
+  public String getMatchedUrl() {
+    return this.matchedUrl;
+  }
+
   /** @return the timeout in milliseconds */
   public int getTimeout() {
     return timeout;
@@ -656,7 +817,7 @@ public class ServerRequest<R, S> extends BaseRequest
    * @return the request {@link NullQueryParamStrategy} and if not set fallback to the Global
    *     strategy defined in
    */
-  public NullQueryParamStrategy getNullQueryParamStrategy() {
+  public NullQueryParamStrategy getNullParamStrategy() {
     if (isNull(nullQueryParamStrategy)) {
       return DominoRestContext.make().getConfig().getNullQueryParamStrategy();
     }
@@ -703,6 +864,45 @@ public class ServerRequest<R, S> extends BaseRequest
 
     public boolean isWithCredentials() {
       return withCredentials;
+    }
+  }
+
+  private static class DefaultParametersProvider<R, S> implements RequestParametersProvider {
+
+    private final ServerRequest<R, S> serverRequest;
+
+    public DefaultParametersProvider(ServerRequest<R, S> serverRequest) {
+      this.serverRequest = serverRequest;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return new HashMap<>(serverRequest.headers());
+    }
+
+    @Override
+    public Map<String, List<String>> getQueryParameters() {
+      return new HashMap<>(serverRequest.queryParameters());
+    }
+
+    @Override
+    public Map<String, String> getPathParameters() {
+      return new HashMap<>(serverRequest.pathParameters());
+    }
+
+    @Override
+    public Map<String, List<String>> getMatrixParameters() {
+      return new HashMap<>(serverRequest.matrixParameters());
+    }
+
+    @Override
+    public Map<String, String> getFragmentParameters() {
+      return new HashMap<>(serverRequest.fragmentParameters());
+    }
+
+    @Override
+    public Map<String, MetaParam> getMetaParameters() {
+      return new HashMap<>(serverRequest.getMetaParameters());
     }
   }
 }

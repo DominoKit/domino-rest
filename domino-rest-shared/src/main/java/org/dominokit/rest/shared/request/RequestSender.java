@@ -55,7 +55,6 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
   /** {@inheritDoc} */
   @Override
   public void send(ServerRequest<R, S> request, ServerRequestCallBack callBack) {
-    request.normalizeUrl();
     List<RequestInterceptor> interceptors =
         DominoRestContext.make().getConfig().getRequestInterceptors();
 
@@ -74,17 +73,21 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
 
   private void onAfterInterception(ServerRequest<R, S> request, ServerRequestCallBack callBack) {
     final int[] retriesCounter = new int[] {0};
+    request.normalizeUrl();
     RestfulRequest restfulRequest =
         RestfulRequest.request(request.getUrl(), request.getHttpMethod().toUpperCase());
     request.setHttpRequest(restfulRequest);
     if (!request.isAborted()) {
       restfulRequest
           .putHeaders(request.headers())
-          .putParameters(request.queryParameters())
-          .onSuccess(response -> handleResponse(request, callBack, response))
+          .onSuccess(
+              response -> {
+                handleResponse(request, callBack, response);
+              })
           .onError(
-              throwable ->
-                  handleError(request, callBack, retriesCounter, restfulRequest, throwable));
+              throwable -> {
+                handleError(request, callBack, retriesCounter, restfulRequest, throwable);
+              });
 
       if (nonNull(request.getResponseType())) {
         restfulRequest.setResponseType(request.getResponseType());
@@ -110,7 +113,7 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
     } else {
       FailedResponseBean failedResponse = new FailedResponseBean(throwable);
       LOGGER.log(Level.SEVERE, "Failed to execute request : ", failedResponse.getThrowable());
-      callFailedResponseHandlers(request, failedResponse);
+      onBeforeFailed(request, failedResponse);
       callBack.onFailure(failedResponse);
     }
   }
@@ -119,43 +122,42 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
       ServerRequest<R, S> request, ServerRequestCallBack callBack, Response response) {
     if (Arrays.stream(request.getSuccessCodes())
         .anyMatch(code -> code.equals(response.getStatusCode()))) {
-      callSuccessGlobalHandlers(request, response);
-      callBack.onSuccess(readResponse(request, response));
+      S result = readResponse(request, response);
+      response.setBean(result);
+      onBeforeSuccess(request, response);
+      callBack.onSuccess(result);
     } else {
       FailedResponseBean failedResponse = new FailedResponseBean(request, response);
-      callFailedResponseHandlers(request, failedResponse);
+      onBeforeFailed(request, failedResponse);
       callBack.onFailure(failedResponse);
     }
   }
 
-  private <R, S> S readResponse(ServerRequest<R, S> request, Response response) {
+  private S readResponse(ServerRequest<R, S> request, Response response) {
     int statusCode = response.getStatusCode();
-    switch (statusCode) {
-      case 204:
-        {
-          if (isNull(response.getBodyAsString()) || response.getBodyAsString().isEmpty()) {
-            return null;
-          }
-        }
-      default:
-        return request.getResponseReader().read(response);
+    if (statusCode == 204) {
+      if (isNull(response.getBodyAsString()) || response.getBodyAsString().isEmpty()) {
+        return null;
+      }
     }
+    return request.getResponseReader().read(response);
   }
 
-  private void callSuccessGlobalHandlers(ServerRequest<R, S> request, Response response) {
-    DominoRestContext.make()
-        .getConfig()
-        .getResponseInterceptors()
-        .forEach(responseInterceptor -> responseInterceptor.interceptOnSuccess(request, response));
-  }
-
-  private void callFailedResponseHandlers(
-      ServerRequest request, FailedResponseBean failedResponse) {
+  private void onBeforeSuccess(ServerRequest<R, S> request, Response response) {
     DominoRestContext.make()
         .getConfig()
         .getResponseInterceptors()
         .forEach(
-            responseInterceptor -> responseInterceptor.interceptOnFailed(request, failedResponse));
+            responseInterceptor -> responseInterceptor.onBeforeSuccessCallback(request, response));
+  }
+
+  private void onBeforeFailed(ServerRequest<R, S> request, FailedResponseBean failedResponse) {
+    DominoRestContext.make()
+        .getConfig()
+        .getResponseInterceptors()
+        .forEach(
+            responseInterceptor ->
+                responseInterceptor.onBeforeFailedCallback(request, failedResponse));
   }
 
   private void setTimeout(ServerRequest<R, S> request, RestfulRequest restfulRequest) {

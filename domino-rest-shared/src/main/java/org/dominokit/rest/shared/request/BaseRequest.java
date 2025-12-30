@@ -39,6 +39,7 @@ public abstract class BaseRequest implements Request {
       };
 
   protected CompleteHandler completeHandler = () -> {};
+  protected CompleteHandler afterCompleteHandler = () -> {};
 
   protected Fail fail = requestContext.getConfig().getDefaultFailHandler();
 
@@ -47,8 +48,25 @@ public abstract class BaseRequest implements Request {
         if (!skipFailHandler) {
           fail.onFail(context.response);
         }
-        completeHandler.onCompleted();
+        onCompleted();
       };
+
+  protected void onCompleted() {
+    DominoRestContext.make()
+        .getConfig()
+        .getResponseInterceptors()
+        .forEach(
+            responseInterceptor ->
+                responseInterceptor.onBeforeCompleteCallback((ServerRequest) this));
+    completeHandler.onCompleted();
+    DominoRestContext.make()
+        .getConfig()
+        .getResponseInterceptors()
+        .forEach(
+            responseInterceptor ->
+                responseInterceptor.onAfterCompleteCallback((ServerRequest) this));
+    afterCompleteHandler.onCompleted();
+  }
 
   public BaseRequest() {
     this.state = ready;

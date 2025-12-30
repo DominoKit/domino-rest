@@ -25,7 +25,6 @@ import elemental2.dom.Blob;
 import elemental2.dom.BlobPropertyBag;
 import elemental2.dom.FormData;
 import elemental2.dom.XMLHttpRequest;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,42 +53,6 @@ public class JsRestfulRequest extends BaseRestfulRequest {
   public JsRestfulRequest(String uri, String method) {
     super(uri, method);
     request = new XMLHttpRequest();
-    parseUri(uri);
-  }
-
-  private void parseUri(String uri) {
-    if (uri.contains("?")) {
-      String[] uriParts = uri.split("\\?");
-      addQueryString(uriParts[1]);
-    }
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  protected String paramsAsString() {
-    return params.entrySet().stream().map(this::entryAsString).collect(joining("&"));
-  }
-
-  private String entryAsString(Map.Entry<String, List<String>> paramValuePair) {
-    return paramValuePair.getValue().stream()
-        .map(v -> paramValuePair.getKey() + "=" + v)
-        .collect(joining("&"));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public RestfulRequest addQueryParam(String key, String value) {
-    if (!params.containsKey(key)) params.put(key, new ArrayList<>());
-    params.get(key).add(value);
-    return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public RestfulRequest setQueryParam(String key, String value) {
-    params.put(key, new ArrayList<>());
-    addQueryParam(key, value);
-    return this;
   }
 
   /** {@inheritDoc} */
@@ -109,15 +72,6 @@ public class JsRestfulRequest extends BaseRestfulRequest {
   public RestfulRequest putHeaders(Map<String, String> headers) {
     if (nonNull(headers)) {
       headers.forEach(this::putHeader);
-    }
-    return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public RestfulRequest putParameters(Map<String, List<String>> parameters) {
-    if (nonNull(parameters) && !parameters.isEmpty()) {
-      parameters.forEach((key, values) -> values.forEach(value -> addQueryParam(key, value)));
     }
     return this;
   }

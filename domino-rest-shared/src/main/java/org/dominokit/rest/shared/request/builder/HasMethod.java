@@ -15,7 +15,37 @@
  */
 package org.dominokit.rest.shared.request.builder;
 
+import jakarta.ws.rs.HttpMethod;
+
 public interface HasMethod<R, S> {
 
   HasPath<R, S> withMethod(String method);
+
+  default HasPath<R, S> get() {
+    return withMethod(HttpMethod.GET);
+  }
+
+  default HasPath<R, S> post() {
+    return withMethod(HttpMethod.POST);
+  }
+
+  default HasPath<R, S> put() {
+    return withMethod(HttpMethod.PUT);
+  }
+
+  default HasPath<R, S> delete() {
+    return withMethod(HttpMethod.DELETE);
+  }
+
+  default HasPath<R, S> patch() {
+    return withMethod(HttpMethod.PATCH);
+  }
+
+  default HasPath<R, S> head() {
+    return withMethod(HttpMethod.HEAD);
+  }
+
+  default HasPath<R, S> options() {
+    return withMethod(HttpMethod.OPTIONS);
+  }
 }

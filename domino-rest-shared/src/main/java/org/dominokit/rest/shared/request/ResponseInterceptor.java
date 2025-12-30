@@ -18,14 +18,67 @@ package org.dominokit.rest.shared.request;
 import org.dominokit.rest.shared.Response;
 
 /**
- * Intercepts the response.
+ * Intercepts responses at different stages of a {@link ServerRequest} lifecycle.
+ *
+ * <p>Each method is a no-op by default so implementors only override the hooks they need.
  *
  * @see ServerRequest
  * @see Response
  * @see FailedResponseBean
  */
 public interface ResponseInterceptor {
+  /**
+   * Called before a successful callback is invoked.
+   *
+   * @param serverRequest the request that produced the response
+   * @param response the successful response
+   * @deprecated use {@link #onBeforeSuccessCallback(ServerRequest, Response)} instead
+   */
+  @Deprecated
   default void interceptOnSuccess(ServerRequest serverRequest, Response response) {}
 
+  /**
+   * Hook invoked before a successful callback.
+   *
+   * @param serverRequest the request that produced the response
+   * @param response the successful response
+   */
+  default void onBeforeSuccessCallback(ServerRequest serverRequest, Response response) {
+    interceptOnSuccess(serverRequest, response);
+  }
+
+  /**
+   * Called before a failed callback is invoked.
+   *
+   * @param serverRequest the request that failed
+   * @param failedResponse the failure details
+   * @deprecated use {@link #onBeforeFailedCallback(ServerRequest, FailedResponseBean)} instead
+   */
+  @Deprecated
   default void interceptOnFailed(ServerRequest serverRequest, FailedResponseBean failedResponse) {}
+
+  /**
+   * Hook invoked before a failed callback.
+   *
+   * @param serverRequest the request that failed
+   * @param failedResponse the failure details
+   */
+  default void onBeforeFailedCallback(
+      ServerRequest serverRequest, FailedResponseBean failedResponse) {
+    interceptOnFailed(serverRequest, failedResponse);
+  }
+
+  /**
+   * Hook executed before completion callbacks are invoked regardless of success or failure.
+   *
+   * @param serverRequest the request that is completing
+   */
+  default void onBeforeCompleteCallback(ServerRequest serverRequest) {}
+
+  /**
+   * Hook executed after completion callbacks finish regardless of success or failure.
+   *
+   * @param serverRequest the request that completed
+   */
+  default void onAfterCompleteCallback(ServerRequest serverRequest) {}
 }

@@ -30,4 +30,6 @@ public interface CanCompleteOrSend extends CanSend {
    * @return same instance to support builder pattern
    */
   CanSend onComplete(CompleteHandler completeHandler);
+
+  CanSend onAfterComplete(CompleteHandler completeHandler);
 }
