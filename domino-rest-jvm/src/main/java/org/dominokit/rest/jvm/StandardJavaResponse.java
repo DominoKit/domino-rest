@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.dominokit.rest.shared.Response;
 
-/** Simple adapter over JDK HttpResponse<byte[]> to your shared Response. */
+/** Simple adapter over JDK {@code HttpResponse<byte[]>} to your shared Response. */
 public class StandardJavaResponse implements Response {
 
   private final HttpResponse<byte[]> delegate;

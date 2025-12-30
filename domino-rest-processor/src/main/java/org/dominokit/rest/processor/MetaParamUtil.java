@@ -27,6 +27,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.dominokit.rest.shared.request.MetaParam;
 
+/** Utility class for handling {@link MetaParam} in the processor. */
 public class MetaParamUtil {
 
   /**

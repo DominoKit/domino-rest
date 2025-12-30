@@ -17,6 +17,7 @@ package org.dominokit.rest.shared.request;
 
 import org.dominokit.rest.shared.Response;
 
+/** A wrapper for a response and its associated request metadata. */
 public class GenericResponse {
 
   private final Response response;

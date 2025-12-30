@@ -15,21 +15,39 @@
  */
 package org.dominokit.rest.shared.regex;
 
+/** Interface for a regular expression matcher. */
 public interface DominoMatcher {
-  /** Find next match from current position. */
+  /**
+   * Find next match from current position.
+   *
+   * @return true if a match is found, false otherwise.
+   */
   boolean find();
 
+  /** @return true if there is a match, false otherwise. */
   boolean isMatch();
 
-  /** Group value 0..groupCount(). */
+  /**
+   * Group value 0..groupCount().
+   *
+   * @param index the group index
+   * @return the group value
+   */
   String group(int index);
 
-  /** Number of groups including the entire match at index 0. */
+  /**
+   * Number of groups including the entire match at index 0.
+   *
+   * @return the group count
+   */
   int groupCount();
 
+  /** @return the start index of current match */
   int start(); // start index of current match
 
+  /** @return the end index (exclusive) */
   int end(); // end index (exclusive)
 
+  /** reset to search again from beginning */
   void reset(); // reset to search again from beginning
 }

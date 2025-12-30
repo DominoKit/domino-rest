@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared.regex;
 
+/** Interface for a compiled regular expression pattern. */
 public interface DominoCompiledPattern {
   DominoMatcher matcher(String input);
 

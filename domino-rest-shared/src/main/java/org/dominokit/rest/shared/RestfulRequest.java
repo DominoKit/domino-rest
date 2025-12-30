@@ -22,12 +22,19 @@ import org.dominokit.rest.RestfullRequestContext;
 /** A representation of REST request */
 public interface RestfulRequest {
 
+  /** POST HTTP method */
   String POST = "POST";
+  /** GET HTTP method */
   String GET = "GET";
+  /** PUT HTTP method */
   String PUT = "PUT";
+  /** DELETE HTTP method */
   String DELETE = "DELETE";
+  /** HEAD HTTP method */
   String HEAD = "HEAD";
+  /** OPTIONS HTTP method */
   String OPTIONS = "OPTIONS";
+  /** PATCH HTTP method */
   String PATCH = "PATCH";
 
   /** @return returns the factory of the {@link RestfulRequest} */
@@ -221,13 +228,25 @@ public interface RestfulRequest {
    */
   RestfulRequest onError(ErrorHandler errorHandler);
 
+  /** Handler for successful requests. */
   @FunctionalInterface
   interface SuccessHandler {
+    /**
+     * Called when a response is received.
+     *
+     * @param response the received response
+     */
     void onResponseReceived(Response response);
   }
 
+  /** Handler for failed requests. */
   @FunctionalInterface
   interface ErrorHandler {
+    /**
+     * Called when an error occurs.
+     *
+     * @param throwable the error cause
+     */
     void onError(Throwable throwable);
   }
 }

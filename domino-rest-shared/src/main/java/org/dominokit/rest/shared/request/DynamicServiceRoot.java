@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared.request;
 
+/** A class to provide a dynamic service root based on path matching. */
 public class DynamicServiceRoot implements HasPathMatcher {
 
   private final PathMatcher pathMatcher;

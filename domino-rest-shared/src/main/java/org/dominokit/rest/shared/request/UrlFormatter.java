@@ -77,12 +77,23 @@ public class UrlFormatter {
   private final RegexValidationMode validationMode;
   private UrlSplitUtil urlSplitUtil;
 
-  /** Backward-compatible constructor: one map powers all components. */
+  /**
+   * Backward-compatible constructor: one map powers all components.
+   *
+   * @param params a map of parameters
+   */
   public UrlFormatter(Map<String, String> params) {
     this(params, params, params, params);
   }
 
-  /** Full constructor: separate maps per component. */
+  /**
+   * Full constructor: separate maps per component.
+   *
+   * @param pathParams a map of path parameters
+   * @param matrixParams a map of matrix parameters
+   * @param queryParams a map of query parameters
+   * @param fragmentParams a map of fragment parameters
+   */
   public UrlFormatter(
       Map<String, String> pathParams,
       Map<String, String> matrixParams,
@@ -106,6 +117,8 @@ public class UrlFormatter {
    * Formats a URL by replacing expressions in the token part (as defined by {@link
    * RestConfig#getRegexEngine()} ) and normalizing the result.
    *
+   * @param targetUrl the URL to format
+   * @return the formatted URL
    * @throws IllegalArgumentException if the url is null, or a {name:regex} has an invalid regex
    * @throws PathParameterMissingException if a required expression is missing in its component map
    */

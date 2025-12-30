@@ -77,6 +77,7 @@ public enum NullQueryParamStrategy {
    *
    * @param request {@link ServerRequest}
    * @param name String name of the query parameter
+   * @param type String type of the parameter (query, path, matrix)
    */
   public void setNullValue(ServerRequest<?, ?> request, String name, String type) {
     paramValueSetter.setParameter(request, name, type);

@@ -23,6 +23,12 @@ import org.dominokit.rest.shared.request.RequestWriter;
 import org.dominokit.rest.shared.request.ResponseReader;
 import org.dominokit.rest.shared.request.ServerRequest;
 
+/**
+ * A builder for creating and configuring REST requests.
+ *
+ * @param <R> the request type
+ * @param <S> the response type
+ */
 public class RestRequestBuilder<R, S>
     implements HasMethod<R, S>, HasPath<R, S>, Consumes<R, S>, Produces<R, S> {
 

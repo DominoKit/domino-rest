@@ -20,6 +20,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
 
+/** A filter to identify JAX-RS resource locator methods. */
 public class ResourceLocatorFilter {
 
   public static boolean isResourceLocator(ExecutableElement method) {

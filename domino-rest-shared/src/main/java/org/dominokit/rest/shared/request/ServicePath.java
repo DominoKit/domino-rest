@@ -41,7 +41,7 @@ import org.dominokit.rest.shared.regex.RegexEngine;
  *
  * <ul>
  *   <li>{@link #paths()} still returns only the plain segment names (without matrix parameters).
- *   <li>{@link #path()} historically returned {@code a/b/c}. It now renders the <emfull path with
+ *   <li>{@link #path()} historically returned {@code a/b/c}. It now renders the <em>full path with
  *       matrix parameters</em> (to keep round-tripping intact). If you need the name-only version,
  *       use {@link #pathWithoutMatrix()}.
  * </ul>
@@ -795,12 +795,18 @@ public class ServicePath {
       return name;
     }
 
-    /** @return true if a matrix parameter with the given name exists */
+    /**
+     * @param param the parameter name
+     * @return true if a matrix parameter with the given name exists
+     */
     public boolean hasMatrixParameter(String param) {
       return matrix.stream().anyMatch(p -> p.key.equals(param));
     }
 
-    /** @return all values for a matrix parameter (empty list if not present) */
+    /**
+     * @param param the parameter name
+     * @return all values for a matrix parameter (empty list if not present)
+     */
     public List<String> matrixValues(String param) {
       return matrix.stream()
           .filter(p -> p.key.equals(param))

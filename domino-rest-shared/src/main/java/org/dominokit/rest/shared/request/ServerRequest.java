@@ -108,10 +108,17 @@ public class ServerRequest<R, S> extends BaseRequest
   private boolean multipartForm = false;
   private RequestParametersProvider parametersProvider = new DefaultParametersProvider<R, S>(this);
 
+  /** Default constructor. */
   protected ServerRequest() {
     this.httpMethod = HttpMethod.GET;
   }
 
+  /**
+   * Creates a new instance.
+   *
+   * @param requestMeta the request meta
+   * @param requestBean the request bean
+   */
   protected ServerRequest(RequestMeta requestMeta, R requestBean) {
     this.requestMeta = requestMeta;
     this.requestBean = requestBean;
@@ -156,6 +163,11 @@ public class ServerRequest<R, S> extends BaseRequest
     requestContext.getConfig().getServerRouter().routeRequest(this);
   }
 
+  /**
+   * Sets the HTTP request.
+   *
+   * @param httpRequest the HTTP request
+   */
   public void setHttpRequest(RestfulRequest httpRequest) {
     this.httpRequest = httpRequest;
   }
@@ -848,20 +860,27 @@ public class ServerRequest<R, S> extends BaseRequest
     this.multipartForm = multipartForm;
   }
 
-  /** A function that get called right before sending the request to the server */
+  /** Handler for before send events. */
   @FunctionalInterface
   public interface BeforeSendHandler {
+    /** Called before sending the request. */
     void onBeforeSend();
   }
 
-  /** A config class to configure the credential flag for the request */
+  /** Represents a request with credentials. */
   public static class WithCredentialsRequest {
     private final boolean withCredentials;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param withCredentials true if with credentials is enabled, false otherwise
+     */
     public WithCredentialsRequest(boolean withCredentials) {
       this.withCredentials = withCredentials;
     }
 
+    /** @return true if with credentials is enabled, false otherwise */
     public boolean isWithCredentials() {
       return withCredentials;
     }

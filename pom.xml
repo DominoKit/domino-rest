@@ -73,7 +73,7 @@
         <maven.gpg.plugin>1.6</maven.gpg.plugin>
         <maven.nexus.staging.plugin>1.6.8</maven.nexus.staging.plugin>
         <maven.deploy.plugin>3.0.0-M1</maven.deploy.plugin>
-        <maven.fmt.plugin>2.9</maven.fmt.plugin>
+        <maven.fmt.plugin>2.43.0</maven.fmt.plugin>
         <maven.install.plugin>3.0.0-M1</maven.install.plugin>
         <maven.license.plugin>3.0</maven.license.plugin>
         <maven.surfire.plugin>3.0.0-M5</maven.surfire.plugin>
@@ -213,17 +213,30 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.coveo</groupId>
-                <artifactId>fmt-maven-plugin</artifactId>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
                 <version>${maven.fmt.plugin}</version>
+
+                <configuration>
+                    <java>
+                        <!-- Use Google Java Format, but modern & JPMS-safe -->
+                        <googleJavaFormat>
+                            <version>1.22.0</version>
+                        </googleJavaFormat>
+                    </java>
+                </configuration>
+
                 <executions>
+                    <!-- CI / build validation -->
                     <execution>
+                        <id>spotless-check</id>
                         <goals>
                             <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>

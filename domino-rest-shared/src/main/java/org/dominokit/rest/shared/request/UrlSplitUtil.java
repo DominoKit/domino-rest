@@ -19,6 +19,7 @@ import org.dominokit.rest.shared.regex.DominoCompiledPattern;
 import org.dominokit.rest.shared.regex.DominoMatcher;
 import org.dominokit.rest.shared.regex.RegexEngine;
 
+/** Utility class for splitting and parsing URLs into segments. */
 public final class UrlSplitUtil {
 
   // Matches: [scheme: ]// [optional userinfo@] [host:port] [rest...]
@@ -35,7 +36,12 @@ public final class UrlSplitUtil {
     this.compiled = engine.compile(SPLIT_PATTERN);
   }
 
-  /** Result: base = scheme://host[:port], rest = remainder (may be empty). */
+  /**
+   * Result: base = scheme://host[:port], rest = remainder (may be empty).
+   *
+   * @param url the URL to split
+   * @return the split result
+   */
   public Split split(String url) {
     DominoMatcher m = compiled.matcher(url);
     if (m.isMatch()) {
@@ -58,6 +64,10 @@ public final class UrlSplitUtil {
    * inside a { ... } expression.
    *
    * <p>Nested braces (e.g. quantifiers like {8,12} inside the regex) are handled by tracking depth.
+   *
+   * @param token the string to search in
+   * @param target the character to find
+   * @return the index of the target character, or -1 if not found
    */
   public static int indexOfOutsideBraces(String token, char target) {
     if (token == null || token.isEmpty()) {

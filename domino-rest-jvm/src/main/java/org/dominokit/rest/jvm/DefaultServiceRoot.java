@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.jvm;
 
+/** Default service root configuration for JVM environment. */
 public class DefaultServiceRoot {
 
   public static String get() {

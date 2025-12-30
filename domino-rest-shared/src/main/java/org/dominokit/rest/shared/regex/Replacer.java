@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared.regex;
 
+/** Interface for replacing content during a regular expression replace operation. */
 public interface Replacer {
   String replace(DominoMatcher m);
 }

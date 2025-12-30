@@ -176,37 +176,107 @@ public interface RestConfig {
    */
   RestConfig setNullQueryParamStrategy(NullQueryParamStrategy strategy);
 
+  /** @return the {@link RegexEngine} */
   RegexEngine getRegexEngine();
 
+  /** @return a map of global path parameters */
   Map<String, String> getGlobalPathParameters();
 
+  /** @return a map of global header parameters */
   Map<String, String> getGlobalHeaderParameters();
 
+  /** @return a map of global query parameters */
   Map<String, List<String>> getGlobalQueryParameters();
 
+  /**
+   * Sets a global path parameter
+   *
+   * @param name the name of the parameter
+   * @param value the value of the parameter
+   * @return same instance
+   */
   RestConfig setGlobalPathParameter(String name, String value);
 
+  /**
+   * Sets global path parameters
+   *
+   * @param pathParameters a map of path parameters
+   * @return same instance
+   */
   RestConfig setGlobalPathParameters(Map<String, String> pathParameters);
 
+  /**
+   * Sets a global header parameter
+   *
+   * @param name the name of the parameter
+   * @param value the value of the parameter
+   * @return same instance
+   */
   RestConfig setGlobalHeaderParameter(String name, String value);
 
+  /**
+   * Sets global header parameters
+   *
+   * @param headerParameters a map of header parameters
+   * @return same instance
+   */
   RestConfig setGlobalHeaderParameters(Map<String, String> headerParameters);
 
+  /**
+   * Sets a global query parameter
+   *
+   * @param name the name of the parameter
+   * @param value the value of the parameter
+   * @return same instance
+   */
   RestConfig setGlobalQueryParameter(String name, String value);
 
+  /**
+   * Adds a global query parameter
+   *
+   * @param name the name of the parameter
+   * @param value the value of the parameter
+   * @return same instance
+   */
   RestConfig addGlobalQueryParameter(String name, String value);
 
+  /**
+   * Sets global query parameters
+   *
+   * @param parameters a map of query parameters
+   * @return same instance
+   */
   RestConfig setGlobalQueryParameters(Map<String, List<String>> parameters);
 
+  /**
+   * Adds global query parameters
+   *
+   * @param parameters a map of query parameters
+   * @return same instance
+   */
   RestConfig addGlobalQueryParameters(Map<String, List<String>> parameters);
 
+  /**
+   * Sets the regex validation mode
+   *
+   * @param regexValidationMode the validation mode
+   * @return same instance
+   */
   RestConfig setRegexValidationMode(RegexValidationMode regexValidationMode);
 
+  /** @return the {@link RegexValidationMode} */
   RegexValidationMode getRegexValidationMode();
 
-  /** Formatter to format the date parameter based on a patter */
+  /** Formatter to format the date parameter based on a pattern */
   @FunctionalInterface
   interface DateParamFormatter {
+    /**
+     * Formats a date.
+     *
+     * @param date the date to format
+     * @param pattern the pattern to use
+     * @return the formatted date string
+     */
     String format(Date date, String pattern);
   }
 }

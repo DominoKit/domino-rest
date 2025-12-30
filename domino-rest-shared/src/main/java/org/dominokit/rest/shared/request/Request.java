@@ -27,29 +27,55 @@ package org.dominokit.rest.shared.request;
  */
 public interface Request {
 
+  /** Default implementation of {@link RequestStateContext}. */
   class DefaultRequestStateContext implements RequestStateContext {}
 
+  /** Context for the state when a server response is received. */
   class ServerResponseReceivedStateContext implements RequestStateContext {
+    /** The next state context. */
     protected final RequestStateContext nextContext;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param nextContext the next state context
+     */
     public ServerResponseReceivedStateContext(RequestStateContext nextContext) {
       this.nextContext = nextContext;
     }
   }
 
+  /**
+   * Context for the state when a server request is successful.
+   *
+   * @param <T> the type of the response bean
+   */
   class ServerSuccessRequestStateContext<T> implements RequestStateContext {
 
+    /** The response bean. */
     protected final T responseBean;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param responseBean the response bean
+     */
     public ServerSuccessRequestStateContext(T responseBean) {
       this.responseBean = responseBean;
     }
   }
 
+  /** Context for the state when a server request fails. */
   class ServerFailedRequestStateContext implements RequestStateContext {
 
+    /** The failed response bean. */
     protected final FailedResponseBean response;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param response the failed response bean
+     */
     public ServerFailedRequestStateContext(FailedResponseBean response) {
       this.response = response;
     }
@@ -78,10 +104,16 @@ public interface Request {
     return false;
   }
 
+  /** Exception thrown when the request is in an invalid state. */
   class InvalidRequestState extends RuntimeException {
 
     private static final long serialVersionUID = 1976356149064117774L;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param message the exception message
+     */
     public InvalidRequestState(String message) {
       super(message);
     }

@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared.request;
 
+/** An interface for matching URL tokens using regular expressions. */
 public interface UrlTokenRegexMatcher {
   String asTokenString(String url);
 }

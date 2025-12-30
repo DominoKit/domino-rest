@@ -17,34 +17,81 @@ package org.dominokit.rest.shared.request.builder;
 
 import jakarta.ws.rs.HttpMethod;
 
+/**
+ * Interface for specifying the HTTP method of a request.
+ *
+ * @param <R> the request type
+ * @param <S> the response type
+ */
 public interface HasMethod<R, S> {
 
+  /**
+   * Specifies the HTTP method.
+   *
+   * @param method the HTTP method
+   * @return the next builder step
+   */
   HasPath<R, S> withMethod(String method);
 
+  /**
+   * Specifies the GET HTTP method.
+   *
+   * @return the next builder step
+   */
   default HasPath<R, S> get() {
     return withMethod(HttpMethod.GET);
   }
 
+  /**
+   * Specifies the POST HTTP method.
+   *
+   * @return the next builder step
+   */
   default HasPath<R, S> post() {
     return withMethod(HttpMethod.POST);
   }
 
+  /**
+   * Specifies the PUT HTTP method.
+   *
+   * @return the next builder step
+   */
   default HasPath<R, S> put() {
     return withMethod(HttpMethod.PUT);
   }
 
+  /**
+   * Specifies the DELETE HTTP method.
+   *
+   * @return the next builder step
+   */
   default HasPath<R, S> delete() {
     return withMethod(HttpMethod.DELETE);
   }
 
+  /**
+   * Specifies the PATCH HTTP method.
+   *
+   * @return the next builder step
+   */
   default HasPath<R, S> patch() {
     return withMethod(HttpMethod.PATCH);
   }
 
+  /**
+   * Specifies the HEAD HTTP method.
+   *
+   * @return the next builder step
+   */
   default HasPath<R, S> head() {
     return withMethod(HttpMethod.HEAD);
   }
 
+  /**
+   * Specifies the OPTIONS HTTP method.
+   *
+   * @return the next builder step
+   */
   default HasPath<R, S> options() {
     return withMethod(HttpMethod.OPTIONS);
   }

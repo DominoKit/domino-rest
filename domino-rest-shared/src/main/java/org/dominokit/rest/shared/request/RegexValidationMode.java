@@ -15,6 +15,7 @@
  */
 package org.dominokit.rest.shared.request;
 
+/** Enum representing the validation mode for regular expressions. */
 public enum RegexValidationMode {
   IGNORE,
   WARN,

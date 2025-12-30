@@ -22,6 +22,7 @@ import org.dominokit.rest.shared.regex.Replacer;
 import org.gwtproject.regexp.shared.MatchResult;
 import org.gwtproject.regexp.shared.RegExp;
 
+/** JavaScript implementation of the {@link RegexEngine}. */
 public final class JsRegexEngine implements RegexEngine {
 
   @Override

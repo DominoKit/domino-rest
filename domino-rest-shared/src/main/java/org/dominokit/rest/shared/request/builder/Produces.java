@@ -15,6 +15,18 @@
  */
 package org.dominokit.rest.shared.request.builder;
 
+/**
+ * Interface for specifying the media type that a request produces.
+ *
+ * @param <R> the request type
+ * @param <S> the response type
+ */
 public interface Produces<R, S> {
+  /**
+   * Specifies the media type that the request produces (e.g., "application/json").
+   *
+   * @param produces the media type
+   * @return the configured RestRequestBuilder
+   */
   RestRequestBuilder<R, S> produces(String produces);
 }
