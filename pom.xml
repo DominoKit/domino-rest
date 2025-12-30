@@ -61,7 +61,7 @@
 
     <properties>
         <snapshot.version>HEAD-SNAPSHOT</snapshot.version>
-        <next.release.version>2.0.1</next.release.version>
+        <next.release.version>2.0.0</next.release.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -278,7 +278,7 @@
                     <releaseVersionProperty>next.release.version</releaseVersionProperty>
                     <!-- Set to true to immediately bump the development version when creating a release branch -->
                     <commitDevelopmentVersionAtStart>true</commitDevelopmentVersionAtStart>
-
+                    <skipTestProject>true</skipTestProject>
                     <!-- Which digit to increas in major.minor.patch versioning, the values being 0.1.2 respectively.
                          By default the rightmost number is increased.
                          Pass in the number via parameter or profile to allow configuration,
