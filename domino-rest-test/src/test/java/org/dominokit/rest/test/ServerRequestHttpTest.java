@@ -297,6 +297,7 @@ class ServerRequestHttpTest {
     assertTrue(afterComplete.get(), "onAfterCompleteCallback should have been called");
     assertFalse(
         beforeFailed.get(), "onBeforeFailedCallback should NOT have been called on success");
+    DominoRestContext.make().getConfig().removeResponseInterceptor(interceptor);
   }
 
   @Test
@@ -345,6 +346,7 @@ class ServerRequestHttpTest {
     assertTrue(afterComplete.get(), "onAfterCompleteCallback should have been called");
     assertFalse(
         beforeSuccess.get(), "onBeforeSuccessCallback should NOT have been called on failure");
+    DominoRestContext.make().getConfig().removeResponseInterceptor(interceptor);
   }
 
   @Test
