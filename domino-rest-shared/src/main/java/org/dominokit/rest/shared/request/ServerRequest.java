@@ -550,6 +550,20 @@ public class ServerRequest<R, S> extends BaseRequest
   }
 
   /**
+   * define the on complete handler
+   *
+   * @param completeHandler the handler
+   * @return same instance to support builder pattern
+   */
+  @Override
+  public CanFailOrSend onAfterComplete(CompleteHandler completeHandler) {
+    if (nonNull(completeHandler)) {
+      this.afterCompleteHandler = completeHandler;
+    }
+    return this;
+  }
+
+  /**
    * sets the Content-type header
    *
    * @param contentType the content type array

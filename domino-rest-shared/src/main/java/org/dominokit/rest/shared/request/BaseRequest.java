@@ -39,6 +39,7 @@ public abstract class BaseRequest implements Request {
       };
 
   protected CompleteHandler completeHandler = () -> {};
+  protected CompleteHandler afterCompleteHandler = () -> {};
 
   protected Fail fail = requestContext.getConfig().getDefaultFailHandler();
 
@@ -64,6 +65,7 @@ public abstract class BaseRequest implements Request {
         .forEach(
             responseInterceptor ->
                 responseInterceptor.onAfterCompleteCallback((ServerRequest) this));
+    afterCompleteHandler.onCompleted();
   }
 
   public BaseRequest() {

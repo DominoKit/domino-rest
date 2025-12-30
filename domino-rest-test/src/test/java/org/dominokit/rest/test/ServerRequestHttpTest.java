@@ -266,22 +266,26 @@ class ServerRequestHttpTest {
         new ResponseInterceptor() {
           @Override
           public void onBeforeSuccessCallback(ServerRequest serverRequest, Response response) {
+            LOGGER.info("onBeforeSuccessCallback called");
             beforeSuccess.set(true);
           }
 
           @Override
           public void onBeforeCompleteCallback(ServerRequest serverRequest) {
+            LOGGER.info("onBeforeCompleteCallback called");
             beforeComplete.set(true);
           }
 
           @Override
           public void onAfterCompleteCallback(ServerRequest serverRequest) {
+            LOGGER.info("onAfterCompleteCallback called");
             afterComplete.set(true);
           }
 
           @Override
           public void onBeforeFailedCallback(
               ServerRequest serverRequest, FailedResponseBean failedResponse) {
+            LOGGER.error("onBeforeFailedCallback called", failedResponse.getThrowable());
             beforeFailed.set(true);
           }
         };
@@ -519,7 +523,7 @@ class ServerRequestHttpTest {
                   r.successBodyBean = body;
                 })
         .onFailed(err -> r.error = err.getThrowable())
-        .onComplete(done::countDown);
+        .onAfterComplete(done::countDown);
     req.send();
     assertTrue(done.await(5, TimeUnit.SECONDS), "Request did not complete in time");
     return r;
