@@ -57,7 +57,7 @@
         <module>domino-rest-client</module>
         <module>domino-rest-jvm</module>
         <module>domino-rest-jaxrs</module>
-    </modules>
+	</modules>
 
     <properties>
         <snapshot.version>HEAD-SNAPSHOT</snapshot.version>
@@ -84,8 +84,9 @@
         <domino.jackson.version>1.0.6</domino.jackson.version>
         <domino.aggregator.version>1.0.3</domino.aggregator.version>
         <jax.rs.version>3.1.0</jax.rs.version>
-        <jackson.databind.version>2.16.0</jackson.databind.version>
+        <jackson.databind.version>2.18.6</jackson.databind.version>
         <elemental2.version>1.3.2</elemental2.version>
+        <assertj.version>3.27.7</assertj.version>
     </properties>
 
     <dependencyManagement>
@@ -203,7 +204,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.14.0</version>
+                <version>3.18.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
