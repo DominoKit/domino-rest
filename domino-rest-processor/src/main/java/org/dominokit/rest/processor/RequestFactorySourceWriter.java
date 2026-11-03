@@ -50,6 +50,7 @@ import org.dominokit.jackson.processor.Type;
 import org.dominokit.jackson.processor.deserialization.FieldDeserializersChainBuilder;
 import org.dominokit.jackson.processor.serialization.FieldSerializerChainBuilder;
 import org.dominokit.rest.shared.MultipartForm;
+import org.dominokit.rest.shared.UrlEncodedForm;
 import org.dominokit.rest.shared.request.*;
 import org.dominokit.rest.shared.request.service.annotations.*;
 import org.dominokit.rest.shared.request.service.annotations.Request;
@@ -358,6 +359,12 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
                   }
                 });
         request.addStatement(initializeStatement + "(multipartForm)");
+      } else if (consumesFormUrlEncoded(serviceMethod)) {
+        request.addStatement("$T form = new $T()", UrlEncodedForm.class, UrlEncodedForm.class);
+        request.addStatement(initializeStatement + "(form)");
+        getMethodParameters(serviceMethod).stream()
+            .filter(parameter -> nonNull(parameter.getAnnotation(FormParam.class)))
+            .forEach(parameter -> addFormParameter(request, parameter));
       } else if (requestBodyParamName.isPresent()) {
         request.addStatement(initializeStatement + "(" + requestBodyParamName.get() + ")");
       } else {
@@ -661,6 +668,51 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     }
   }
 
+  private void addFormParameter(MethodSpec.Builder request, VariableElement parameter) {
+    String formName = formParamName(parameter);
+    DateFormat dateFormat = parameter.getAnnotation(DateFormat.class);
+    String parameterName = parameter.getSimpleName().toString();
+
+    if (processorUtil.isCollection(parameter.asType())) {
+      TypeMirror typeArgument = processorUtil.firstTypeArgument(parameter.asType());
+      request.beginControlFlow("if ($L != null)", parameterName);
+      request.beginControlFlow("for ($T item : $L)", TypeName.get(typeArgument), parameterName);
+      request.beginControlFlow("if (item != null)");
+      if (processorUtil.isAssignableFrom(typeArgument, Date.class) && nonNull(dateFormat)) {
+        request.addStatement(
+            "form.append($S, instance.formatDate(() -> item, $S))", formName, dateFormat.value());
+      } else {
+        request.addStatement("form.append($S, String.valueOf(item))", formName);
+      }
+      request.endControlFlow();
+      request.endControlFlow();
+      request.endControlFlow();
+    } else if (isPrimitive(parameter.asType())) {
+      request.addStatement("form.append($S, String.valueOf($L))", formName, parameterName);
+    } else if (processorUtil.isAssignableFrom(parameter, Date.class) && nonNull(dateFormat)) {
+      request.beginControlFlow("if ($L != null)", parameterName);
+      request.addStatement(
+          "form.append($S, instance.formatDate(() -> $L, $S))",
+          formName,
+          parameterName,
+          dateFormat.value());
+      request.endControlFlow();
+    } else {
+      request.beginControlFlow("if ($L != null)", parameterName);
+      request.addStatement(
+          "form.append($S, instance.emptyOrStringValue(() -> $L))", formName, parameterName);
+      request.endControlFlow();
+    }
+  }
+
+  private String formParamName(VariableElement parameter) {
+    String name = parameter.getAnnotation(FormParam.class).value();
+    if (name == null || name.isEmpty()) {
+      return parameter.getSimpleName().toString();
+    }
+    return name;
+  }
+
   private void addSetParameterStatement(MethodSpec.Builder request, VariableElement parameter) {
     addSetParameterStatement(
         request, parameter, parameter.getAnnotation(QueryParam.class).value(), "Query");
@@ -921,6 +973,12 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
           null,
           getMappingType(elements.getTypeElement(MultipartForm.class.getCanonicalName()).asType()));
     }
+    if (consumesFormUrlEncoded(serviceMethod)) {
+      return new RequestBodyParam(
+          null,
+          getMappingType(
+              elements.getTypeElement(UrlEncodedForm.class.getCanonicalName()).asType()));
+    }
     List<? extends VariableElement> parameters = serviceMethod.method.getParameters();
 
     if (!isBodyHttpMethod(serviceMethod)) {
@@ -959,6 +1017,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     return isNull(param.getAnnotation(QueryParam.class))
         && isNull(param.getAnnotation(PathParam.class))
         && isNull(param.getAnnotation(HeaderParam.class))
+        && isNull(param.getAnnotation(FormParam.class))
         && isNull(param.getAnnotation(Context.class))
         && isNull(param.getAnnotation(Suspended.class))
         && notInPath(param, serviceMethod);
@@ -1056,7 +1115,7 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
 
     if (consumesMultipartForm(serviceMethod)) {
       constructorBuilder.addStatement("setMultipartForm(true)");
-    } else if (!isVoidType(serviceMethod)) {
+    } else if (!consumesFormUrlEncoded(serviceMethod) && !isVoidType(serviceMethod)) {
       Optional<CodeBlock> requestWriter = getFactoryRequestWriterBlock(serviceMethod);
       requestWriter.ifPresent(constructorBuilder::addCode);
     }
@@ -1138,6 +1197,17 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
   private boolean consumesMultipartForm(ServiceMethod serviceMethod) {
     String contentType = getContentType(serviceMethod);
     return contentType.contains(MediaType.MULTIPART_FORM_DATA);
+  }
+
+  private boolean consumesFormUrlEncoded(ServiceMethod serviceMethod) {
+    return !consumesMultipartForm(serviceMethod)
+        && getContentType(serviceMethod).contains(MediaType.APPLICATION_FORM_URLENCODED)
+        && hasFormParam(serviceMethod);
+  }
+
+  private boolean hasFormParam(ServiceMethod serviceMethod) {
+    return serviceMethod.method.getParameters().stream()
+        .anyMatch(parameter -> nonNull(parameter.getAnnotation(FormParam.class)));
   }
 
   private boolean shouldGenerateSerializer(TypeMirror requestBeanType) {
@@ -1267,6 +1337,8 @@ public class RequestFactorySourceWriter extends AbstractSourceBuilder {
     } else if (nonNull(findAnnotationInEnclosingElements(serviceElement, Consumes.class))) {
       return asAcceptsHeaderValue(
           findAnnotationInEnclosingElements(serviceElement, Consumes.class).value());
+    } else if (hasFormParam(serviceMethod)) {
+      return "\"" + MediaType.APPLICATION_FORM_URLENCODED + "\"";
     }
 
     return "\"" + MediaType.APPLICATION_JSON + "\"";
