@@ -37,6 +37,7 @@ import org.dominokit.rest.shared.BaseRestfulRequest;
 import org.dominokit.rest.shared.GwtIncompatible;
 import org.dominokit.rest.shared.MultipartForm;
 import org.dominokit.rest.shared.RestfulRequest;
+import org.dominokit.rest.shared.UrlEncodedForm;
 
 /** Java implementation for {@link RestfulRequest} using the standard JDK HTTP Client. */
 @GwtIncompatible
@@ -107,12 +108,27 @@ public class JavaStandardRestfulRequest extends BaseRestfulRequest {
 
   @Override
   public void sendForm(Map<String, String> formData) {
+    UrlEncodedForm form = new UrlEncodedForm();
+    if (nonNull(formData)) {
+      formData.forEach(form::append);
+    }
+    sendForm(form);
+  }
+
+  @Override
+  public void sendForm(UrlEncodedForm form) {
+    headers.keySet().removeIf(key -> "content-type".equalsIgnoreCase(key));
     putHeader("Content-Type", "application/x-www-form-urlencoded");
-    String body =
-        formData.entrySet().stream()
-            .map(e -> urlEncode(e.getKey()) + "=" + urlEncode(e.getValue()))
-            .collect(joining("&"));
-    send(body);
+    send(encodeForm(form));
+  }
+
+  static String encodeForm(UrlEncodedForm form) {
+    if (form == null) {
+      return "";
+    }
+    return form.getFields().stream()
+        .map(field -> urlEncode(field.name()) + "=" + urlEncode(field.value()))
+        .collect(joining("&"));
   }
 
   @Override

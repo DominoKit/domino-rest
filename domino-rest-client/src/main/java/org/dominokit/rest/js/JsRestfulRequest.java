@@ -16,7 +16,6 @@
 package org.dominokit.rest.js;
 
 import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.joining;
 
 import elemental2.core.ArrayBuffer;
 import elemental2.core.TypedArray;
@@ -24,13 +23,17 @@ import elemental2.core.Uint8Array;
 import elemental2.dom.Blob;
 import elemental2.dom.BlobPropertyBag;
 import elemental2.dom.FormData;
+import elemental2.dom.URLSearchParams;
 import elemental2.dom.XMLHttpRequest;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsPackage;
 import org.dominokit.rest.shared.BaseRestfulRequest;
 import org.dominokit.rest.shared.MultipartForm;
 import org.dominokit.rest.shared.RestfulRequest;
+import org.dominokit.rest.shared.UrlEncodedForm;
 import org.dominokit.rest.shared.request.RequestTimeoutException;
 import org.gwtproject.timer.client.Timer;
 
@@ -102,12 +105,32 @@ public class JsRestfulRequest extends BaseRestfulRequest {
   /** {@inheritDoc} */
   @Override
   public void sendForm(Map<String, String> formData) {
-    setContentType("application/x-www-form-urlencoded");
-    send(
-        formData.entrySet().stream()
-            .map(e -> e.getKey() + "=" + e.getValue())
-            .collect(joining("&")));
+    UrlEncodedForm form = new UrlEncodedForm();
+    if (nonNull(formData)) {
+      formData.forEach(form::append);
+    }
+    sendForm(form);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public void sendForm(UrlEncodedForm form) {
+    setContentType("application/x-www-form-urlencoded");
+    URLSearchParams params = new URLSearchParams();
+    if (nonNull(form)) {
+      for (UrlEncodedForm.Field field : form.getFields()) {
+        params.append(field.name(), field.value());
+      }
+    }
+    send(formBody(params));
+  }
+
+  /**
+   * {@code String(params)} calls {@code URLSearchParams.toString}, which percent-encodes the body.
+   * The Java type does not declare that method.
+   */
+  @JsMethod(namespace = JsPackage.GLOBAL, name = "String")
+  private static native String formBody(URLSearchParams params);
 
   /** {@inheritDoc} */
   @Override
@@ -192,6 +215,16 @@ public class JsRestfulRequest extends BaseRestfulRequest {
   }
 
   private void setContentType(String contentType) {
+    String existing = null;
+    for (String name : headers.keySet()) {
+      if (CONTENT_TYPE.equalsIgnoreCase(name)) {
+        existing = name;
+        break;
+      }
+    }
+    if (existing != null) {
+      headers.remove(existing);
+    }
     headers.put(CONTENT_TYPE, contentType);
   }
 

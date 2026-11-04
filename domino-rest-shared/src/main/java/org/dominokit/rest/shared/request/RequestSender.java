@@ -27,6 +27,7 @@ import org.dominokit.domino.api.shared.extension.ContextAggregator;
 import org.dominokit.rest.shared.MultipartForm;
 import org.dominokit.rest.shared.Response;
 import org.dominokit.rest.shared.RestfulRequest;
+import org.dominokit.rest.shared.UrlEncodedForm;
 
 /**
  * The default request rest sender.
@@ -178,6 +179,8 @@ public class RequestSender<R, S> implements RequestRestSender<R, S> {
         && !request.isVoidRequest()) {
       if (request.isMultipartForm()) {
         restfulRequest.sendMultipartForm((MultipartForm) request.requestBean());
+      } else if (request.requestBean() instanceof UrlEncodedForm) {
+        restfulRequest.sendForm((UrlEncodedForm) request.requestBean());
       } else {
         restfulRequest.send(request.getRequestWriter().write(request.requestBean()));
       }

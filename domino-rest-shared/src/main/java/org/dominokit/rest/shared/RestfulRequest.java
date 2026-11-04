@@ -189,6 +189,14 @@ public interface RestfulRequest {
   void sendForm(Map<String, String> formData);
 
   /**
+   * Sends the request with content type {@code application/x-www-form-urlencoded}. Repeated names
+   * are preserved.
+   *
+   * @param form the body of the request
+   */
+  void sendForm(UrlEncodedForm form);
+
+  /**
    * Sends the request with content type {@code application/json}
    *
    * @param json the body of the request
