@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
 import org.dominokit.rest.shared.request.service.annotations.RequestFactory;
 import org.dominokit.rest.shared.request.service.annotations.ResourceList;
 
@@ -75,13 +76,24 @@ public class ResourceListProcessingStep extends AbstractProcessingStep {
             processorUtil.getClassArrayValueFromAnnotation(
                 resourceListElement, ResourceList.class, "value"));
 
-    resourceTypes.forEach(
-        typeMirror -> {
-          Element element = types.asElement(typeMirror);
-          writeSource(
-              new RequestFactorySourceWriter(element, resourceList.serviceRoot(), processingEnv)
-                  .asTypeBuilder(),
-              elements.getPackageOf(resourceListElement).getQualifiedName().toString());
-        });
+    String packageName = elements.getPackageOf(resourceListElement).getQualifiedName().toString();
+    for (TypeMirror typeMirror : resourceTypes) {
+      Element element = types.asElement(typeMirror);
+      try {
+        if (element == null) {
+          messager.printMessage(
+              Diagnostic.Kind.ERROR,
+              "Cannot generate factory for unresolved type " + typeMirror,
+              resourceListElement);
+          continue;
+        }
+        writeSource(
+            new RequestFactorySourceWriter(element, resourceList.serviceRoot(), processingEnv)
+                .asTypeBuilder(),
+            packageName);
+      } catch (Exception e) {
+        ExceptionUtil.messageStackTrace(messager, e, element);
+      }
+    }
   }
 }
